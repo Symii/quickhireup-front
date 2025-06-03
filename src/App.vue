@@ -1,22 +1,23 @@
-<script setup>
-import { onMounted, ref } from 'vue'
-import axios from 'axios'
-
-const data = ref(null)
-
-onMounted(async () => {
-  try {
-    const response = await axios.get('https://localhost:5001/api/example')
-    data.value = response.data
-  } catch (err) {
-    console.error(err)
-  }
-})
-</script>
-
 <template>
   <div>
-    <h1>API Data:</h1>
-    <pre>{{ data }}</pre>
+    <Navbar v-if="showNavFooter" />
+
+    <router-view />
+
+    <Footer v-if="showNavFooter" />
   </div>
 </template>
+
+<script setup>
+import Navbar from './components/Navbar.vue';
+import Footer from './components/Footer.vue';
+
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+const showNavFooter = computed(() => {
+  return !['/login', '/register', '/company-register'].includes(route.path);
+});
+</script>
