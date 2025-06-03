@@ -1,45 +1,9 @@
 # quickhireup-front
 
-This template should help get you started developing with Vue 3 in Vite.
+![glowna](https://github.com/user-attachments/assets/2981e386-fce0-4051-8ad5-161f53bd1799)
 
-## Recommended IDE Setup
+![zaloguj_sie](https://github.com/user-attachments/assets/fd724e9c-4972-4d59-ae8b-ab47663ddb5c)
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+![zarejestruj](https://github.com/user-attachments/assets/71ca4928-7832-4efd-adf7-92ef5990cea7)
 
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-npm run test:unit
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+![firmowe](https://github.com/user-attachments/assets/31cc07b3-55db-41e8-8172-e83d85249c8e)
