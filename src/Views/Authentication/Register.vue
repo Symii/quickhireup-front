@@ -30,8 +30,12 @@
           <input id="confirmPassword" type="password" v-model="confirmPassword" required />
         </div>
 
-        <button type="submit" :disabled="!isFormValid" class="btn-register">Zarejestruj się</button>
+        <button type="submit" :disabled="!isFormValid || loading" class="btn-register">
+          {{ loading ? 'Rejestracja...' : 'Zarejestruj się' }}
+        </button>
       </form>
+
+      <div v-if="error" style="color: #f66; margin-top: 1rem">{{ error }}</div>
 
       <p class="footer-text">
         Masz już konto?
@@ -52,20 +56,26 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuth } from '@/composables/useAuth';
+import type { UserRegisterDto } from '@/api/authentication/types/auth'; // dostosuj ścieżkę
 
-const name = ref('');
-const email = ref('');
-const password = ref('');
-const confirmPassword = ref('');
+const router = useRouter();
+const { register, loading, error } = useAuth();
 
-const isEmailValid = (email) => {
+const name = ref<string>('');
+const email = ref<string>('');
+const password = ref<string>('');
+const confirmPassword = ref<string>('');
+
+const isEmailValid = (email: string): boolean => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(email);
 };
 
-const isFormValid = computed(() => {
+const isFormValid = computed<boolean>(() => {
   return (
     name.value.trim().length >= 3 &&
     isEmailValid(email.value) &&
@@ -74,8 +84,20 @@ const isFormValid = computed(() => {
   );
 });
 
-function submitRegister() {
-  alert(`Imię i nazwisko: ${name.value}\nEmail: ${email.value}`);
+async function submitRegister(): Promise<void> {
+  if (!isFormValid.value) return;
+
+  const payload: UserRegisterDto = {
+    userName: name.value.trim(),
+    email: email.value.trim(),
+    password: password.value,
+  };
+
+  try {
+    await register(payload);
+    alert('Rejestracja zakończona sukcesem! Możesz się teraz zalogować.');
+    router.push('/');
+  } catch (e) {}
 }
 </script>
 

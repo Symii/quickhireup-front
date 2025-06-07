@@ -9,16 +9,26 @@
         <div class="input-group">
           <label for="email">Email</label>
 
-          <input id="email" type="email" v-model="email" required />
+          <input id="email" type="email" v-model="email" autocomplete="email" required />
         </div>
 
         <div class="input-group">
           <label for="password">Hasło</label>
 
-          <input id="password" type="password" v-model="password" required />
+          <input
+            id="password"
+            type="password"
+            v-model="password"
+            autocomplete="current-password"
+            required
+          />
         </div>
 
-        <button type="submit" :disabled="!isFormValid" class="btn-login">Zaloguj się</button>
+        <button type="submit" :disabled="!isFormValid || loading" class="btn-login">
+          {{ loading ? 'Logowanie...' : 'Zaloguj się' }}
+        </button>
+
+        <p v-if="error" style="color: red" aria-live="polite">{{ error }}</p>
       </form>
 
       <p class="footer-text">
@@ -40,18 +50,34 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue';
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuth } from '@/composables/useAuth';
+import { useNotification } from '@/composables/useNotification';
+
+const notification = useNotification();
+const router = useRouter();
+const { login, error, loading, isLoggedIn } = useAuth();
 
 const email = ref('');
 const password = ref('');
 
-const isFormValid = computed(() => {
-  return email.value.includes('@') && password.value.length >= 6;
+const isEmailValid = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const isFormValid = computed(() => isEmailValid(email.value) && password.value.length >= 6);
+
+onMounted(() => {
+  if (isLoggedIn.value) {
+    notification.showMessage('Jesteś już zalogowany.');
+    router.push('/');
+  }
 });
 
-function submitLogin() {
-  alert(`Email: ${email.value}\nHasło: ${'*'.repeat(password.value.length)}`);
+async function submitLogin() {
+  try {
+    await login({ email: email.value, password: password.value });
+    router.push('/');
+  } catch {}
 }
 </script>
 

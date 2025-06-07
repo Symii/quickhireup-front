@@ -60,7 +60,7 @@ footer {
   margin-bottom: 2rem;
 }
 .footer-columns h4 {
-  color: #b56576;
+  color: #fc4c4e;
   margin-bottom: 0.5rem;
 }
 .footer-columns ul {
