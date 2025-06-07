@@ -27,9 +27,9 @@
         </div>
 
         <div class="input-group">
-          <label for="experience">Wymagania kluczowe (doświadczenie)</label>
+          <label for="experience">Doświadczenie</label>
           <select id="experience" v-model="form.experience" required>
-            <option disabled value="">Wybierz wymagania</option>
+            <option disabled value="">Wybierz doświadczenie</option>
             <option value="Brak doświadczenia">Brak doświadczenia</option>
             <option value="Do 1 roku">Do 1 roku</option>
             <option value="1-3 lata">1-3 lata</option>
