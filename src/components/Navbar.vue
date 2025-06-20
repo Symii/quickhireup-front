@@ -3,14 +3,13 @@
     <div class="navbar-left">
       <RouterLink to="/" class="logo">quickhireup.pl</RouterLink>
 
-      <!-- Desktopowe linki - widoczne tylko na desktop -->
       <ul class="nav-links">
         <li><RouterLink to="/oferty">Oferty pracy</RouterLink></li>
+
         <li><RouterLink to="/pracodawcy">Profile pracodawców</RouterLink></li>
       </ul>
     </div>
 
-    <!-- Hamburger tylko na mobilkach -->
     <div class="hamburger" @click="toggleMobileMenu">&#9776;</div>
 
     <div class="navbar-right">
@@ -24,7 +23,9 @@
         <div v-if="dropdownOpen" class="nav-dropdown-menu">
           <ul>
             <li><RouterLink to="/profil">Profil</RouterLink></li>
+
             <li><RouterLink to="/ustawienia">Ustawienia</RouterLink></li>
+
             <li><RouterLink to="/logout">Wyloguj się</RouterLink></li>
           </ul>
         </div>
@@ -32,33 +33,40 @@
 
       <div class="for-companies">
         <span>DLA FIRM</span>
+
         <a href="#">Dodaj ogłoszenie</a>
       </div>
     </div>
 
-    <!-- Mobilne pełnoekranowe menu -->
     <transition name="fade">
       <div v-if="mobileMenuOpen" class="mobile-menu">
         <div class="mobile-menu-header">
           <RouterLink to="/" class="logo">quickhireup.pl</RouterLink>
+
           <button class="close-btn" @click="toggleMobileMenu">&times;</button>
         </div>
+
         <ul class="mobile-nav-links">
           <li>
             <RouterLink @click.native="toggleMobileMenu" to="/oferty">Oferty pracy</RouterLink>
           </li>
+
           <li>
             <RouterLink @click.native="toggleMobileMenu" to="/pracodawcy"
               >Profile pracodawców</RouterLink
             >
           </li>
+
           <li><RouterLink @click.native="toggleMobileMenu" to="/profil">Profil</RouterLink></li>
+
           <li>
             <RouterLink @click.native="toggleMobileMenu" to="/ustawienia">Ustawienia</RouterLink>
           </li>
+
           <li>
             <RouterLink @click.native="toggleMobileMenu" to="/logout">Wyloguj się</RouterLink>
           </li>
+
           <li class="for-companies-mobile">
             <span>DLA FIRM</span>
             <a href="#" @click.prevent>Dodaj ogłoszenie</a>

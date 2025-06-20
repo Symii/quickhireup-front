@@ -1,6 +1,7 @@
 <template>
   <header>
     <h1>Oferty pracy</h1>
+
     <p>
       Znaleźliśmy <strong>{{ formatNumber(displayedNumber) }}</strong> ofert pracy w twojej okolicy.
     </p>
@@ -9,16 +10,23 @@
   <div class="search-form-container">
     <form class="search-form">
       <input type="text" placeholder="Stanowisko, firma, słowo kluczowe" />
+
       <select>
         <option>Kategoria</option>
       </select>
+
       <input type="text" placeholder="Lokalizacja" />
       <select>
         <option>Odległość +0 km</option>
+
         <option>Odległość +10 km</option>
+
         <option>Odległość +20 km</option>
+
         <option>Odległość +30 km</option>
+
         <option>Odległość +50 km</option>
+
         <option>Odległość +100 km</option>
       </select>
     </form>
@@ -35,8 +43,10 @@
           <div class="card-body d-flex flex-column">
             <div class="d-flex align-items-center mb-3">
               <div class="company-icon me-3">{{ job.company[0] }}</div>
+
               <div>
                 <h5 class="card-title mb-0 fw-semibold">{{ job.title }}</h5>
+
                 <small class="text-muted">{{ job.company }}</small>
               </div>
             </div>
@@ -45,6 +55,7 @@
 
             <div class="d-flex justify-content-between text-muted small mb-3">
               <span><i class="fa-regular fa-map me-1"></i>{{ job.location }}</span>
+
               <span><i class="fas fa-clock me-1"></i>{{ job.type }}</span>
             </div>
 
@@ -62,10 +73,12 @@
       <img src="https://cdn-icons-png.flaticon.com/512/2920/2920263.png" alt="Generator" />
       <div>
         <h2>Stwórz idealny opis stanowiska w kilka sekund</h2>
+
         <p>
           Nie trać czasu – skorzystaj z naszego inteligentnego narzędzia do generowania opisów ofert
           pracy i przyciągaj najlepszych kandydatów!
         </p>
+
         <a href="/generator" class="btn-generator">🚀 Uruchom generator</a>
       </div>
     </div>
@@ -74,6 +87,7 @@
   <section class="partners-slider">
     <div class="container">
       <h2 class="text-center mb-4">Nasi Partnerzy</h2>
+
       <div class="partners-track" ref="track">
         <div
           class="partner"
@@ -81,7 +95,9 @@
           :key="index + '-' + partner.name"
         >
           <img :src="partner.logo" :alt="partner.name" />
+
           <h3 class="partner-name">{{ partner.name }}</h3>
+
           <p>{{ partner.description }}</p>
         </div>
       </div>

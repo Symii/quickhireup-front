@@ -46,6 +46,12 @@ const routes = [
     name: 'Generator',
     component: () => import('@/views/Generator.vue'),
   },
+  {
+    path: '/logout',
+    name: 'Logout',
+    component: () => import('@/views/Authentication/Logout.vue'),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({
@@ -56,11 +62,16 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const auth = useAuth();
 
-  if (to.meta.requiresAuth && !auth.isLoggedIn.value) {
+  if (to.meta.requiresAuth && !auth.isLoggedIn.value && from.path === '/login') {
     isRedirecting.value = true;
     next('/login');
-  } else {
+  } else if (to.meta.requiresAuth && auth.isLoggedIn.value) {
     next();
+  } else if (!to.meta.requiresAuth) {
+    next();
+  } else {
+    isRedirecting.value = true;
+    next('/login');
   }
 });
 

@@ -28,33 +28,48 @@
 
         <div class="input-group">
           <label for="experience">Doświadczenie</label>
+
           <select id="experience" v-model="form.experience" required>
             <option disabled value="">Wybierz doświadczenie</option>
+
             <option value="Brak doświadczenia">Brak doświadczenia</option>
+
             <option value="Do 1 roku">Do 1 roku</option>
+
             <option value="1-3 lata">1-3 lata</option>
+
             <option value="3-5 lat">3-5 lat</option>
+
             <option value="Powyżej 5 lat">Powyżej 5 lat</option>
           </select>
         </div>
 
         <div class="input-group">
           <label for="contractType">Rodzaj umowy</label>
+
           <select id="contractType" v-model="form.contractType" required>
             <option disabled value="">Wybierz rodzaj umowy</option>
+
             <option value="Umowa o pracę">Umowa o pracę</option>
+
             <option value="Umowa zlecenie">Umowa zlecenie</option>
+
             <option value="Umowa o dzieło">Umowa o dzieło</option>
+
             <option value="Kontrakt B2B">Kontrakt B2B</option>
           </select>
         </div>
 
         <div class="input-group">
           <label for="employmentType">Rodzaj zatrudnienia</label>
+
           <select id="employmentType" v-model="form.employmentType" required>
             <option disabled value="">Wybierz rodzaj zatrudnienia</option>
+
             <option value="Zdalnie">Zdalnie</option>
+
             <option value="Stacjonarnie">Stacjonarnie</option>
+
             <option value="Hybrydowo">Hybrydowo</option>
           </select>
         </div>
@@ -74,19 +89,24 @@
         <header class="modal-header">
           <h3 id="modalTitle">Opis stanowiska</h3>
         </header>
+
         <main class="modal-content">
           <template v-if="loading">
             <div class="loading-container">
               <div class="loading-spinner"></div>
+
               <p>Trwa generowanie...</p>
             </div>
           </template>
+
           <template v-else>
             <pre class="generated-text">{{ generatedDescription }}</pre>
           </template>
         </main>
+
         <footer class="modal-footer" v-if="!loading">
           <button @click="copyToClipboard" class="btn-copy">Kopiuj</button>
+
           <button @click="closeModal" class="btn-exit">Wyjdź</button>
         </footer>
       </div>

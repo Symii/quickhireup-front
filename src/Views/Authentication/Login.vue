@@ -25,7 +25,9 @@
         </div>
 
         <button type="submit" :disabled="!isFormValid || loading" class="btn-login">
-          {{ loading ? 'Logowanie...' : 'Zaloguj się' }}
+          <span v-if="loading" class="pulse-loader"></span>
+
+          <span v-else>Zaloguj się</span>
         </button>
 
         <p v-if="error" style="color: red" aria-live="polite">{{ error }}</p>
@@ -58,7 +60,7 @@ import { useNotification } from '@/composables/useNotification';
 
 const notification = useNotification();
 const router = useRouter();
-const { login, error, loading, isLoggedIn } = useAuth();
+const { handleLogin, error, loading, isLoggedIn } = useAuth();
 
 const email = ref('');
 const password = ref('');
@@ -75,8 +77,7 @@ onMounted(() => {
 
 async function submitLogin() {
   try {
-    await login({ email: email.value, password: password.value });
-    router.push('/');
+    await handleLogin({ email: email.value, password: password.value });
   } catch {}
 }
 </script>
@@ -170,6 +171,10 @@ async function submitLogin() {
   transition:
     background 0.3s ease,
     box-shadow 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
 }
 
 .btn-login:hover:not(:disabled) {
@@ -206,6 +211,68 @@ async function submitLogin() {
   }
   .title {
     font-size: 2rem;
+  }
+}
+
+.pulse-loader {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  background: rgb(255, 86, 102);
+  border-radius: 50%;
+  animation: pulse-center 1.6s infinite ease-in-out;
+}
+
+.pulse-loader::before,
+.pulse-loader::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(255, 86, 102, 0.4);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0;
+}
+
+.pulse-loader::before {
+  animation: pulse-wave 1.6s infinite ease-out;
+}
+
+.pulse-loader::after {
+  animation: pulse-wave 1.6s infinite ease-out;
+  animation-delay: 0.8s;
+}
+
+.pulse-loader::after {
+  box-shadow: 0 0 0 0 rgba(255, 86, 102, 0.25);
+}
+
+@keyframes pulse-center {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-wave {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+  }
+  80% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3.5);
+    opacity: 0;
   }
 }
 </style>

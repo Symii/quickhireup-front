@@ -7,30 +7,28 @@ import {
 
 const axiosInstance = axios.create({
   baseURL: 'https://localhost:7184/api',
+  timeout: 10000,
 });
 
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = getToken();
     if (token) {
+      console.log('Adding token to request:', token.substring(0, 10) + '...');
       config.headers = config.headers ?? {};
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => {
+    console.error('Request error:', error);
+    return Promise.reject(error);
+  },
 );
 
 let isRefreshing = false;
 let failedQueue: Array<{ resolve: (token: string) => void; reject: (error: any) => void }> = [];
-
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach(({ resolve, reject }) => {
-    if (error) reject(error);
-    else if (token) resolve(token);
-  });
-  failedQueue = [];
-};
+let retryCount = 0;
 
 axiosInstance.interceptors.response.use(
   (response) => response,
@@ -46,11 +44,21 @@ axiosInstance.interceptors.response.use(
             originalRequest.headers.Authorization = 'Bearer ' + token;
             return axiosInstance(originalRequest);
           })
-          .catch((err) => Promise.reject(err));
+          .catch((err) => {
+            if (retryCount < 3) {
+              retryCount++;
+              return new Promise((resolve) => setTimeout(resolve, 1000)).then(() =>
+                axiosInstance(originalRequest),
+              );
+            }
+            processQueue(err, null);
+            return Promise.reject(err);
+          });
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
+      retryCount = 0;
 
       try {
         const newToken = await refreshTokenRequest();
@@ -70,5 +78,12 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+function processQueue(error: any, token: string | null) {
+  failedQueue.forEach((prom) => {
+    error ? prom.reject(error) : prom.resolve(token!);
+  });
+  failedQueue = [];
+}
 
 export default axiosInstance;

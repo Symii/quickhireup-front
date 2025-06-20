@@ -11,12 +11,15 @@
       <b-tab title="Ogólne" active>
         <FaqAccordion :items="faqGeneral" :primaryColor="primaryColor" />
       </b-tab>
+
       <b-tab title="Ogłoszenia">
         <FaqAccordion :items="faqPosts" :primaryColor="primaryColor" />
       </b-tab>
+
       <b-tab title="Aplikacje">
         <FaqAccordion :items="faqApplications" :primaryColor="primaryColor" />
       </b-tab>
+
       <b-tab title="Konto">
         <FaqAccordion :items="faqAccount" :primaryColor="primaryColor" />
       </b-tab>
@@ -37,8 +40,10 @@
           />
           <div class="invalid-feedback">Proszę podać swoje imię i nazwisko.</div>
         </div>
+
         <div class="mb-3">
           <label for="email" class="form-label">Adres e-mail</label>
+
           <input
             type="email"
             class="form-control"
@@ -47,8 +52,10 @@
             required
             :class="{ 'is-invalid': errors.email }"
           />
+
           <div class="invalid-feedback">Proszę podać poprawny adres e-mail.</div>
         </div>
+
         <div class="mb-3">
           <label for="message" class="form-label">Wiadomość</label>
           <textarea
@@ -59,8 +66,10 @@
             required
             :class="{ 'is-invalid': errors.message }"
           ></textarea>
+
           <div class="invalid-feedback">Wiadomość nie może być pusta.</div>
         </div>
+
         <button
           type="submit"
           class="btn btn-primary"
@@ -69,9 +78,11 @@
         >
           {{ sending ? 'Wysyłanie...' : 'Wyślij' }}
         </button>
+
         <div v-if="successMessage" class="alert alert-success mt-3" role="alert">
           {{ successMessage }}
         </div>
+
         <div v-if="errorMessage" class="alert alert-danger mt-3" role="alert">
           {{ errorMessage }}
         </div>

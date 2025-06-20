@@ -60,10 +60,10 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
-import type { UserRegisterDto } from '@/api/authentication/types/auth'; // dostosuj ścieżkę
+import type { UserRegisterDto } from '@/api/authentication/types/auth';
 
 const router = useRouter();
-const { register, loading, error } = useAuth();
+const { handleRegister, loading, error } = useAuth();
 
 const name = ref<string>('');
 const email = ref<string>('');
@@ -94,7 +94,7 @@ async function submitRegister(): Promise<void> {
   };
 
   try {
-    await register(payload);
+    await handleRegister(payload);
     alert('Rejestracja zakończona sukcesem! Możesz się teraz zalogować.');
     router.push('/');
   } catch (e) {}

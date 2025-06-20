@@ -14,6 +14,7 @@
           {{ item.question }}
         </button>
       </h2>
+
       <div
         :id="'collapse' + index"
         class="accordion-collapse collapse"
