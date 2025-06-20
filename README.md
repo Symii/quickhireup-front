@@ -1,5 +1,8 @@
 # quickhireup-front
 
+### Prezentacja generatora opisu na youtube:
+[![Filmy na youtube](https://img.youtube.com/vi/zmCZ0Ecs-1o/hqdefault.jpg)](https://youtu.be/zmCZ0Ecs-1o?feature=shared)
+
 ![image](https://github.com/user-attachments/assets/67eeee60-fb34-41fb-856c-82c6f9270f47)
 
 ![image](https://github.com/user-attachments/assets/efc46d38-1702-4444-a398-467b323cee53)
