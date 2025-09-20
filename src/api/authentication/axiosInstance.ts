@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import {
   getToken,
   refreshTokenRequest,
@@ -6,7 +6,7 @@ import {
 } from '@/api/authentication/services/tokenService';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://localhost:7184/api',
+  baseURL: 'http://localhost:5000/api',
   timeout: 10000,
 });
 
@@ -27,7 +27,10 @@ axiosInstance.interceptors.request.use(
 );
 
 let isRefreshing = false;
-let failedQueue: Array<{ resolve: (token: string) => void; reject: (error: any) => void }> = [];
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: AxiosError) => void;
+}> = [];
 let retryCount = 0;
 
 axiosInstance.interceptors.response.use(
@@ -66,7 +69,11 @@ axiosInstance.interceptors.response.use(
         processQueue(null, newToken);
         return axiosInstance(originalRequest);
       } catch (err) {
-        processQueue(err, null);
+        if (axios.isAxiosError(err)) {
+          processQueue(err, null);
+        } else {
+          processQueue(new AxiosError('Unknown error') as AxiosError, null);
+        }
         clearTokens();
         window.location.href = '/login';
         return Promise.reject(err);
@@ -79,9 +86,13 @@ axiosInstance.interceptors.response.use(
   },
 );
 
-function processQueue(error: any, token: string | null) {
+function processQueue(error: AxiosError | null, token: string | null) {
   failedQueue.forEach((prom) => {
-    error ? prom.reject(error) : prom.resolve(token!);
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token!);
+    }
   });
   failedQueue = [];
 }

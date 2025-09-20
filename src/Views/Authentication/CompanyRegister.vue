@@ -52,7 +52,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue';
 
 const companyName = ref('');
@@ -61,12 +61,12 @@ const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 
-const isNipValid = (nip) => {
+const isNipValid = (nip: string) => {
   const cleanNip = nip.replace(/[\s-]/g, '');
   return /^[0-9]{10}$/.test(cleanNip);
 };
 
-const isEmailValid = (email) => {
+const isEmailValid = (email: string) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(email);
 };

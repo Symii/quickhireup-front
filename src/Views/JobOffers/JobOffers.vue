@@ -8,8 +8,10 @@
           <div class="card-body d-flex flex-column">
             <div class="d-flex align-items-center mb-3">
               <div class="company-icon me-3">{{ job.company[0] }}</div>
+
               <div>
                 <h5 class="card-title mb-0 fw-semibold">{{ job.title }}</h5>
+
                 <small class="text-muted">{{ job.company }}</small>
               </div>
             </div>
@@ -18,6 +20,7 @@
 
             <div class="d-flex justify-content-between text-muted small mb-3">
               <span><i class="fa-regular fa-map me-1"></i>{{ job.location }}</span>
+
               <span><i class="fas fa-clock me-1"></i>{{ job.type }}</span>
             </div>
 
@@ -31,7 +34,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang=ts>
 import { ref } from 'vue';
 
 const jobs = ref([
@@ -69,6 +72,7 @@ const jobs = ref([
 .text-primary-gradient {
   background: linear-gradient(90deg, #ff5666, #ff8794);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 

@@ -33,7 +33,7 @@ async function handleLogin(credentials: UserLoginDto) {
     saveTokens(response.token, response.refreshToken);
     isLoggedIn.value = true;
     router.push('/');
-  } catch (e: any) {
+  } catch (e) {
     if (axios.isAxiosError(e)) {
       if (!e.response) {
         error.value = 'Brak połączenia z serwerem. Sprawdź połączenie sieciowe.';

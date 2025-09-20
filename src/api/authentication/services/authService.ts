@@ -6,7 +6,7 @@ import type {
   TokenRequestDto,
 } from '@/api/authentication/types/auth';
 
-const API_URL = 'https://localhost:7184/api/account';
+const API_URL = 'http://localhost:5000/api/account';
 
 export async function register(userData: UserRegisterDto): Promise<void> {
   await axios.post(`${API_URL}/register`, userData);

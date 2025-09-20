@@ -105,22 +105,22 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 
 const targetNumber = ref(Math.floor(Math.random() * (11000 - 10000 + 1)) + 10000);
 const displayedNumber = ref(0);
 
-function formatNumber(num) {
+function formatNumber(num: number) {
   return num.toLocaleString('pl-PL');
 }
 
 function animateNumber() {
   const duration = 1500;
   const start = performance.now();
-  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
-  function update(now) {
+  function update(now: number) {
     const elapsed = now - start;
     const progress = Math.min(elapsed / duration, 1);
     displayedNumber.value = Math.floor(easeOut(progress) * targetNumber.value);
@@ -268,10 +268,10 @@ const partners = ref([
   },
 ]);
 
-const track = ref(null);
+const track = ref<HTMLElement | null>(null);
 
 onMounted(() => {
-  let scrollStep = 0.5;
+  const scrollStep = 0.5;
 
   function autoScroll() {
     const el = track.value;
@@ -463,6 +463,7 @@ header p {
   font-size: 2rem;
   background: var(--primary);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 2rem;
 }

@@ -114,7 +114,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   data() {
     return {
@@ -159,7 +159,7 @@ export default {
       };
 
       try {
-        const response = await fetch('https://localhost:7184/api/JobDescription/generate', {
+        const response = await fetch('http://localhost:5000/api/JobDescription/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestData),
@@ -173,7 +173,7 @@ export default {
         const data = await response.json();
         this.generatedDescription = data.description || data.Description || 'Brak opisu z serwera';
       } catch (error) {
-        this.generatedDescription = `Wystąpił błąd podczas generowania opisu: ${error.message}`;
+        this.generatedDescription = `Wystąpił błąd podczas generowania opisu: ${error}`;
       } finally {
         this.loading = false;
       }

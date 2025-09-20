@@ -1,4 +1,6 @@
-<template></template>
+<template>
+  <div></div>
+</template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';

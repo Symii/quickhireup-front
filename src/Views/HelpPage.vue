@@ -91,7 +91,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive } from 'vue';
 import FaqAccordion from '@/components/FaqAccordion.vue';
 
@@ -159,7 +159,7 @@ const sending = ref(false);
 const successMessage = ref('');
 const errorMessage = ref('');
 
-function validateEmail(email) {
+function validateEmail(email: string) {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return re.test(email);
 }
@@ -185,7 +185,7 @@ async function handleSubmit() {
     contact.name = '';
     contact.email = '';
     contact.message = '';
-  } catch (e) {
+  } catch {
     errorMessage.value = 'Coś poszło nie tak. Spróbuj ponownie później.';
   } finally {
     sending.value = false;

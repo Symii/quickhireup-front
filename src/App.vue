@@ -25,7 +25,7 @@ import { useAuth } from '@/composables/useAuth';
 import { onMounted } from 'vue';
 
 const { message, visible } = useNotification();
-const { initAuth, isLoggedIn, authIsReady } = useAuth();
+const { initAuth } = useAuth();
 
 onMounted(() => {
   initAuth();

@@ -97,7 +97,7 @@ async function submitRegister(): Promise<void> {
     await handleRegister(payload);
     alert('Rejestracja zakończona sukcesem! Możesz się teraz zalogować.');
     router.push('/');
-  } catch (e) {}
+  } catch {}
 }
 </script>
 
