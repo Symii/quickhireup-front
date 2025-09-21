@@ -1,1 +1,78 @@
 @import './base.css';
+
+:root {
+  --primary: #fc4c4e;
+  --primary-dark: #c41114;
+  --bg: #ffffff;
+  --background: #f8f9fa;
+  --bg-light: #ffffff;
+  --text: #1a1a1a;
+  --text-muted: #666;
+  --card: #ffffff;
+  --border: #ddd;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-gradient,
+.btn-gradient-light {
+  color: white !important;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  text-align: center;
+  font-weight: 500;
+  transition:
+    background 0.3s ease,
+    transform 0.2s ease;
+}
+
+.btn-gradient {
+  background: var(--primary);
+}
+
+.btn-gradient-light {
+  background: var(--bg);
+  color: var(--text) !important;
+}
+
+.btn-gradient:focus,
+.btn-gradient:active {
+  background: var(--primary-dark) !important;
+}
+
+.btn-gradient-light:focus,
+.btn-gradient-light:active {
+  background: var(--border) !important;
+}
+
+.btn-gradient:hover {
+  background: #e63a3c;
+  transform: scale(1.02);
+}
+
+.btn-gradient-light:hover {
+  background: var(--bg);
+  transform: scale(1.02);
+}
+
+.text-primary {
+  color: var(--primary) !important;
+}
+
+.btn-generator {
+  display: inline-block;
+  background: var(--primary);
+  color: white !important;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  font-weight: bold;
+  text-decoration: none;
+  transition:
+    background 0.3s ease,
+    transform 0.2s ease;
+}
+
+.btn-generator:hover {
+  background: #e63a3c;
+  transform: scale(1.05);
+}

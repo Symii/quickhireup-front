@@ -1,81 +1,101 @@
 <template>
   <div class="form-wrapper">
     <div class="form-card">
-      <h2 class="title">Formularz opisu stanowiska</h2>
+      <div class="form-content">
+        <div class="form-left">
+          <h2 class="title">Formularz opisu stanowiska</h2>
 
-      <form @submit.prevent="submitForm" class="job-form" novalidate>
-        <div class="input-group">
-          <label for="jobTitle">Tytuł stanowiska</label>
-          <input
-            id="jobTitle"
-            type="text"
-            v-model="form.jobTitle"
-            placeholder="Np. Specjalista ds. marketingu"
-            required
+          <form @submit.prevent="submitForm" class="job-form" novalidate>
+            <div class="input-group">
+              <label for="jobTitle">Tytuł stanowiska</label>
+              <input
+                id="jobTitle"
+                type="text"
+                v-model="form.jobTitle"
+                placeholder="Np. Specjalista ds. marketingu"
+                required
+              />
+            </div>
+
+            <div class="input-group">
+              <label for="location">Lokalizacja</label>
+              <input
+                id="location"
+                type="text"
+                v-model="form.location"
+                placeholder="Np. Warszawa"
+                required
+              />
+            </div>
+
+            <div class="input-group">
+              <label for="experience">Doświadczenie</label>
+
+              <select id="experience" v-model="form.experience" required>
+                <option disabled value="">Wybierz doświadczenie</option>
+
+                <option value="Brak doświadczenia">Brak doświadczenia</option>
+
+                <option value="Do 1 roku">Do 1 roku</option>
+
+                <option value="1-3 lata">1-3 lata</option>
+
+                <option value="3-5 lat">3-5 lat</option>
+
+                <option value="Powyżej 5 lat">Powyżej 5 lat</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="contractType">Rodzaj umowy</label>
+
+              <select id="contractType" v-model="form.contractType" required>
+                <option disabled value="">Wybierz rodzaj umowy</option>
+
+                <option value="Umowa o pracę">Umowa o pracę</option>
+
+                <option value="Umowa zlecenie">Umowa zlecenie</option>
+
+                <option value="Umowa o dzieło">Umowa o dzieło</option>
+
+                <option value="Kontrakt B2B">Kontrakt B2B</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="employmentType">Rodzaj zatrudnienia</label>
+
+              <select id="employmentType" v-model="form.employmentType" required>
+                <option disabled value="">Wybierz rodzaj zatrudnienia</option>
+
+                <option value="Zdalnie">Zdalnie</option>
+
+                <option value="Stacjonarnie">Stacjonarnie</option>
+
+                <option value="Hybrydowo">Hybrydowo</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn-submit">Wygeneruj opis stanowiska</button>
+          </form>
+        </div>
+
+        <div class="form-right">
+          <h2>Jak wypełnić formularz?</h2>
+
+          <p>
+            Wprowadź dokładny tytuł stanowiska oraz lokalizację. Wybierz doświadczenie i rodzaj
+            umowy. Opis stanowiska zostanie wygenerowany automatycznie po kliknięciu "Wygeneruj opis
+            stanowiska".
+          </p>
+
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/4712/4712010.png"
+            alt="Robot"
+            class="robot-image"
           />
         </div>
-
-        <div class="input-group">
-          <label for="location">Lokalizacja</label>
-          <input
-            id="location"
-            type="text"
-            v-model="form.location"
-            placeholder="Np. Warszawa"
-            required
-          />
-        </div>
-
-        <div class="input-group">
-          <label for="experience">Doświadczenie</label>
-
-          <select id="experience" v-model="form.experience" required>
-            <option disabled value="">Wybierz doświadczenie</option>
-
-            <option value="Brak doświadczenia">Brak doświadczenia</option>
-
-            <option value="Do 1 roku">Do 1 roku</option>
-
-            <option value="1-3 lata">1-3 lata</option>
-
-            <option value="3-5 lat">3-5 lat</option>
-
-            <option value="Powyżej 5 lat">Powyżej 5 lat</option>
-          </select>
-        </div>
-
-        <div class="input-group">
-          <label for="contractType">Rodzaj umowy</label>
-
-          <select id="contractType" v-model="form.contractType" required>
-            <option disabled value="">Wybierz rodzaj umowy</option>
-
-            <option value="Umowa o pracę">Umowa o pracę</option>
-
-            <option value="Umowa zlecenie">Umowa zlecenie</option>
-
-            <option value="Umowa o dzieło">Umowa o dzieło</option>
-
-            <option value="Kontrakt B2B">Kontrakt B2B</option>
-          </select>
-        </div>
-
-        <div class="input-group">
-          <label for="employmentType">Rodzaj zatrudnienia</label>
-
-          <select id="employmentType" v-model="form.employmentType" required>
-            <option disabled value="">Wybierz rodzaj zatrudnienia</option>
-
-            <option value="Zdalnie">Zdalnie</option>
-
-            <option value="Stacjonarnie">Stacjonarnie</option>
-
-            <option value="Hybrydowo">Hybrydowo</option>
-          </select>
-        </div>
-
-        <button type="submit" class="btn-submit">Wygeneruj opis stanowiska</button>
-      </form>
+      </div>
     </div>
 
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
@@ -202,7 +222,7 @@ export default {
   align-items: center;
   padding: 1rem;
   font-family: 'Poppins', sans-serif;
-  background: #f8f9fa;
+  background: var(--background);
 }
 
 .form-card {
@@ -211,13 +231,10 @@ export default {
   padding: 3rem 3.5rem;
   max-width: 80vw;
   width: 100%;
-  text-align: center;
   box-shadow: 0 20px 40px rgba(255, 86, 102, 0.15);
 }
 
 .title {
-  font-size: 2.4rem;
-  font-weight: 700;
   color: rgb(255, 86, 102);
   margin-bottom: 2rem;
 }
@@ -226,7 +243,6 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  text-align: left;
 }
 
 .input-group label {
@@ -434,6 +450,30 @@ export default {
   box-shadow: 0 0 8px rgba(255, 86, 102, 0.5);
 }
 
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-left,
+.form-right {
+  flex: 1;
+}
+
+.title,
+.form-right h2 {
+  font-size: 2.4rem;
+  font-weight: 700;
+}
+
+.robot-image {
+  max-width: 350px;
+  width: 100%;
+  display: block;
+  margin: 1.5rem auto 0 auto;
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -447,7 +487,9 @@ export default {
   .form-card {
     padding: 2rem 2rem;
   }
-  .title {
+
+  .title,
+  .form-right h2 {
     font-size: 2rem;
   }
 }
@@ -455,6 +497,28 @@ export default {
 @media (max-width: 767px) {
   .form-card {
     max-width: 100vw;
+  }
+}
+
+@media (min-width: 1024px) {
+  .form-content {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .form-left {
+    max-width: 600px;
+  }
+
+  .form-right {
+    padding-left: 2rem;
+    display: block;
+  }
+}
+
+@media (max-width: 1023px) {
+  .form-right {
+    padding-left: 0;
   }
 }
 </style>

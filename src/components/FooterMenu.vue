@@ -1,11 +1,11 @@
 <template>
-  <footer class="container">
-    <div class="footer-columns">
+  <footer>
+    <div class="container footer-columns">
       <div>
         <h4>Dla kandydatów</h4>
 
         <ul>
-          <li><RouterLink to="/oferty-pracy">Oferty pracy</RouterLink></li>
+          <li><RouterLink to="/oferty">Oferty pracy</RouterLink></li>
 
           <li><RouterLink to="/pomoc">Pomoc</RouterLink></li>
         </ul>
@@ -61,7 +61,6 @@
 footer {
   background: #fff;
   padding: 2rem;
-  margin-top: 2rem;
   border-top: 1px solid #eee;
   font-size: 0.9rem;
 }

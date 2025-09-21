@@ -8,17 +8,17 @@
   </Transition>
 
   <div>
-    <Navbar v-if="!$route.meta.hideNavFooter" />
+    <navbar-menu v-if="!$route.meta.hideNavFooter" />
 
     <router-view />
 
-    <Footer v-if="!$route.meta.hideNavFooter" />
+    <footer-menu v-if="!$route.meta.hideNavFooter" />
   </div>
 </template>
 
 <script setup lang="ts">
-import Navbar from './components/Navbar.vue';
-import Footer from './components/Footer.vue';
+import NavbarMenu from './components/NavbarMenu.vue';
+import FooterMenu from './components/FooterMenu.vue';
 
 import { useNotification } from './composables/useNotification';
 import { useAuth } from '@/composables/useAuth';

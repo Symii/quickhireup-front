@@ -52,6 +52,11 @@ const routes = [
     component: () => import('@/Views/Authentication/LogoutPage.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/partnerzy',
+    name: 'Partnerzy',
+    component: () => import('@/Views/PartnersPage.vue'),
+  },
 ];
 
 const router = createRouter({

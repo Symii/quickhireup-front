@@ -1,6 +1,6 @@
 <template>
   <div class="job-board container py-5">
-    <h1 class="text-center display-4 fw-bold mb-5 text-primary-gradient">Najnowsze Oferty Pracy</h1>
+    <h1 class="text-center fw-bold mb-5 text-primary-gradient">Najnowsze Oferty Pracy</h1>
 
     <div class="row g-4">
       <div class="col-md-6 col-lg-4" v-for="job in jobs" :key="job.id">
@@ -34,7 +34,7 @@
   </div>
 </template>
 
-<script setup lang=ts>
+<script setup lang="ts">
 import { ref } from 'vue';
 
 const jobs = ref([

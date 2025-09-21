@@ -261,11 +261,6 @@ const partners = ref([
     logo: 'https://cdn-icons-png.flaticon.com/512/1048/1048941.png',
     description: 'Przyspiesz swoją ścieżkę zawodową.',
   },
-  {
-    name: 'RecruitSmart',
-    logo: 'https://cdn-icons-png.flaticon.com/512/3062/3062634.png',
-    description: 'Inteligentne podejście do rekrutacji.',
-  },
 ]);
 
 const track = ref<HTMLElement | null>(null);
@@ -290,18 +285,7 @@ onMounted(() => {
 });
 </script>
 
-<style>
-:root {
-  --primary: #fc4c4e;
-  --bg: #ffffff;
-  --bg-light: #ffffff;
-  --text: #1a1a1a;
-  --text-muted: #666;
-  --card: #ffffff;
-  --border: #ddd;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
+<style scoped>
 body {
   font-family: 'Inter', Arial, sans-serif;
   background: var(--bg-light);
@@ -314,7 +298,6 @@ header {
   background: var(--bg-light);
   padding: 2rem 1rem;
   text-align: center;
-  border-bottom: 1px solid var(--border);
 }
 
 header h1 {
@@ -374,24 +357,6 @@ header p {
   font-size: 1rem;
   color: var(--text-muted);
   margin-bottom: 1.5rem;
-}
-
-.btn-generator {
-  display: inline-block;
-  background: var(--primary);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 999px;
-  font-weight: bold;
-  text-decoration: none;
-  transition:
-    background 0.3s ease,
-    transform 0.2s ease;
-}
-
-.btn-generator:hover {
-  background: #e63a3c;
-  transform: scale(1.05);
 }
 
 @media (max-width: 768px) {
@@ -514,24 +479,6 @@ header p {
   flex-grow: 1;
 }
 
-.btn-gradient {
-  background: var(--primary);
-  color: white !important;
-  border: none;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  text-align: center;
-  font-weight: 500;
-  transition:
-    background 0.3s ease,
-    transform 0.2s ease;
-}
-
-.btn-gradient:hover {
-  background: #e63a3c;
-  transform: scale(1.02);
-}
-
 @media (max-width: 768px) {
   .search-form {
     flex-direction: column;
@@ -566,6 +513,7 @@ header p {
   white-space: nowrap;
   scroll-behavior: smooth;
   scrollbar-width: none;
+  padding: 10px 0;
 }
 
 .partners-track::-webkit-scrollbar {
