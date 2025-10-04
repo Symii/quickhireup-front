@@ -14,7 +14,6 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const token = getToken();
     if (token) {
-      console.log('Adding token to request:', token.substring(0, 10) + '...');
       config.headers = config.headers ?? {};
       config.headers.Authorization = `Bearer ${token}`;
     }

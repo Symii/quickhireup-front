@@ -13,19 +13,16 @@ const refreshTokenKey = 'refreshToken';
 export function getToken(): string | null {
   const token = localStorage.getItem(tokenKey);
   if (!token) {
-    console.log('Brak tokenu w localStorage');
     return null;
   }
 
   try {
     const decoded = jwtService.decodeToken(token);
     if (decoded.exp && decoded.exp < Math.floor(Date.now() / 1000)) {
-      console.log('Token wygasł');
       return null;
     }
     return token;
-  } catch (error) {
-    console.error('Nieprawidłowy token:', error);
+  } catch {
     return null;
   }
 }
@@ -35,10 +32,6 @@ export function getRefreshToken(): string | null {
 }
 
 export function saveTokens(token: string, refreshToken: string): void {
-  console.log('Saving tokens:', {
-    token: token.substring(0, 10) + '...',
-    refreshToken: refreshToken.substring(0, 10) + '...',
-  });
   localStorage.setItem(tokenKey, token);
   localStorage.setItem(refreshTokenKey, refreshToken);
 }
@@ -100,12 +93,10 @@ export async function logoutRequest(): Promise<void> {
       clearTokens();
       return;
     }
-    console.log('Wylogowywanie z tokenem:', token.substring(0, 10) + '...');
 
     const refreshToken = localStorage.getItem(refreshTokenKey);
     if (refreshToken) {
       try {
-        console.log('Próba odświeżenia tokenu przed wylogowaniem');
         await refreshTokenRequest();
       } catch (refreshError) {
         console.error('Nie udało się odświeżyć tokenu:', refreshError);

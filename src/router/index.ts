@@ -57,11 +57,53 @@ const routes = [
     name: 'Partnerzy',
     component: () => import('@/Views/PartnersPage.vue'),
   },
+  {
+    path: '/polityka-plikow-cookies',
+    name: 'Polityka plików cookies',
+    component: () => import('@/Views/CookiePolicyPage.vue'),
+  },
+  {
+    path: '/polityka-prywatnosci',
+    name: 'Polityka prywatności',
+    component: () => import('@/Views/PrivacyPolicyPage.vue'),
+  },
+  {
+    path: '/regulamin',
+    name: 'Regulamin',
+    component: () => import('@/Views/TermsOfServicePage.vue'),
+  },
+  {
+    path: '/profil',
+    name: 'Profil',
+    component: () => import('@/Views/UserProfilePage.vue'),
+  },
+  {
+    path: '/ustawienia',
+    name: 'Ustawienia',
+    component: () => import('@/Views/SettingsPage.vue'),
+  },
+  {
+    path: '/zapisane',
+    name: 'Zapisane',
+    component: () => import('@/Views/SavedJobsPage.vue'),
+  },
+  {
+    path: '/pracodawcy',
+    name: 'Pracodawcy',
+    component: () => import('@/Views/EmployersPage.vue'),
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    } else {
+      return { top: 0 };
+    }
+  },
 });
 
 router.beforeEach((to, from, next) => {

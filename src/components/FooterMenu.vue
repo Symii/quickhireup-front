@@ -16,8 +16,6 @@
 
         <ul>
           <li><RouterLink to="/firma/dodaj-ogloszenie">Dodaj ogłoszenie</RouterLink></li>
-
-          <li><RouterLink to="/firma/konto">Konto pracodawcy</RouterLink></li>
         </ul>
       </div>
       <div>
@@ -60,7 +58,7 @@
 <style>
 footer {
   background: #fff;
-  padding: 2rem;
+  padding: 2rem 0;
   border-top: 1px solid #eee;
   font-size: 0.9rem;
 }

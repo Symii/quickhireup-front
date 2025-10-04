@@ -112,7 +112,6 @@ const form = reactive({
 });
 
 function submitForm() {
-  console.log('Form submitted:', { ...form });
   alert('Wiadomość została wysłana');
 
   form.name = '';

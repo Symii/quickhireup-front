@@ -101,10 +101,8 @@ async function logout() {
 
 async function initAuth() {
   const storedToken = localStorage.getItem('token');
-  console.log('Stored token:', storedToken);
 
   if (!storedToken || isTokenExpired(storedToken)) {
-    console.log('Token missing or expired, clearing tokens');
     clearTokens();
     isLoggedIn.value = false;
     router.push('/login');
@@ -113,14 +111,11 @@ async function initAuth() {
   }
 
   try {
-    console.log('Wysyłam żądanie do /account/me z tokenem:', storedToken);
-    const response = await axiosInstance.get('/account/me');
-    console.log('Odpowiedź z backendu:', response);
+    await axiosInstance.get('/account/me');
     isLoggedIn.value = true;
 
     setupTokenRefresh(storedToken);
   } catch (err: any) {
-    console.log('Błąd w axios get /account/me:', err);
     clearTokens();
     isLoggedIn.value = false;
     router.push('/login');

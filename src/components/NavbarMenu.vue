@@ -13,7 +13,9 @@
     <div class="hamburger" @click="toggleMobileMenu">&#9776;</div>
 
     <div class="navbar-right">
-      <div class="favorites-icon" style="font-size: 30px">★</div>
+      <div class="favorites-icon" style="font-size: 30px">
+        <RouterLink to="/zapisane">★</RouterLink>
+      </div>
 
       <div class="account-wrapper" ref="accountWrapper">
         <div class="account-btn" @click="toggleDropdown">
@@ -48,13 +50,19 @@
 
         <ul class="mobile-nav-links">
           <li>
-            <RouterLink @click.native="toggleMobileMenu" to="/oferty">Oferty pracy</RouterLink>
+            <RouterLink @click.native="toggleMobileMenu" to="/oferty"> Oferty pracy </RouterLink>
           </li>
 
           <li>
-            <RouterLink @click.native="toggleMobileMenu" to="/pracodawcy"
-              >Profile pracodawców</RouterLink
-            >
+            <RouterLink @click.native="toggleMobileMenu" to="/pracodawcy">
+              Profile pracodawców
+            </RouterLink>
+          </li>
+
+          <li>
+            <RouterLink @click.native="toggleMobileMenu" to="/zapisane">
+              Zapisane ogłoszenia
+            </RouterLink>
           </li>
 
           <li><RouterLink @click.native="toggleMobileMenu" to="/profil">Profil</RouterLink></li>
@@ -69,6 +77,7 @@
 
           <li class="for-companies-mobile">
             <span>DLA FIRM</span>
+
             <a href="#" @click.prevent>Dodaj ogłoszenie</a>
           </li>
         </ul>
@@ -188,8 +197,11 @@ a:hover {
 
 .favorites-icon {
   font-size: 18px;
-  color: #888;
   cursor: pointer;
+}
+
+.favorites-icon a {
+  color: var(--text-muted) !important;
 }
 
 .account-btn {

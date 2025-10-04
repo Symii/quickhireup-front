@@ -1,524 +1,441 @@
 <template>
-  <div class="form-wrapper">
-    <div class="form-card">
-      <div class="form-content">
-        <div class="form-left">
-          <h2 class="title">Formularz opisu stanowiska</h2>
+  <div class="container mt-20">
+    <header class="form-header text-center mb-5">
+      <h1>Formularz opisu stanowiska</h1>
 
-          <form @submit.prevent="submitForm" class="job-form" novalidate>
-            <div class="input-group">
-              <label for="jobTitle">Tytuł stanowiska</label>
+      <p class="lead">Wprowadź szczegóły stanowiska, aby wygenerować automatyczny opis pracy.</p>
+    </header>
+
+    <section class="form-content row justify-content-center">
+      <div class="col-md-5 mb-4">
+        <div class="form-card shadow-sm p-4">
+          <form @submit.prevent="submitForm" novalidate>
+            <div class="mb-3">
+              <label class="form-label">Tytuł stanowiska</label>
+
               <input
-                id="jobTitle"
                 type="text"
                 v-model="form.jobTitle"
                 placeholder="Np. Specjalista ds. marketingu"
-                required
+                class="form-control"
+                :class="{ 'is-invalid': errors.jobTitle }"
               />
+
+              <div v-if="errors.jobTitle" class="invalid-feedback">
+                Proszę podać tytuł stanowiska.
+              </div>
             </div>
 
-            <div class="input-group">
-              <label for="location">Lokalizacja</label>
+            <div class="mb-3">
+              <label class="form-label">Lokalizacja</label>
+
               <input
-                id="location"
                 type="text"
                 v-model="form.location"
                 placeholder="Np. Warszawa"
-                required
+                class="form-control"
+                :class="{ 'is-invalid': errors.location }"
               />
+
+              <div v-if="errors.location" class="invalid-feedback">Proszę podać lokalizację.</div>
             </div>
 
-            <div class="input-group">
-              <label for="experience">Doświadczenie</label>
+            <div class="mb-3">
+              <label class="form-label">Doświadczenie</label>
 
-              <select id="experience" v-model="form.experience" required>
+              <select
+                v-model="form.experience"
+                class="form-control"
+                :class="{ 'is-invalid': errors.experience }"
+              >
                 <option disabled value="">Wybierz doświadczenie</option>
 
-                <option value="Brak doświadczenia">Brak doświadczenia</option>
+                <option>Brak doświadczenia</option>
 
-                <option value="Do 1 roku">Do 1 roku</option>
+                <option>Do 1 roku</option>
 
-                <option value="1-3 lata">1-3 lata</option>
+                <option>1-3 lata</option>
 
-                <option value="3-5 lat">3-5 lat</option>
+                <option>3-5 lat</option>
 
-                <option value="Powyżej 5 lat">Powyżej 5 lat</option>
+                <option>Powyżej 5 lat</option>
               </select>
+
+              <div v-if="errors.experience" class="invalid-feedback">
+                Proszę wybrać doświadczenie.
+              </div>
             </div>
 
-            <div class="input-group">
-              <label for="contractType">Rodzaj umowy</label>
+            <div class="mb-3">
+              <label class="form-label">Rodzaj umowy</label>
 
-              <select id="contractType" v-model="form.contractType" required>
+              <select
+                v-model="form.contractType"
+                class="form-control"
+                :class="{ 'is-invalid': errors.contractType }"
+              >
                 <option disabled value="">Wybierz rodzaj umowy</option>
 
-                <option value="Umowa o pracę">Umowa o pracę</option>
+                <option>Umowa o pracę</option>
 
-                <option value="Umowa zlecenie">Umowa zlecenie</option>
+                <option>Umowa zlecenie</option>
 
-                <option value="Umowa o dzieło">Umowa o dzieło</option>
+                <option>Umowa o dzieło</option>
 
-                <option value="Kontrakt B2B">Kontrakt B2B</option>
+                <option>Kontrakt B2B</option>
               </select>
+
+              <div v-if="errors.contractType" class="invalid-feedback">
+                Proszę wybrać rodzaj umowy.
+              </div>
             </div>
 
-            <div class="input-group">
-              <label for="employmentType">Rodzaj zatrudnienia</label>
+            <div class="mb-3">
+              <label class="form-label">Rodzaj zatrudnienia</label>
 
-              <select id="employmentType" v-model="form.employmentType" required>
+              <select
+                v-model="form.employmentType"
+                class="form-control"
+                :class="{ 'is-invalid': errors.employmentType }"
+              >
                 <option disabled value="">Wybierz rodzaj zatrudnienia</option>
 
-                <option value="Zdalnie">Zdalnie</option>
+                <option>Zdalnie</option>
 
-                <option value="Stacjonarnie">Stacjonarnie</option>
+                <option>Stacjonarnie</option>
 
-                <option value="Hybrydowo">Hybrydowo</option>
+                <option>Hybrydowo</option>
               </select>
+
+              <div v-if="errors.employmentType" class="invalid-feedback">
+                Proszę wybrać rodzaj zatrudnienia.
+              </div>
             </div>
 
-            <button type="submit" class="btn-submit">Wygeneruj opis stanowiska</button>
+            <div class="text-end">
+              <button type="submit" class="btn btn-primary" :disabled="loading">
+                {{ loading ? 'Generowanie...' : 'Wygeneruj opis stanowiska' }}
+              </button>
+            </div>
           </form>
         </div>
+      </div>
 
-        <div class="form-right">
-          <h2>Jak wypełnić formularz?</h2>
+      <div class="col-md-5">
+        <div class="form-card shadow-sm p-4 bg-light text-center">
+          <h4>Instrukcja</h4>
 
           <p>
-            Wprowadź dokładny tytuł stanowiska oraz lokalizację. Wybierz doświadczenie i rodzaj
-            umowy. Opis stanowiska zostanie wygenerowany automatycznie po kliknięciu "Wygeneruj opis
-            stanowiska".
+            Wprowadź dokładny tytuł stanowiska, lokalizację, doświadczenie, rodzaj umowy i
+            zatrudnienia. Opis stanowiska zostanie wygenerowany automatycznie po kliknięciu
+            przycisku.
           </p>
 
           <img
             src="https://cdn-icons-png.flaticon.com/512/4712/4712010.png"
             alt="Robot"
-            class="robot-image"
+            class="robot-image mx-auto d-block mt-3"
           />
         </div>
       </div>
-    </div>
+    </section>
 
-    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div
-        class="modal-card modal-fade"
-        :class="{ show: modalVisible }"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modalTitle"
-      >
-        <header class="modal-header">
-          <h3 id="modalTitle">Opis stanowiska</h3>
-        </header>
+    <div v-if="generating" class="mt-3 p-3 form-card shadow-sm bg-light text-center">
+      <p>Trwa generowanie opisu...</p>
 
-        <main class="modal-content">
-          <template v-if="loading">
-            <div class="loading-container">
-              <div class="loading-spinner"></div>
+      <p>Czas oczekiwania: {{ formattedTime }} / przewidywany 3 minuty</p>
 
-              <p>Trwa generowanie...</p>
-            </div>
-          </template>
-
-          <template v-else>
-            <pre class="generated-text">{{ generatedDescription }}</pre>
-          </template>
-        </main>
-
-        <footer class="modal-footer" v-if="!loading">
-          <button @click="copyToClipboard" class="btn-copy">Kopiuj</button>
-
-          <button @click="closeModal" class="btn-exit">Wyjdź</button>
-        </footer>
+      <div class="progress">
+        <div
+          class="progress-bar progress-bar-striped progress-bar-animated custom-progress"
+          role="progressbar"
+        ></div>
       </div>
     </div>
+
+    <section v-if="generatedDescription" class="mt-5">
+      <h4>Aktualny wygenerowany opis</h4>
+
+      <div class="form-card shadow-sm p-3 mb-3 bg-success-light">
+        <pre class="generated-text">{{ generatedDescription }}</pre>
+
+        <div class="text-end mt-2">
+          <button @click="copyToClipboard" class="btn btn-generator">Kopiuj opis</button>
+        </div>
+      </div>
+    </section>
+
+    <section v-if="history.length" class="mt-5 mb-5">
+      <h4>Historia wygenerowanych opisów</h4>
+
+      <div
+        v-for="item in paginatedHistory"
+        :key="item.jobTitle + item.location + item.description"
+        class="form-card shadow-sm p-3 mb-3 bg-light"
+      >
+        <strong>{{ item.jobTitle }} ({{ item.location }})</strong>
+
+        <pre class="generated-text mt-2">{{ item.description }}</pre>
+      </div>
+
+      <div class="d-flex justify-content-between mt-3">
+        <button class="btn btn-outline-secondary" :disabled="currentPage === 1" @click="prevPage">
+          Poprzednia strona
+        </button>
+
+        <span>Strona {{ currentPage }} z {{ totalPages }}</span>
+
+        <button
+          class="btn btn-outline-secondary"
+          :disabled="currentPage === totalPages"
+          @click="nextPage"
+        >
+          Następna strona
+        </button>
+      </div>
+    </section>
   </div>
 </template>
 
 <script lang="ts">
+interface History {
+  jobTitle: string;
+  location: string;
+  description: string;
+}
+
+import { computed, reactive, ref } from 'vue';
+
 export default {
-  data() {
-    return {
-      form: {
-        location: '',
-        jobTitle: '',
-        experience: '',
-        contractType: '',
-        employmentType: '',
-      },
-      loading: false,
-      showModal: false,
-      modalVisible: false,
-      generatedDescription: '',
+  setup() {
+    const generating = ref(false);
+    const elapsedTime = ref(0);
+    let timer: number | undefined = undefined;
+
+    const form = reactive({
+      jobTitle: '',
+      location: '',
+      experience: '',
+      contractType: '',
+      employmentType: '',
+    });
+
+    const errors = reactive({
+      jobTitle: false,
+      location: false,
+      experience: false,
+      contractType: false,
+      employmentType: false,
+    });
+
+    const loading = ref(false);
+    const generatedDescription = ref('');
+    const history = ref<History[]>([
+      { jobTitle: 'Specjalista A', location: 'Warszawa', description: 'Opis A' },
+      { jobTitle: 'Specjalista B', location: 'Kraków', description: 'Opis B' },
+      { jobTitle: 'Specjalista C', location: 'Poznań', description: 'Opis C' },
+      { jobTitle: 'Specjalista D', location: 'Gdańsk', description: 'Opis D' },
+      { jobTitle: 'Specjalista E', location: 'Wrocław', description: 'Opis E' },
+      { jobTitle: 'Specjalista F', location: 'Łódź', description: 'Opis F' },
+    ]);
+
+    const itemsPerPage = 5;
+    const currentPage = ref(1);
+
+    const totalPages = computed(() => Math.ceil(history.value.length / itemsPerPage));
+
+    const paginatedHistory = computed(() => {
+      const start = (currentPage.value - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      return history.value.slice(start, end);
+    });
+
+    const nextPage = () => {
+      if (currentPage.value < totalPages.value) currentPage.value++;
     };
-  },
-  methods: {
-    async submitForm() {
-      if (
-        !this.form.location ||
-        !this.form.jobTitle ||
-        !this.form.experience ||
-        !this.form.contractType ||
-        !this.form.employmentType
-      ) {
-        alert('Proszę wypełnić wszystkie pola.');
-        return;
-      }
 
-      this.loading = true;
-      this.modalVisible = false;
-      this.showModal = true;
-      await this.$nextTick();
-      this.modalVisible = true;
+    const prevPage = () => {
+      if (currentPage.value > 1) currentPage.value--;
+    };
 
-      const requestData = {
-        jobTitle: this.form.jobTitle,
-        location: this.form.location,
-        experience: this.form.experience,
-        contractType: this.form.contractType,
-        employmentType: this.form.employmentType,
-      };
+    const validateForm = () => {
+      errors.jobTitle = !form.jobTitle;
+      errors.location = !form.location;
+      errors.experience = !form.experience;
+      errors.contractType = !form.contractType;
+      errors.employmentType = !form.employmentType;
+
+      return !Object.values(errors).some(Boolean);
+    };
+
+    const submitForm = async () => {
+      if (!validateForm()) return;
+
+      loading.value = true;
+      startTimer();
 
       try {
         const response = await fetch('http://localhost:5000/api/JobDescription/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestData),
+          body: JSON.stringify(form),
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Błąd serwera: ${response.status} ${response.statusText} - ${errorText}`);
+          throw new Error(`Błąd serwera: ${response.statusText}`);
         }
 
         const data = await response.json();
-        this.generatedDescription = data.description || data.Description || 'Brak opisu z serwera';
+        generatedDescription.value = data.description || 'Brak opisu z serwera';
+
+        history.value.unshift({
+          jobTitle: form.jobTitle,
+          location: form.location,
+          description: generatedDescription.value,
+        });
       } catch (error) {
-        this.generatedDescription = `Wystąpił błąd podczas generowania opisu: ${error}`;
+        generatedDescription.value = `Wystąpił błąd: ${error}`;
       } finally {
-        this.loading = false;
+        loading.value = false;
+        stopTimer();
       }
-    },
-    async closeModal() {
-      this.modalVisible = false;
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      this.showModal = false;
-    },
-    copyToClipboard() {
-      navigator.clipboard.writeText(this.generatedDescription).then(() => {
-        alert('Opis został skopiowany do schowka!');
-      });
-    },
+    };
+
+    const copyToClipboard = () => {
+      navigator.clipboard.writeText(generatedDescription.value);
+      alert('Opis został skopiowany do schowka!');
+    };
+
+    const startTimer = () => {
+      elapsedTime.value = 0;
+      generating.value = true;
+      timer = setInterval(() => {
+        elapsedTime.value++;
+      }, 1000);
+    };
+
+    const stopTimer = () => {
+      generating.value = false;
+      if (timer) clearInterval(timer);
+    };
+
+    const formattedTime = computed(() => {
+      const minutes = Math.floor(elapsedTime.value / 60);
+      const seconds = elapsedTime.value % 60;
+      return minutes > 0 ? `${minutes} min ${seconds} s` : `${seconds} s`;
+    });
+
+    return {
+      form,
+      errors,
+      loading,
+      generatedDescription,
+      history,
+      currentPage,
+      totalPages,
+      paginatedHistory,
+      elapsedTime,
+      generating,
+      formattedTime,
+      nextPage,
+      prevPage,
+      submitForm,
+      copyToClipboard,
+      startTimer,
+      stopTimer,
+    };
   },
 };
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
-
-.form-wrapper {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-  font-family: 'Poppins', sans-serif;
-  background: var(--background);
+.form-header {
+  background: linear-gradient(135deg, #ff5666, #e14b59);
+  color: white;
+  padding: 2.5rem 1rem;
+  border-radius: 1rem;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .form-card {
   background: #fff;
-  border-radius: 1.2rem;
-  padding: 3rem 3.5rem;
-  max-width: 80vw;
-  width: 100%;
-  box-shadow: 0 20px 40px rgba(255, 86, 102, 0.15);
+  border-radius: 12px;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
-.title {
-  color: rgb(255, 86, 102);
-  margin-bottom: 2rem;
+.form-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
 }
 
-.job-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.input-group label {
-  font-weight: 500;
-  color: #4a4a4a;
-  display: block;
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
-}
-
-.input-group input,
-.input-group textarea {
-  width: 100%;
-  padding: 0.85rem 1rem;
-  border: 2px solid #d3d3d3;
-  border-radius: 0.6rem;
+input.form-control,
+select.form-control {
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 12px 15px;
   font-size: 1rem;
   transition:
     border-color 0.3s ease,
     box-shadow 0.3s ease;
-  outline: none;
-  font-family: 'Poppins', sans-serif;
 }
 
-.input-group input:focus,
-.input-group textarea:focus {
-  border-color: rgb(255, 86, 102);
-  box-shadow: 0 0 8px rgba(255, 86, 102, 0.5);
+input.form-control:focus,
+select.form-control:focus {
+  border-color: #ff5666;
+  box-shadow: 0 0 8px rgba(255, 86, 102, 0.3);
 }
 
-.btn-submit {
-  background: rgb(255, 86, 102);
-  color: white;
+button.btn-primary {
+  background-color: #ff5666;
+  border-color: #ff5666;
   font-weight: 600;
-  padding: 1rem 0;
-  border: none;
-  border-radius: 0.8rem;
-  font-size: 1.1rem;
-  cursor: pointer;
-  box-shadow: 0 5px 15px rgba(255, 86, 102, 0.4);
+  padding: 12px 28px;
+  font-size: 1.05rem;
+  border-radius: 8px;
   transition:
-    background 0.3s ease,
+    background-color 0.3s ease,
     box-shadow 0.3s ease;
-  width: 100%;
-  margin-top: 0.5rem;
 }
 
-.btn-submit:hover {
-  background: rgb(255, 86, 102);
-  box-shadow: 0 8px 20px rgba(255, 86, 102, 0.6);
+button.btn-primary:hover {
+  background-color: #e14b59;
+  border-color: #e14b59;
+  box-shadow: 0 6px 20px rgba(225, 75, 89, 0.6);
 }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
+.robot-image {
+  max-width: 250px;
 }
 
-.modal-card {
-  background: white;
-  border-radius: 1rem;
-  max-width: 1000px;
-  width: 90vw;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 40px rgba(255, 86, 102, 0.3);
-  overflow: hidden;
+.is-invalid {
+  border-color: #dc3545 !important;
 }
 
-.modal-fade {
-  opacity: 0;
-  transform: scale(0.9);
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
-}
-
-.modal-fade.show {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.modal-header {
-  background: rgb(255, 86, 102);
-  padding: 1rem 1.5rem;
-  color: white;
-  font-weight: 700;
-  font-size: 1.5rem;
-  user-select: none;
-}
-
-.modal-content {
-  padding: 1.5rem;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  font-family: 'Poppins', sans-serif;
-  color: #333;
-  flex-grow: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 4px;
 }
 
 .generated-text {
   white-space: pre-wrap;
-  font-size: 1rem;
-  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.bg-success-light {
+  background-color: #e6ffed;
+  border-left: 4px solid #28a745;
+}
+
+.progress {
+  height: 20px;
+  margin-top: 5px;
+}
+
+.custom-progress {
+  background-color: var(--primary);
   width: 100%;
-}
-
-.modal-footer {
-  padding: 1rem 1.5rem;
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  background: #f7f7f7;
-}
-
-.btn-copy,
-.btn-exit {
-  font-weight: 600;
-  border-radius: 0.6rem;
-  padding: 0.7rem 1.4rem;
-  border: none;
-  cursor: pointer;
-  font-family: 'Poppins', sans-serif;
-  transition: background 0.3s ease;
-}
-
-.btn-copy {
-  background: rgb(255, 86, 102);
-  color: white;
-  box-shadow: 0 5px 15px rgba(255, 86, 102, 0.4);
-}
-
-.btn-copy:hover {
-  background: rgb(255, 86, 102);
-  box-shadow: 0 8px 20px rgba(255, 86, 102, 0.6);
-}
-
-.btn-exit {
-  background: #ccc;
-  color: #333;
-}
-
-.btn-exit:hover {
-  background: #b3b3b3;
-}
-
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 2rem;
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid rgb(255, 86, 102);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.loading-container p {
-  font-size: 1.2rem;
-  color: rgb(255, 86, 102);
-  font-weight: 600;
-  margin: 0;
-}
-
-.input-group select {
-  width: 100%;
-  padding: 0.85rem 1rem;
-  border: 2px solid #d3d3d3;
-  border-radius: 0.6rem;
-  font-size: 1rem;
-  font-family: 'Poppins', sans-serif;
-  transition:
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
-  outline: none;
-  background-color: white;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23666' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 10px 6px;
-  cursor: pointer;
-}
-
-.input-group select:focus {
-  border-color: rgb(255, 86, 102);
-  box-shadow: 0 0 8px rgba(255, 86, 102, 0.5);
-}
-
-.form-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.form-left,
-.form-right {
-  flex: 1;
-}
-
-.title,
-.form-right h2 {
-  font-size: 2.4rem;
-  font-weight: 700;
-}
-
-.robot-image {
-  max-width: 350px;
-  width: 100%;
-  display: block;
-  margin: 1.5rem auto 0 auto;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@media (max-width: 450px) {
-  .form-card {
-    padding: 2rem 2rem;
-  }
-
-  .title,
-  .form-right h2 {
-    font-size: 2rem;
-  }
-}
-
-@media (max-width: 767px) {
-  .form-card {
-    max-width: 100vw;
-  }
-}
-
-@media (min-width: 1024px) {
-  .form-content {
-    flex-direction: row;
-    align-items: flex-start;
-  }
-
-  .form-left {
-    max-width: 600px;
-  }
-
-  .form-right {
-    padding-left: 2rem;
-    display: block;
-  }
-}
-
-@media (max-width: 1023px) {
-  .form-right {
-    padding-left: 0;
-  }
 }
 </style>
