@@ -32,11 +32,6 @@ const routes = [
     meta: { hideNavFooter: true },
   },
   {
-    path: '/oferty',
-    name: 'Oferty pracy',
-    component: () => import('@/Views/JobOffers/JobOffers.vue'),
-  },
-  {
     path: '/pomoc',
     name: 'Pomoc',
     component: () => import('@/Views/HelpPage.vue'),
@@ -91,6 +86,36 @@ const routes = [
     path: '/pracodawcy',
     name: 'Pracodawcy',
     component: () => import('@/Views/EmployersPage.vue'),
+  },
+  {
+    path: '/firma/dodaj-ogloszenie',
+    name: 'Dodaj ogłoszenie',
+    component: () => import('@/Views/JobAddPage.vue'),
+  },
+  {
+    path: '/admin/stworz-szablon',
+    name: 'Stwórz szablon',
+    component: () => import('@/Views/AdminTemplateCreatePage.vue'),
+  },
+  {
+    path: '/oferty',
+    name: 'Oferty pracy',
+    component: () => import('@/Views/JobListPage.vue'),
+  },
+  {
+    path: '/profil-pracodwawcy/:id',
+    name: 'Profil pracodawcy',
+    component: () => import('@/Views/EmployerProfilePage.vue'),
+  },
+  {
+    path: '/oferta/:id',
+    name: 'Oferta pracy',
+    component: () => import('@/Views/JobDetailsPage.vue'),
+  },
+  {
+    path: '/aplikuj/:id',
+    name: 'Aplikuj na stanowisko',
+    component: () => import('@/Views/JobApplicationPage.vue'),
   },
 ];
 

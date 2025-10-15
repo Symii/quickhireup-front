@@ -36,7 +36,7 @@
       <div class="for-companies">
         <span>DLA FIRM</span>
 
-        <a href="#">Dodaj ogłoszenie</a>
+        <RouterLink to="/firma/dodaj-ogloszenie">Dodaj ogłoszenie</RouterLink>
       </div>
     </div>
 

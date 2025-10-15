@@ -438,4 +438,8 @@ button.btn-primary:hover {
   background-color: var(--primary);
   width: 100%;
 }
+
+.mt-20 {
+  margin-top: 20px;
+}
 </style>

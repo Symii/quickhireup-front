@@ -1,0 +1,465 @@
+<template>
+  <div class="container mt-20">
+    <header class="form-header text-center mb-5">
+      <h1>Dodaj ogłoszenie o pracę</h1>
+
+      <p class="lead">Wypełnij formularz krok po kroku, aby opublikować swoje ogłoszenie.</p>
+    </header>
+
+    <section class="row justify-content-center">
+      <div class="col-md-6 mb-4">
+        <div class="form-card shadow-sm p-4">
+          <div class="steps mb-4">
+            <div v-for="n in 3" :key="n" class="step" :class="{ active: currentStep === n }">
+              <span class="step-number">{{ n }}</span>
+
+              <span class="step-label">{{ stepLabels[n - 1] }}</span>
+            </div>
+          </div>
+
+          <form @submit.prevent="handleSubmit">
+            <div v-if="currentStep === 1">
+              <h4 class="mb-3">Dane podstawowe</h4>
+
+              <div class="mb-3">
+                <label class="form-label">Szablon ogłoszenia</label>
+
+                <select v-model="selectedTemplate" @change="onTemplateChange" class="form-control">
+                  <option value="">Brak (wypełnij ręcznie)</option>
+
+                  <option v-for="tpl in templates" :key="tpl.id" :value="tpl.id">
+                    {{ tpl.name }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Tytuł stanowiska</label>
+
+                <input
+                  type="text"
+                  v-model="form.jobTitle"
+                  :class="['form-control', { 'is-invalid': errors.jobTitle }]"
+                />
+
+                <div class="invalid-feedback">{{ errors.jobTitle }}</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Firma</label>
+
+                <input
+                  type="text"
+                  v-model="form.company"
+                  :class="['form-control', { 'is-invalid': errors.company }]"
+                />
+
+                <div class="invalid-feedback">{{ errors.company }}</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Lokalizacja</label>
+
+                <input
+                  type="text"
+                  v-model="form.location"
+                  :class="['form-control', { 'is-invalid': errors.location }]"
+                />
+
+                <div class="invalid-feedback">{{ errors.location }}</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Rodzaj zatrudnienia</label>
+
+                <select
+                  v-model="form.employmentType"
+                  :class="['form-control', { 'is-invalid': errors.employmentType }]"
+                >
+                  <option disabled value="">Wybierz</option>
+
+                  <option>Zdalnie</option>
+
+                  <option>Stacjonarnie</option>
+
+                  <option>Hybrydowo</option>
+                </select>
+
+                <div class="invalid-feedback">{{ errors.employmentType }}</div>
+              </div>
+
+              <div class="text-end">
+                <button class="btn btn-primary" type="button" @click="nextStep">Dalej →</button>
+              </div>
+            </div>
+
+            <div v-if="currentStep === 2">
+              <h4 class="mb-3">Szczegóły stanowiska</h4>
+
+              <div class="mb-3">
+                <label class="form-label">Doświadczenie</label>
+
+                <select
+                  v-model="form.experience"
+                  :class="['form-control', { 'is-invalid': errors.experience }]"
+                >
+                  <option disabled value="">Wybierz doświadczenie</option>
+
+                  <option>Brak doświadczenia</option>
+
+                  <option>Do 1 roku</option>
+
+                  <option>1-3 lata</option>
+
+                  <option>3-5 lat</option>
+
+                  <option>Powyżej 5 lat</option>
+                </select>
+
+                <div class="invalid-feedback">{{ errors.experience }}</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Rodzaj umowy</label>
+
+                <select
+                  v-model="form.contractType"
+                  :class="['form-control', { 'is-invalid': errors.contractType }]"
+                >
+                  <option disabled value="">Wybierz rodzaj umowy</option>
+
+                  <option>Umowa o pracę</option>
+
+                  <option>Umowa zlecenie</option>
+
+                  <option>Umowa o dzieło</option>
+
+                  <option>Kontrakt B2B</option>
+                </select>
+
+                <div class="invalid-feedback">{{ errors.contractType }}</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Wynagrodzenie</label>
+
+                <input
+                  type="text"
+                  v-model="form.salary"
+                  placeholder="Np. 6000-8000 zł"
+                  :class="['form-control', { 'is-invalid': errors.salary }]"
+                />
+
+                <div class="invalid-feedback">{{ errors.salary }}</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Opis obowiązków</label>
+
+                <textarea
+                  v-model="form.responsibilities"
+                  rows="3"
+                  :class="['form-control', { 'is-invalid': errors.responsibilities }]"
+                ></textarea>
+
+                <div class="invalid-feedback">{{ errors.responsibilities }}</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Wymagane kwalifikacje</label>
+
+                <textarea
+                  v-model="form.qualifications"
+                  rows="3"
+                  :class="['form-control', { 'is-invalid': errors.qualifications }]"
+                ></textarea>
+
+                <div class="invalid-feedback">{{ errors.qualifications }}</div>
+              </div>
+
+              <div class="text-end">
+                <button class="btn btn-outline-secondary me-2" type="button" @click="prevStep">
+                  ← Wstecz
+                </button>
+
+                <button class="btn btn-primary" type="button" @click="nextStep">Dalej →</button>
+              </div>
+            </div>
+
+            <div v-if="currentStep === 3">
+              <h4 class="mb-3">Podsumowanie</h4>
+
+              <div class="preview bg-light p-3 rounded">
+                <h5>{{ form.jobTitle }} – {{ form.company }}</h5>
+
+                <p><strong>Lokalizacja:</strong> {{ form.location }}</p>
+
+                <p><strong>Rodzaj pracy:</strong> {{ form.employmentType }}</p>
+
+                <p><strong>Doświadczenie:</strong> {{ form.experience }}</p>
+
+                <p><strong>Umowa:</strong> {{ form.contractType }}</p>
+
+                <p><strong>Wynagrodzenie:</strong> {{ form.salary }}</p>
+
+                <hr />
+
+                <p><strong>Obowiązki:</strong><br />{{ form.responsibilities }}</p>
+
+                <p><strong>Wymagania:</strong><br />{{ form.qualifications }}</p>
+              </div>
+
+              <div class="form-check mt-3">
+                <input
+                  type="checkbox"
+                  v-model="form.agreeRegulation"
+                  class="form-check-input"
+                  id="agree"
+                />
+
+                <label for="agree" class="form-check-label">Akceptuję regulamin publikacji</label>
+
+                <div v-if="errors.agreeRegulation" class="text-danger small mt-1">
+                  {{ errors.agreeRegulation }}
+                </div>
+              </div>
+
+              <div class="text-end mt-3">
+                <button class="btn btn-outline-secondary me-2" type="button" @click="prevStep">
+                  ← Wstecz
+                </button>
+
+                <button class="btn btn-primary" type="submit" :disabled="loading">
+                  {{ loading ? 'Zapisywanie...' : 'Zapisz ogłoszenie' }}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="form-card shadow-sm p-4 bg-light">
+          <h4>Instrukcja – {{ stepLabels[currentStep - 1] }}</h4>
+
+          <p v-html="instructions[currentStep - 1]"></p>
+        </div>
+      </div>
+    </section>
+  </div>
+</template>
+
+<script lang="ts">
+import { reactive, ref } from 'vue';
+
+interface JobForm {
+  jobTitle: string;
+  company: string;
+  location: string;
+  employmentType: string;
+  experience: string;
+  contractType: string;
+  salary: string;
+  responsibilities: string;
+  qualifications: string;
+  agreeRegulation: boolean;
+}
+
+export default {
+  setup() {
+    const currentStep = ref(1);
+    const stepLabels = ['Dane podstawowe', 'Szczegóły stanowiska', 'Podsumowanie'];
+    const loading = ref(false);
+    const selectedTemplate = ref('');
+    const errors = reactive<Record<string, string>>({});
+
+    const templates = [
+      {
+        id: 'tpl1',
+        name: 'Junior Marketing Specialist',
+        data: {
+          jobTitle: 'Junior Marketing Specialist',
+          experience: 'Do 1 roku',
+          contractType: 'Umowa zlecenie',
+          employmentType: 'Zdalnie',
+          responsibilities: 'Pomoc przy tworzeniu kampanii reklamowych.',
+          qualifications: 'Podstawy marketingu, znajomość social media.',
+          salary: '4000-5000 zł',
+        },
+      },
+      {
+        id: 'tpl2',
+        name: 'Mid Web Developer',
+        data: {
+          jobTitle: 'Mid Web Developer',
+          experience: '1-3 lata',
+          contractType: 'Umowa o pracę',
+          employmentType: 'Hybrydowo',
+          responsibilities: 'Tworzenie i utrzymanie aplikacji webowych.',
+          qualifications: 'Vue, TypeScript, REST API.',
+          salary: '8000-11000 zł',
+        },
+      },
+    ];
+
+    const form = reactive<JobForm>({
+      jobTitle: '',
+      company: '',
+      location: '',
+      employmentType: '',
+      experience: '',
+      contractType: '',
+      salary: '',
+      responsibilities: '',
+      qualifications: '',
+      agreeRegulation: false,
+    });
+
+    const validateStep = (step: number): boolean => {
+      Object.keys(errors).forEach((k) => (errors[k] = ''));
+
+      if (step === 1) {
+        if (!form.jobTitle) errors.jobTitle = 'Błąd: Proszę podać tytuł stanowiska.';
+        if (!form.company) errors.company = 'Błąd: Proszę podać nazwę firmy.';
+        if (!form.location) errors.location = 'Błąd: Proszę podać lokalizację.';
+        if (!form.employmentType)
+          errors.employmentType = 'Błąd: Proszę wybrać rodzaj zatrudnienia.';
+      }
+
+      if (step === 2) {
+        if (!form.experience) errors.experience = 'Błąd: Proszę wybrać poziom doświadczenia.';
+        if (!form.contractType) errors.contractType = 'Błąd: Proszę wybrać rodzaj umowy.';
+        if (!form.salary) errors.salary = 'Błąd: Proszę podać wynagrodzenie.';
+        if (!form.responsibilities)
+          errors.responsibilities = 'Błąd: Proszę wpisać opis obowiązków.';
+        if (!form.qualifications)
+          errors.qualifications = 'Błąd: Proszę podać wymagane kwalifikacje.';
+      }
+
+      if (step === 3 && !form.agreeRegulation)
+        errors.agreeRegulation = 'Błąd: Musisz zaakceptować regulamin.';
+
+      return Object.values(errors).every((v) => !v);
+    };
+
+    const nextStep = () => {
+      if (validateStep(currentStep.value)) currentStep.value++;
+    };
+
+    const prevStep = () => {
+      if (currentStep.value > 1) currentStep.value--;
+    };
+
+    const handleSubmit = async () => {
+      if (!validateStep(3)) return;
+      loading.value = true;
+      try {
+        await new Promise((r) => setTimeout(r, 1200));
+        alert('✅ Ogłoszenie zapisane pomyślnie!');
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const onTemplateChange = () => {
+      const tpl = templates.find((t) => t.id === selectedTemplate.value);
+      if (tpl) Object.assign(form, tpl.data);
+    };
+
+    const instructions = [
+      `W tym kroku podaj podstawowe dane o stanowisku i firmie.`,
+      `Tutaj uzupełnij szczegóły stanowiska: umowa, wynagrodzenie, opis obowiązków.`,
+      `Sprawdź dane i zaakceptuj regulamin przed publikacją.`,
+    ];
+
+    return {
+      currentStep,
+      stepLabels,
+      templates,
+      selectedTemplate,
+      form,
+      loading,
+      errors,
+      instructions,
+      nextStep,
+      prevStep,
+      onTemplateChange,
+      handleSubmit,
+    };
+  },
+};
+</script>
+
+<style scoped>
+.form-header {
+  background: linear-gradient(135deg, #ff5666, #e14b59);
+  color: white;
+  padding: 2.5rem 1rem;
+  border-radius: 1rem;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.step.active {
+  font-weight: bold;
+  opacity: 1;
+  color: #ff5666;
+}
+
+.step-number {
+  background: #ff5666;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 28px;
+}
+
+.form-card {
+  background: #fff;
+  border-radius: 12px;
+  transition: 0.3s ease;
+}
+
+.form-card:hover {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+button.btn-primary {
+  background-color: #ff5666;
+  border-color: #ff5666;
+}
+
+button.btn-primary:hover {
+  background-color: #e14b59;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.is-invalid {
+  border-color: #dc3545 !important;
+}
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.85rem;
+}
+.text-danger {
+  color: #dc3545 !important;
+}
+</style>

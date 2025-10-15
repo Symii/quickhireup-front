@@ -27,7 +27,11 @@
             <p class="text-muted small">{{ employer.description }}</p>
 
             <div class="mt-3">
-              <a :href="employer.profileUrl" class="btn btn-generator btn-sm"> Zobacz profil </a>
+              <RouterLink :to="employer.profileUrl">
+                <button :href="employer.profileUrl" class="btn btn-generator btn-sm">
+                  Zobacz profil
+                </button>
+              </RouterLink>
             </div>
           </div>
         </div>
@@ -71,7 +75,7 @@ const employers = ref<Employer[]>([
     location: 'Warszawa',
     description: 'Firma tworząca nowoczesne aplikacje webowe i mobilne.',
     logo: '',
-    profileUrl: '#',
+    profileUrl: '/profil-pracodwawcy/1',
   },
   {
     id: 2,
@@ -80,7 +84,7 @@ const employers = ref<Employer[]>([
     location: 'Zdalnie',
     description: 'Specjalizacja w backendzie i rozwoju systemów cloud.',
     logo: 'https://cdn-icons-png.flaticon.com/512/5968/5968705.png',
-    profileUrl: '#',
+    profileUrl: '/profil-pracodwawcy/2',
   },
 ]);
 </script>

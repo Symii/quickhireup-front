@@ -31,7 +31,9 @@
       </select>
     </form>
 
-    <button class="search-btn"><i class="fa-brands fa-searchengin"></i>&nbsp;Szukaj</button>
+    <RouterLink to="/oferty">
+      <button class="search-btn"><i class="fa-brands fa-searchengin"></i>&nbsp;Szukaj</button>
+    </RouterLink>
   </div>
 
   <div class="job-board container py-5">
@@ -59,9 +61,11 @@
               <span><i class="fas fa-clock me-1"></i>{{ job.type }}</span>
             </div>
 
-            <a href="#" class="btn btn-gradient w-100 mt-auto">
-              <i class="fa-regular fa-circle-right me-2"></i>Zobacz ofertę
-            </a>
+            <RouterLink :to="`/oferta/${job.id}`">
+              <button class="btn btn-gradient w-100 mt-auto">
+                <i class="fa-regular fa-circle-right me-2"></i>Zobacz ofertę
+              </button>
+            </RouterLink>
           </div>
         </div>
       </div>
@@ -79,7 +83,9 @@
           pracy i przyciągaj najlepszych kandydatów!
         </p>
 
-        <a href="/generator" class="btn-generator">🚀 Uruchom generator</a>
+        <RouterLink to="/generator">
+          <button class="btn-generator">🚀 Uruchom generator</button>
+        </RouterLink>
       </div>
     </div>
   </section>
