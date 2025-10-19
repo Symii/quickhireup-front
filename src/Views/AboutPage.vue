@@ -4,9 +4,7 @@
       <h1>O nas</h1>
 
       <p class="lead">
-        Jesteśmy platformą łączącą najlepsze oferty pracy z utalentowanymi kandydatami. <br />
-        Pomagamy firmom w znalezieniu idealnego zespołu, a ludziom - odkrywać ciekawe ścieżki
-        kariery.
+        Jesteśmy platformą łączącą najlepsze oferty pracy z utalentowanymi kandydatami.
       </p>
     </header>
 
@@ -96,12 +94,12 @@ const values = ref([
     icon: 'fa-solid fa-lightbulb',
   },
   {
-    title: 'Uczciwość',
-    description: 'Transparentność wobec kandydatów i firm - jasne warunki',
+    title: 'Bezpieczeństwo',
+    description: 'Najwyższe standardy ochrony danych i prywatności naszych użytkowników',
     icon: 'fa-solid fa-user',
   },
   {
-    title: 'Wzrost',
+    title: 'Rozwój',
     description:
       'Wsparcie rozwoju - zarówno zawodowego, jak i osobistego - dla każdego użytkownika naszej platformy',
     icon: 'fa-solid fa-paper-plane',

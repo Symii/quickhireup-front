@@ -7,6 +7,8 @@
         <ul>
           <li><RouterLink to="/oferty">Oferty pracy</RouterLink></li>
 
+          <li><RouterLink to="/moje-aplikacje">Moje aplikacje</RouterLink></li>
+
           <li><RouterLink to="/pomoc">Pomoc</RouterLink></li>
         </ul>
       </div>
@@ -16,6 +18,8 @@
 
         <ul>
           <li><RouterLink to="/firma/dodaj-ogloszenie">Dodaj ogłoszenie</RouterLink></li>
+
+          <li><RouterLink to="/firma/moje-ogloszenia">Moje ogłoszenia</RouterLink></li>
         </ul>
       </div>
       <div>

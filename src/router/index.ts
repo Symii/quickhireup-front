@@ -93,6 +93,11 @@ const routes = [
     component: () => import('@/Views/JobAddPage.vue'),
   },
   {
+    path: '/firma/edytuj-ogloszenie/:id',
+    name: 'Edytuj ogłoszenie',
+    component: () => import('@/Views/JobAddPage.vue'),
+  },
+  {
     path: '/admin/stworz-szablon',
     name: 'Stwórz szablon',
     component: () => import('@/Views/AdminTemplateCreatePage.vue'),
@@ -116,6 +121,21 @@ const routes = [
     path: '/aplikuj/:id',
     name: 'Aplikuj na stanowisko',
     component: () => import('@/Views/JobApplicationPage.vue'),
+  },
+  {
+    path: '/firma/moje-ogloszenia',
+    name: 'Moje ogłoszenia',
+    component: () => import('@/Views/EmployerJobListPage.vue'),
+  },
+  {
+    path: '/firma/kandydaci/:jobId',
+    name: 'Kandydaci na ogłoszenie',
+    component: () => import('@/Views/JobCandidatesPage.vue'),
+  },
+  {
+    path: '/moje-aplikacje',
+    name: 'Moje aplikacje',
+    component: () => import('@/Views/CandidateApplicationsPage.vue'),
   },
 ];
 
