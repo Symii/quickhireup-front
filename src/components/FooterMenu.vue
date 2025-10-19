@@ -41,6 +41,8 @@
           <li><RouterLink to="/generator">Generator opisów</RouterLink></li>
 
           <li><RouterLink to="/admin/stworz-szablon">Kreator szablonów</RouterLink></li>
+
+          <li><RouterLink to="/admin/uzytkownicy">Użytkownicy</RouterLink></li>
         </ul>
       </div>
     </div>

@@ -137,6 +137,11 @@ const routes = [
     name: 'Moje aplikacje',
     component: () => import('@/Views/CandidateApplicationsPage.vue'),
   },
+  {
+    path: '/admin/uzytkownicy',
+    name: 'Lista użytkowników',
+    component: () => import('@/Views/UsersListPage.vue'),
+  },
 ];
 
 const router = createRouter({

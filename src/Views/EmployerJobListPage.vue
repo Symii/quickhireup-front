@@ -151,6 +151,8 @@ const myJobs = computed(() => {
   background: linear-gradient(90deg, #ff5666, #e14b59);
   color: white;
   border: none;
+  height: 38px;
+  padding: 5px 10px;
 }
 
 .btn-gradient:hover {

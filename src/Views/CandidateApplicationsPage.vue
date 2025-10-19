@@ -54,7 +54,7 @@
                 class="btn btn-gradient"
                 @click="withdraw(app.id)"
               >
-                <i class="fa-regular fa-circle-left me-2"></i> Wycofaj
+                <i class="fa-regular fa-circle-left me-2"></i> Cofnij aplikację
               </button>
             </div>
           </div>
