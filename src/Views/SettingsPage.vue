@@ -10,10 +10,14 @@
       <div class="col-md-4 mb-4">
         <div class="settings-card shadow-sm p-4 text-center">
           <div class="profile-photo-wrapper mb-3">
-            <img :src="profilePhoto" alt="Zdjęcie profilowe" class="profile-photo rounded-circle" />
+            <img
+              :src="`http://localhost:5000${profilePhoto}` || defaultPhoto"
+              alt="Zdjęcie profilowe"
+              class="profile-photo rounded-circle"
+            />
           </div>
 
-          <h4 class="mb-2">{{ userData.name }}</h4>
+          <h4 class="mb-2">{{ userData.firstName }} {{ userData.secondName }}</h4>
 
           <p class="text-muted mb-1">Ustawienia konta</p>
 
@@ -92,18 +96,18 @@
               </div>
             </div>
 
-            <div class="mb-3">
-              <label class="form-label">Aktualne hasło</label>
-              <input
-                type="password"
-                v-model="settings.currentPassword"
-                class="form-control"
-                placeholder="Wprowadź aktualne hasło"
-              />
-            </div>
-
             <div class="mb-4">
               <h5 class="mb-3">Bezpieczeństwo</h5>
+
+              <div class="mb-3">
+                <label class="form-label">Aktualne hasło</label>
+                <input
+                  type="password"
+                  v-model="settings.currentPassword"
+                  class="form-control"
+                  placeholder="Wprowadź aktualne hasło"
+                />
+              </div>
 
               <div class="mb-3">
                 <label class="form-label">Nowe hasło</label>
@@ -159,12 +163,19 @@
 
 <script setup lang="ts">
 import axios from 'axios';
-import { reactive, ref, computed } from 'vue';
+import { reactive, ref, computed, onMounted } from 'vue';
+import accountService from '@/api/services/accountService';
 import userService from '@/api/services/usersService';
 
-const profilePhoto = ref('ceo.jpeg');
+const defaultPhoto = 'ceo.jpeg';
+const profilePhoto = ref(null as string | null);
 const userData = reactive({
-  name: 'Szymon Ulatowski',
+  id: '',
+  firstName: '',
+  secondName: '',
+  role: '',
+  email: '',
+  bio: '',
 });
 
 const primaryColor = '#ff5666';
@@ -231,6 +242,16 @@ const saveSettings = async () => {
     saving.value = false;
   }
 };
+
+onMounted(async () => {
+  try {
+    const data = await accountService.getCurrentUser();
+    Object.assign(userData, data);
+    profilePhoto.value = data.photoUrl;
+  } catch (error) {
+    console.error('Błąd podczas ładowania danych użytkownika:', error);
+  }
+});
 </script>
 
 <style scoped>

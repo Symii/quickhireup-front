@@ -3,6 +3,7 @@ export interface User {
   userName: string;
   normalizedUserName: string;
   email: string;
+  photoUrl: string;
   bio: string;
   normalizedEmail: string;
   emailConfirmed: boolean;
@@ -35,4 +36,5 @@ export interface UserShort {
   secondName: string;
   role: string;
   bio: string;
+  photoUrl: string;
 }

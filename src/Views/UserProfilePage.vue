@@ -12,7 +12,11 @@
       <div class="col-md-4 mb-4 text-center">
         <div class="profile-card shadow-sm p-4">
           <div class="profile-photo-wrapper position-relative mb-3">
-            <img :src="profilePhoto" alt="Zdjęcie profilowe" class="profile-photo rounded-circle" />
+            <img
+              :src="`http://localhost:5000${profilePhoto}` || defaultPhoto"
+              alt="Zdjęcie profilowe"
+              class="profile-photo rounded-circle"
+            />
 
             <label class="upload-btn">
               <i class="fa-solid fa-image"></i>
@@ -124,7 +128,7 @@ import { ref, reactive, onMounted } from 'vue';
 
 const primaryColor = '#ff5666';
 const defaultPhoto = 'ceo.jpeg';
-const profilePhoto = ref(defaultPhoto);
+const profilePhoto = ref(null as string | null);
 
 const userData = reactive({
   id: '',
@@ -154,12 +158,24 @@ const validateForm = () => {
   return !errors.firstName && !errors.secondName && !errors.email;
 };
 
-const onFileChange = (e: Event) => {
+const onFileChange = async (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => (profilePhoto.value = e.target?.result as string);
-    reader.readAsDataURL(file);
+  if (!file) {
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await userService.uploadProfilePhoto(userData.id, formData);
+    profilePhoto.value = response.photoUrl;
+
+    errorMessage.value = '';
+    successMessage.value = 'Zdjęcie profilowe zostało zmienione!';
+  } catch (err) {
+    console.error(err);
+    errorMessage.value = 'Wystąpił błąd podczas zmiany zdjęcia.';
   }
 };
 
@@ -186,6 +202,7 @@ onMounted(async () => {
   try {
     const data = await accountService.getCurrentUser();
     Object.assign(userData, data);
+    profilePhoto.value = data.photoUrl;
   } catch (error) {
     console.error('Błąd podczas ładowania danych użytkownika:', error);
   }

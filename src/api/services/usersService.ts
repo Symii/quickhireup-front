@@ -39,4 +39,11 @@ export default {
 
     return response.data;
   },
+
+  async uploadProfilePhoto(userId: string, formData: FormData) {
+    const response = await api.post(`${API_URL}/${userId}/photo`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
 };
