@@ -23,6 +23,7 @@
 
           <input
             v-model="form.role"
+            disabled
             type="text"
             class="form-control"
             placeholder="Np. Administrator, HR..."
@@ -82,8 +83,8 @@ async function save() {
   const dto: UpdateUserDto = {
     firstName: form.value.firstName,
     secondName: form.value.secondName,
-    role: form.value.role,
     email: form.value.email,
+    bio: props.user.bio,
   };
 
   if (form.value.id) {

@@ -3,6 +3,7 @@ export interface User {
   userName: string;
   normalizedUserName: string;
   email: string;
+  bio: string;
   normalizedEmail: string;
   emailConfirmed: boolean;
   passwordHash?: string;
@@ -25,4 +26,13 @@ export interface User {
 
 export interface CV {
   id: string;
+}
+
+export interface UserShort {
+  id: string;
+  email: string;
+  firstName: string;
+  secondName: string;
+  role: string;
+  bio: string;
 }

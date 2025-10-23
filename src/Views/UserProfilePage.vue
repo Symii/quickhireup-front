@@ -21,7 +21,7 @@
             </label>
           </div>
 
-          <h4 class="mb-1">{{ userData.name }}</h4>
+          <h4 class="mb-1">{{ userData.firstName }} {{ userData.secondName }}</h4>
 
           <p class="text-muted mb-1">{{ userData.role }}</p>
 
@@ -39,28 +39,31 @@
 
           <form @submit.prevent="saveProfile" novalidate>
             <div class="mb-3">
-              <label class="form-label">Imię i nazwisko</label>
+              <label class="form-label">Imię</label>
 
               <input
                 type="text"
-                v-model="userData.name"
+                v-model="userData.firstName"
                 class="form-control"
                 required
-                :class="{ 'is-invalid': errors.name }"
+                :class="{ 'is-invalid': errors.firstName }"
               />
 
               <div class="invalid-feedback">To pole jest wymagane.</div>
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Stanowisko / rola</label>
+              <label class="form-label">Nazwisko</label>
 
               <input
                 type="text"
-                v-model="userData.role"
+                v-model="userData.secondName"
                 class="form-control"
-                placeholder="Np. Rekruter, Programista..."
+                required
+                :class="{ 'is-invalid': errors.secondName }"
               />
+
+              <div class="invalid-feedback">To pole jest wymagane.</div>
             </div>
 
             <div class="mb-3">
@@ -114,21 +117,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import accountService from '@/api/services/accountService';
+import userService from '@/api/services/usersService';
+import type { UpdateUserDto } from '@/api/types/updateUserDto';
+import { ref, reactive, onMounted } from 'vue';
 
 const primaryColor = '#ff5666';
 const defaultPhoto = 'ceo.jpeg';
 const profilePhoto = ref(defaultPhoto);
 
 const userData = reactive({
-  name: 'Szymon Ulatowski',
-  role: 'Lead Developer',
-  email: 'szymon.ulatowski@quickhireup.pl',
-  bio: 'Pasjonat nowoczesnych rozwiązań w rekrutacji.',
+  id: '',
+  firstName: '',
+  secondName: '',
+  role: '',
+  email: '',
+  bio: '',
 });
 
 const errors = reactive({
-  name: false,
+  firstName: false,
+  secondName: false,
   email: false,
 });
 
@@ -139,26 +148,10 @@ const errorMessage = ref('');
 const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const validateForm = () => {
-  errors.name = !userData.name.trim();
+  errors.firstName = !userData.firstName.trim();
+  errors.secondName = !userData.secondName.trim();
   errors.email = !validateEmail(userData.email);
-  return !errors.name && !errors.email;
-};
-
-const saveProfile = async () => {
-  if (!validateForm()) return;
-
-  saving.value = true;
-  successMessage.value = '';
-  errorMessage.value = '';
-
-  try {
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    successMessage.value = '✅ Zmiany zostały zapisane pomyślnie!';
-  } catch {
-    errorMessage.value = '❌ Wystąpił błąd podczas zapisywania danych.';
-  } finally {
-    saving.value = false;
-  }
+  return !errors.firstName && !errors.secondName && !errors.email;
 };
 
 const onFileChange = (e: Event) => {
@@ -169,6 +162,34 @@ const onFileChange = (e: Event) => {
     reader.readAsDataURL(file);
   }
 };
+
+async function saveProfile() {
+  if (!validateForm()) return;
+
+  saving.value = true;
+  successMessage.value = '';
+  errorMessage.value = '';
+
+  const dto: UpdateUserDto = {
+    firstName: userData.firstName,
+    secondName: userData.secondName,
+    email: userData.email,
+    bio: userData.bio,
+  };
+
+  await userService.update(userData.id, dto);
+  successMessage.value = '✅ Zmiany zostały zapisane pomyślnie!';
+  saving.value = false;
+}
+
+onMounted(async () => {
+  try {
+    const data = await accountService.getCurrentUser();
+    Object.assign(userData, data);
+  } catch (error) {
+    console.error('Błąd podczas ładowania danych użytkownika:', error);
+  }
+});
 </script>
 
 <style scoped>

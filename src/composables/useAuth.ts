@@ -23,7 +23,7 @@ const loading = ref(false);
 const isLoggedIn = ref(!!token.value);
 const authIsReady = ref(false);
 
-let refreshInterval: any = null;
+let refreshInterval: number | null = null;
 
 async function handleLogin(credentials: UserLoginDto) {
   loading.value = true;
@@ -61,7 +61,7 @@ async function handleRegister(data: UserRegisterDto) {
   try {
     await register(data);
     router.push('/login');
-  } catch (e: any) {
+  } catch (e: unknown) {
     if (axios.isAxiosError(e)) {
       if (!e.response) {
         error.value = 'Brak połączenia z serwerem. Sprawdź połączenie sieciowe.';
@@ -92,7 +92,7 @@ async function logout() {
     await logoutRequest();
     isLoggedIn.value = false;
     router.push('/login');
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Błąd podczas wylogowywania:', error);
     clearTokens();
     router.push('/login');
@@ -115,7 +115,7 @@ async function initAuth() {
     isLoggedIn.value = true;
 
     setupTokenRefresh(storedToken);
-  } catch (err: any) {
+  } catch {
     clearTokens();
     isLoggedIn.value = false;
     router.push('/login');
@@ -142,7 +142,7 @@ function setupTokenRefresh(token: string | null) {
       try {
         await refreshTokenRequest();
         setupTokenRefresh(getToken());
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Nie udało się odświeżyć tokenu:', error);
         setTimeout(() => setupTokenRefresh(getToken()), 10000);
       }

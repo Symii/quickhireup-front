@@ -378,7 +378,7 @@ const resetFilters = () => {
 .page-input {
   border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 0.4rem 0.6rem;
+  padding: 0.4rem 0.6rem !important;
   transition: 0.2s;
 }
 

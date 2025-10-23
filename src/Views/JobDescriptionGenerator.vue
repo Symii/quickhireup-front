@@ -178,21 +178,37 @@
         <pre class="generated-text mt-2">{{ item.description }}</pre>
       </div>
 
-      <div class="d-flex justify-content-between mt-3">
-        <button class="btn btn-outline-secondary" :disabled="currentPage === 1" @click="prevPage">
-          Poprzednia strona
+      <nav class="mt-5 d-flex justify-content-center align-items-center gap-3 pagination-custom">
+        <button
+          class="btn btn-outline-primary"
+          :disabled="currentPage === 1"
+          @click="changePage(currentPage - 1)"
+        >
+          ‹
         </button>
 
-        <span>Strona {{ currentPage }} z {{ totalPages }}</span>
+        <div class="d-flex align-items-center gap-2">
+          <input
+            type="number"
+            v-model.number="pageInput"
+            @change="goToPage"
+            class="form-control page-input"
+            :min="1"
+            :max="totalPages"
+            style="width: 70px; text-align: center"
+          />
+
+          <span class="text-muted">z {{ totalPages }} stron</span>
+        </div>
 
         <button
-          class="btn btn-outline-secondary"
+          class="btn btn-outline-primary"
           :disabled="currentPage === totalPages"
-          @click="nextPage"
+          @click="changePage(currentPage + 1)"
         >
-          Następna strona
+          ›
         </button>
-      </div>
+      </nav>
     </section>
   </div>
 </template>
@@ -204,7 +220,7 @@ interface History {
   description: string;
 }
 
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 
 export default {
   setup() {
@@ -250,12 +266,24 @@ export default {
       return history.value.slice(start, end);
     });
 
-    const nextPage = () => {
-      if (currentPage.value < totalPages.value) currentPage.value++;
+    const pageInput = ref(1);
+
+    watch(currentPage, () => {
+      pageInput.value = currentPage.value;
+    });
+
+    const changePage = (page: number) => {
+      if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page;
+      }
     };
 
-    const prevPage = () => {
-      if (currentPage.value > 1) currentPage.value--;
+    const goToPage = () => {
+      if (!pageInput.value || pageInput.value < 1 || pageInput.value > totalPages.value) {
+        pageInput.value = currentPage.value;
+        return;
+      }
+      changePage(Number(pageInput.value));
     };
 
     const validateForm = () => {
@@ -337,8 +365,9 @@ export default {
       elapsedTime,
       generating,
       formattedTime,
-      nextPage,
-      prevPage,
+      pageInput,
+      goToPage,
+      changePage,
       submitForm,
       copyToClipboard,
       startTimer,
@@ -441,5 +470,50 @@ button.btn-primary:hover {
 
 .mt-20 {
   margin-top: 20px;
+}
+
+.pagination .page-link {
+  color: #ff5666;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #ff5666;
+  border-color: #ff5666;
+  color: white;
+}
+
+.pagination-custom .btn {
+  border-radius: 8px;
+  font-weight: 600;
+  min-width: 40px;
+}
+
+.pagination-custom .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-input {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem !important;
+  transition: 0.2s;
+}
+
+.page-input:focus {
+  outline: none;
+  border-color: #ff5666;
+  box-shadow: 0 0 0 2px rgba(255, 86, 102, 0.2);
+}
+
+.btn-outline-primary {
+  color: #ff5666;
+  border-color: #ff5666;
+}
+
+.btn-outline-primary:hover {
+  background-color: #ff5666;
+  color: white;
+  border-color: #ff5666;
 }
 </style>

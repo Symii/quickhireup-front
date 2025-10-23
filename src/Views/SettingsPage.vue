@@ -92,6 +92,16 @@
               </div>
             </div>
 
+            <div class="mb-3">
+              <label class="form-label">Aktualne hasło</label>
+              <input
+                type="password"
+                v-model="settings.currentPassword"
+                class="form-control"
+                placeholder="Wprowadź aktualne hasło"
+              />
+            </div>
+
             <div class="mb-4">
               <h5 class="mb-3">Bezpieczeństwo</h5>
 
@@ -148,7 +158,9 @@
 </template>
 
 <script setup lang="ts">
+import axios from 'axios';
 import { reactive, ref, computed } from 'vue';
+import userService from '@/api/services/usersService';
 
 const profilePhoto = ref('ceo.jpeg');
 const userData = reactive({
@@ -166,6 +178,7 @@ const settings = reactive({
     showCV: true,
     showProfile: true,
   },
+  currentPassword: '',
   newPassword: '',
   confirmPassword: '',
 });
@@ -193,10 +206,27 @@ const saveSettings = async () => {
   errorMessage.value = '';
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    successMessage.value = '✅ Ustawienia zapisane pomyślnie!';
-  } catch {
-    errorMessage.value = '❌ Wystąpił błąd podczas zapisywania ustawień.';
+    if (settings.newPassword && settings.currentPassword) {
+      await userService.changePassword(
+        settings.currentPassword,
+        settings.newPassword,
+        settings.confirmPassword,
+      );
+      successMessage.value = 'Hasło zostało zmienione pomyślnie!';
+      settings.currentPassword = '';
+      settings.newPassword = '';
+      settings.confirmPassword = '';
+    } else {
+      successMessage.value = 'Ustawienia zapisane pomyślnie!';
+    }
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      const axiosError = err;
+      errorMessage.value =
+        axiosError.response?.data || 'Wystąpił błąd podczas zapisywania ustawień.';
+    } else {
+      errorMessage.value = 'Wystąpił nieoczekiwany błąd.';
+    }
   } finally {
     saving.value = false;
   }
