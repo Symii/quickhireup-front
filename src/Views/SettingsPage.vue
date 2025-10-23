@@ -78,7 +78,7 @@
                 />
 
                 <label class="form-check-label" for="showCV">
-                  Twoje CV jest widoczne dla firm
+                  Twoje CV jest widoczne dla wszystkich firm
                 </label>
               </div>
 
