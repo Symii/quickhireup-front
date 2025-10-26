@@ -1,15 +1,16 @@
 import api from '../authentication/axiosInstance';
 import type { UpdateUserDto } from '../types/updateUserDto';
+import type { User } from '../types/user';
 
 const API_URL = 'http://localhost:5000/api/users';
 
 export default {
-  async getAll() {
+  async getAll(): Promise<User[]> {
     const result = await api.get(API_URL);
     return result.data;
   },
 
-  async getById(id: string) {
+  async getById(id: string): Promise<User> {
     const result = await api.get(`${API_URL}/${id}`);
     return result.data;
   },
@@ -20,7 +21,6 @@ export default {
   },
 
   async update(id: string, user: UpdateUserDto) {
-    console.log(user);
     const result = await api.put(`${API_URL}/update/${id}`, user);
     return result.data;
   },

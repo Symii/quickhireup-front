@@ -44,21 +44,21 @@
         <div class="card job-card h-100 shadow-sm border-0">
           <div class="card-body d-flex flex-column">
             <div class="d-flex align-items-center mb-3">
-              <div class="company-icon me-3">{{ job.company[0] }}</div>
+              <div class="company-icon me-3">{{ job.company[0].toUpperCase() }}</div>
 
               <div>
-                <h5 class="card-title mb-0 fw-semibold">{{ job.title }}</h5>
+                <h5 class="card-title mb-0 fw-semibold">{{ job.jobTitle }}</h5>
 
                 <small class="text-muted">{{ job.company }}</small>
               </div>
             </div>
 
-            <p class="card-text text-muted flex-grow-1">{{ job.description }}</p>
+            <p class="card-text text-muted flex-grow-1">{{ job.salary }}</p>
 
             <div class="d-flex justify-content-between text-muted small mb-3">
               <span><i class="fa-regular fa-map me-1"></i>{{ job.location }}</span>
 
-              <span><i class="fas fa-clock me-1"></i>{{ job.type }}</span>
+              <span><i class="fas fa-clock me-1"></i>{{ job.contractType }}</span>
             </div>
 
             <RouterLink :to="`/oferta/${job.id}`">
@@ -79,7 +79,7 @@
         <h2>Stwórz idealny opis stanowiska w kilka sekund</h2>
 
         <p>
-          Nie trać czasu – skorzystaj z naszego inteligentnego narzędzia do generowania opisów ofert
+          Nie trać czasu - skorzystaj z naszego inteligentnego narzędzia do generowania opisów ofert
           pracy i przyciągaj najlepszych kandydatów!
         </p>
 
@@ -112,16 +112,17 @@
 </template>
 
 <script setup lang="ts">
+import jobOfferService from '@/api/services/jobOfferService';
+import type { JobOffer } from '@/api/types/jobOffer';
 import { ref, onMounted } from 'vue';
 
-const targetNumber = ref(Math.floor(Math.random() * (11000 - 10000 + 1)) + 10000);
 const displayedNumber = ref(0);
 
 function formatNumber(num: number) {
   return num.toLocaleString('pl-PL');
 }
 
-function animateNumber() {
+function animateNumber(targetNumber: number) {
   const duration = 1500;
   const start = performance.now();
   const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
@@ -129,7 +130,7 @@ function animateNumber() {
   function update(now: number) {
     const elapsed = now - start;
     const progress = Math.min(elapsed / duration, 1);
-    displayedNumber.value = Math.floor(easeOut(progress) * targetNumber.value);
+    displayedNumber.value = Math.floor(easeOut(progress) * targetNumber);
 
     if (progress < 1) {
       requestAnimationFrame(update);
@@ -139,87 +140,13 @@ function animateNumber() {
   requestAnimationFrame(update);
 }
 
-onMounted(() => {
-  animateNumber();
-});
+const jobs = ref<Array<JobOffer> | null>(null);
 
-const jobs = ref([
-  {
-    id: 1,
-    title: 'Frontend Developer (Vue.js)',
-    company: 'TechNova',
-    location: 'Warszawa, Polska',
-    type: 'Pełny etat',
-    description:
-      'Buduj nowoczesne aplikacje SPA z Vue 3 i Tailwind CSS. Dołącz do zgranego zespołu frontendowego!',
-  },
-  {
-    id: 2,
-    title: 'Backend Developer (Node.js)',
-    company: 'CodeWave',
-    location: 'Zdalnie',
-    type: 'Pełny etat',
-    description:
-      'Twórz szybkie i bezpieczne API w Node.js, z użyciem NestJS, PostgreSQL i Dockera.',
-  },
-  {
-    id: 3,
-    title: 'UI/UX Designer',
-    company: 'Designify',
-    location: 'Kraków, Polska',
-    type: 'Część etatu',
-    description:
-      'Projektuj intuicyjne i piękne interfejsy w Figma. Szukamy osoby z pasją do detalu.',
-  },
-  {
-    id: 4,
-    title: 'Fullstack Developer',
-    company: 'WebCraft',
-    location: 'Wrocław, Polska',
-    type: 'Pełny etat',
-    description: 'Pracuj z React i Node.js nad skalowalnymi rozwiązaniami e-commerce.',
-  },
-  {
-    id: 5,
-    title: 'DevOps Engineer',
-    company: 'CloudSolutions',
-    location: 'Zdalnie',
-    type: 'Pełny etat',
-    description: 'Zarządzaj infrastrukturą w chmurze AWS i automatyzuj procesy CI/CD.',
-  },
-  {
-    id: 6,
-    title: 'Data Scientist',
-    company: 'DataMinds',
-    location: 'Poznań, Polska',
-    type: 'Pełny etat',
-    description: 'Analizuj dane i twórz modele predykcyjne z użyciem Python i ML.',
-  },
-  {
-    id: 7,
-    title: 'Mobile Developer (iOS)',
-    company: 'AppVentures',
-    location: 'Gdańsk, Polska',
-    type: 'Pełny etat',
-    description: 'Twórz aplikacje mobilne dla iOS z użyciem Swift i SwiftUI.',
-  },
-  {
-    id: 8,
-    title: 'QA Engineer',
-    company: 'SoftCheck',
-    location: 'Łódź, Polska',
-    type: 'Pełny etat',
-    description: 'Testuj oprogramowanie automatycznie i manualnie, dbaj o jakość produktów.',
-  },
-  {
-    id: 9,
-    title: 'Product Manager',
-    company: 'InnoTech',
-    location: 'Warszawa, Polska',
-    type: 'Pełny etat',
-    description: 'Kieruj rozwojem produktu, współpracuj z zespołami IT i marketingu.',
-  },
-]);
+onMounted(async () => {
+  jobs.value = await jobOfferService.getRandom(6);
+  const targetNumber = await jobOfferService.getTotalCount();
+  animateNumber(targetNumber);
+});
 
 const partners = ref([
   {

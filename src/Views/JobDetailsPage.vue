@@ -1,9 +1,9 @@
 <template>
   <div class="container mt-20">
     <header class="offer-header text-center mb-5">
-      <h1>{{ job.title }}</h1>
+      <h1>{{ job?.jobTitle }}</h1>
 
-      <p class="lead">{{ job.location }} • {{ job.type }}</p>
+      <p class="lead">{{ job?.location }} • {{ job?.contractType }}</p>
     </header>
 
     <section class="offer-content row justify-content-center">
@@ -11,19 +11,17 @@
         <div class="offer-card shadow-sm p-4">
           <h3 class="section-title mb-3" :style="{ color: primaryColor }">Opis stanowiska</h3>
 
-          <p class="text-muted mb-4">{{ job.description }}</p>
+          <p class="text-muted mb-4">{{ job?.description }}</p>
 
           <h4 class="section-subtitle">Wymagania</h4>
 
-          <ul class="text-muted mb-4">
-            <li v-for="(req, index) in job.requirements" :key="index">{{ req }}</li>
-          </ul>
+          <p class="text-muted mb-4">{{ job?.qualifications }}</p>
 
-          <h4 class="section-subtitle">Oferujemy</h4>
+          <template v-if="job?.benefits">
+            <h4 class="section-subtitle">Oferujemy</h4>
 
-          <ul class="text-muted">
-            <li v-for="(benefit, index) in job.benefits" :key="index">{{ benefit }}</li>
-          </ul>
+            <p class="text-muted mb-4">{{ job?.benefits }}</p>
+          </template>
         </div>
       </div>
 
@@ -81,29 +79,21 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue';
+import jobOfferService from '@/api/services/jobOfferService';
+import type { JobOffer } from '@/api/types/jobOffer';
+import { onMounted, reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const id = route.params.id as string;
+
+const job = ref<JobOffer | null>(null);
+
+onMounted(async () => {
+  job.value = await jobOfferService.getById(id);
+});
 
 const primaryColor = '#ff5666';
-
-const job = reactive({
-  title: 'Frontend Developer (Vue.js)',
-  location: 'Warszawa / Zdalnie',
-  type: 'Pełny etat',
-  description:
-    'Poszukujemy doświadczonego Frontend Developera do zespołu, który tworzy nowoczesne aplikacje webowe w technologii Vue.js. Osoba na tym stanowisku będzie współpracować z zespołem backendowym i UX/UI, aby tworzyć szybkie, skalowalne i estetyczne interfejsy.',
-  requirements: [
-    'Min. 2 lata doświadczenia w pracy z Vue.js',
-    'Dobra znajomość HTML, CSS, JavaScript/TypeScript',
-    'Umiejętność pracy z REST API',
-    'Znajomość Git i pracy w zespołach developerskich',
-  ],
-  benefits: [
-    'Praca hybrydowa lub w pełni zdalna',
-    'Budżet szkoleniowy i konferencyjny',
-    'Prywatna opieka medyczna i karta sportowa',
-    'Elastyczne godziny pracy',
-  ],
-});
 
 const employer = reactive({
   name: 'TechNova',

@@ -154,19 +154,19 @@
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Opis obowiązków</label>
+                <label class="form-label">Opis stanowiska</label>
 
                 <textarea
-                  v-model="form.responsibilities"
+                  v-model="form.description"
                   rows="3"
-                  :class="['form-control', { 'is-invalid': errors.responsibilities }]"
+                  :class="['form-control', { 'is-invalid': errors.description }]"
                 ></textarea>
 
-                <div class="invalid-feedback">{{ errors.responsibilities }}</div>
+                <div class="invalid-feedback">{{ errors.description }}</div>
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Wymagane kwalifikacje</label>
+                <label class="form-label">Wymagania</label>
 
                 <textarea
                   v-model="form.qualifications"
@@ -175,6 +175,12 @@
                 ></textarea>
 
                 <div class="invalid-feedback">{{ errors.qualifications }}</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Oferujemy (opcjonalnie)</label>
+
+                <textarea v-model="form.benefits" rows="3" :class="['form-control']"></textarea>
               </div>
 
               <div class="text-end">
@@ -204,9 +210,11 @@
 
                 <hr />
 
-                <p><strong>Obowiązki:</strong><br />{{ form.responsibilities }}</p>
+                <p><strong>Opis stanowiska:</strong><br />{{ form.description }}</p>
 
                 <p><strong>Wymagania:</strong><br />{{ form.qualifications }}</p>
+
+                <p v-if="form.benefits"><strong>Oferujemy:</strong><br />{{ form.benefits }}</p>
               </div>
 
               <div class="form-check mt-3">
@@ -250,20 +258,10 @@
 </template>
 
 <script lang="ts">
+import jobOfferService from '@/api/services/jobOfferService';
+import type { JobOffer } from '@/api/types/jobOffer';
+import router from '@/router';
 import { reactive, ref } from 'vue';
-
-interface JobForm {
-  jobTitle: string;
-  company: string;
-  location: string;
-  employmentType: string;
-  experience: string;
-  contractType: string;
-  salary: string;
-  responsibilities: string;
-  qualifications: string;
-  agreeRegulation: boolean;
-}
 
 export default {
   setup() {
@@ -302,7 +300,7 @@ export default {
       },
     ];
 
-    const form = reactive<JobForm>({
+    const form = reactive<JobOffer>({
       jobTitle: '',
       company: '',
       location: '',
@@ -310,7 +308,7 @@ export default {
       experience: '',
       contractType: '',
       salary: '',
-      responsibilities: '',
+      description: '',
       qualifications: '',
       agreeRegulation: false,
     });
@@ -330,10 +328,8 @@ export default {
         if (!form.experience) errors.experience = 'Błąd: Proszę wybrać poziom doświadczenia.';
         if (!form.contractType) errors.contractType = 'Błąd: Proszę wybrać rodzaj umowy.';
         if (!form.salary) errors.salary = 'Błąd: Proszę podać wynagrodzenie.';
-        if (!form.responsibilities)
-          errors.responsibilities = 'Błąd: Proszę wpisać opis obowiązków.';
-        if (!form.qualifications)
-          errors.qualifications = 'Błąd: Proszę podać wymagane kwalifikacje.';
+        if (!form.description) errors.description = 'Błąd: Proszę wpisać opis stanowiska.';
+        if (!form.qualifications) errors.qualifications = 'Błąd: Proszę podać wymagania.';
       }
 
       if (step === 3 && !form.agreeRegulation)
@@ -354,8 +350,15 @@ export default {
       if (!validateStep(3)) return;
       loading.value = true;
       try {
-        await new Promise((r) => setTimeout(r, 1200));
-        alert('✅ Ogłoszenie zapisane pomyślnie!');
+        const created = await jobOfferService.create(form);
+
+        router.push({
+          name: 'job-success',
+          query: {
+            offerId: created.id,
+            jobTitle: created.jobTitle,
+          },
+        });
       } finally {
         loading.value = false;
       }

@@ -13,7 +13,7 @@
     </header>
 
     <div v-if="candidates.length === 0" class="text-center text-muted py-5">
-      <i class="fa-regular fa-user-slash fa-3x mb-3"></i>
+      <i class="fa-regular fa-folder-open fa-3x mb-3"></i>
 
       <p>Brak kandydatów dla tej oferty.</p>
     </div>

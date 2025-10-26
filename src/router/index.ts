@@ -142,6 +142,15 @@ const routes = [
     name: 'Lista użytkowników',
     component: () => import('@/Views/UsersListPage.vue'),
   },
+  {
+    path: '/job-success',
+    name: 'job-success',
+    component: () => import('@/Views/JobOfferSuccessPage.vue'),
+    props: (route: { query: { offerId: string; jobTitle: string } }) => ({
+      offerId: route.query.offerId,
+      jobTitle: route.query.jobTitle,
+    }),
+  },
 ];
 
 const router = createRouter({

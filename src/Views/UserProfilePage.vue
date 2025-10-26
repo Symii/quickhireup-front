@@ -13,7 +13,7 @@
         <div class="profile-card shadow-sm p-4">
           <div class="profile-photo-wrapper position-relative mb-3">
             <img
-              :src="`http://localhost:5000${profilePhoto}` || defaultPhoto"
+              :src="profilePhoto ? `http://localhost:5000${profilePhoto}` : defaultPhoto"
               alt="Zdjęcie profilowe"
               class="profile-photo rounded-circle"
             />

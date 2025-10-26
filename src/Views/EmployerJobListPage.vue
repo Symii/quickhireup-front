@@ -28,10 +28,14 @@
               <div class="company-icon me-3">{{ job.company[0] }}</div>
 
               <div>
-                <h5 class="card-title fw-semibold mb-0">{{ job.title }}</h5>
+                <h5 class="card-title fw-semibold mb-0">{{ job.jobTitle }}</h5>
 
                 <small class="text-muted">{{ job.company }}</small>
               </div>
+
+              <button class="btn btn-outline-danger btn-sm ms-auto" @click="removeJob(job.id)">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
             </div>
 
             <p class="card-text text-muted flex-grow-1">
@@ -41,7 +45,7 @@
             <div class="d-flex justify-content-between text-muted small mb-3">
               <span><i class="fa-regular fa-map me-1"></i>{{ job.location }}</span>
 
-              <span><i class="fas fa-clock me-1"></i>{{ job.type }}</span>
+              <span><i class="fas fa-clock me-1"></i>{{ job.contractType }}</span>
             </div>
 
             <div class="d-flex gap-2 mt-auto">
@@ -65,57 +69,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import jobOfferService from '@/api/services/jobOfferService';
+import type { JobOffer } from '@/api/types/jobOffer';
+import { ref, onMounted } from 'vue';
 
-interface Job {
-  id: number;
-  title: string;
-  company: string;
-  location: string;
-  type: string;
-  experience: string;
-  description: string;
-  employerId: number;
-}
+const myJobs = ref<JobOffer[]>([]);
+const loading = ref(true);
 
-const loggedEmployerId = 1;
+const fetchJobs = async () => {
+  loading.value = true;
+  try {
+    const allJobs = await jobOfferService.getAll();
+    myJobs.value = allJobs;
+  } catch (error) {
+    console.error('Błąd pobierania ogłoszeń:', error);
+  } finally {
+    loading.value = false;
+  }
+};
 
-const jobs = ref<Job[]>([
-  {
-    id: 1,
-    title: 'Frontend Developer',
-    company: 'TechNova',
-    location: 'Warszawa',
-    type: 'Pełny etat',
-    experience: '1-3 lata',
-    description: 'Budowa aplikacji w Vue 3.',
-    employerId: 1,
-  },
-  {
-    id: 2,
-    title: 'Backend Developer',
-    company: 'CodeWave',
-    location: 'Zdalnie',
-    type: 'Pełny etat',
-    experience: '3-5 lat',
-    description: 'Tworzenie API w Node.js.',
-    employerId: 2,
-  },
-  {
-    id: 3,
-    title: 'UI/UX Designer',
-    company: 'TechNova',
-    location: 'Kraków',
-    type: 'Część etatu',
-    experience: '1-3 lata',
-    description: 'Projektowanie interfejsów.',
-    employerId: 1,
-  },
-]);
+const removeJob = async (id?: string) => {
+  if (!id) return;
+  if (!confirm('Czy na pewno chcesz usunąć to ogłoszenie?')) return;
 
-const myJobs = computed(() => {
-  return jobs.value.filter((job) => job.employerId === loggedEmployerId);
-});
+  try {
+    await jobOfferService.delete(id);
+    myJobs.value = myJobs.value.filter((job) => job.id !== id);
+  } catch (error) {
+    console.error('Błąd podczas usuwania ogłoszenia:', error);
+  }
+};
+
+onMounted(fetchJobs);
 </script>
 
 <style scoped>
