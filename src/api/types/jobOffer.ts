@@ -6,9 +6,12 @@ export interface JobOffer {
   employmentType: string;
   experience: string;
   contractType: string;
-  salary: string;
+  salaryTo: number;
+  salaryFrom: number;
   description: string;
   qualifications: string;
   benefits?: string;
   agreeRegulation: boolean;
+  latitude?: number;
+  longitude?: number;
 }

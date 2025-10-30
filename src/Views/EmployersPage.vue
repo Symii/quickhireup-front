@@ -11,26 +11,29 @@
         <div v-for="employer in employers" :key="employer.id" class="col-md-4 mb-4">
           <div class="employer-card shadow-sm p-4 text-center">
             <div class="employer-logo-wrapper mb-3">
-              <div v-if="!employer.logo" class="company-icon">
-                {{ employer.name[0] }}
+              <div v-if="!employer.photoUrl" class="company-icon">
+                {{ employer.firstName.charAt(0).toUpperCase() }}
               </div>
 
-              <img v-else :src="employer.logo" :alt="employer.name" class="employer-logo" />
+              <img
+                v-else
+                :src="`http://localhost:5000${employer.photoUrl}`"
+                :alt="employer.firstName"
+                class="employer-logo"
+              />
             </div>
 
-            <h5 class="mb-1">{{ employer.name }}</h5>
+            <h5 class="mb-1">{{ employer.firstName }}</h5>
 
-            <p class="text-muted mb-1">{{ employer.industry }}</p>
+            <p class="text-muted mb-1">{{ employer.secondName }}</p>
 
-            <p class="text-muted small mb-3">{{ employer.location }}</p>
+            <p class="text-muted small mb-3">{{ employer.email }}</p>
 
-            <p class="text-muted small">{{ employer.description }}</p>
+            <p class="text-muted small">{{ employer.bio }}</p>
 
             <div class="mt-3">
-              <RouterLink :to="employer.profileUrl">
-                <button :href="employer.profileUrl" class="btn btn-generator btn-sm">
-                  Zobacz profil
-                </button>
+              <RouterLink :to="`/profil-pracodawcy/${employer.id}`">
+                <button class="btn btn-generator btn-sm">Zobacz profil</button>
               </RouterLink>
             </div>
           </div>
@@ -47,7 +50,9 @@
             Nie znaleziono żadnych pracodawców. Spróbuj później lub sprawdź inne zakładki.
           </p>
 
-          <a href="/jobs" class="btn btn-generator btn-sm">Przejdź do ofert pracy</a>
+          <RouterLink to="/oferty" class="btn btn-generator btn-sm">
+            Przejdź do ofert pracy
+          </RouterLink>
         </div>
       </template>
     </section>
@@ -55,38 +60,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import employersService from '@/api/services/employersService';
+import type { User } from '@/api/types/user';
+import { ref, onMounted } from 'vue';
 
-interface Employer {
-  id: number;
-  name: string;
-  industry: string;
-  location: string;
-  description: string;
-  logo?: string;
-  profileUrl: string;
-}
+const employers = ref<User[]>([]);
+const loading = ref(true);
+const error = ref<string | null>(null);
 
-const employers = ref<Employer[]>([
-  {
-    id: 1,
-    name: 'TechNova',
-    industry: 'IT / Software',
-    location: 'Warszawa',
-    description: 'Firma tworząca nowoczesne aplikacje webowe i mobilne.',
-    logo: '',
-    profileUrl: '/profil-pracodwawcy/1',
-  },
-  {
-    id: 2,
-    name: 'CodeWave',
-    industry: 'IT / Software',
-    location: 'Zdalnie',
-    description: 'Specjalizacja w backendzie i rozwoju systemów cloud.',
-    logo: 'https://cdn-icons-png.flaticon.com/512/5968/5968705.png',
-    profileUrl: '/profil-pracodwawcy/2',
-  },
-]);
+const fetchEmployers = async () => {
+  try {
+    loading.value = true;
+    employers.value = await employersService.getAll();
+  } catch (err) {
+    error.value = 'Nie udało się pobrać pracodawców.';
+    console.error(err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchEmployers();
+});
 </script>
 
 <style scoped>

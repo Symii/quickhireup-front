@@ -1,9 +1,42 @@
 import api from '../authentication/axiosInstance';
+import type { JobOfferFilters } from '../types/filters/jobOfferFilters';
 import type { JobOffer } from '../types/jobOffer';
 
 const API_URL = 'http://localhost:5000/api/joboffer';
 
 export default {
+  async getPaged(page: number, pageSize: number, filters: JobOfferFilters) {
+    const params = new URLSearchParams({
+      page: String(page),
+      pageSize: String(pageSize),
+      keyword: filters.keyword ?? '',
+      location: filters.location ?? '',
+      type: filters.type ?? '',
+      experience: filters.experience ?? '',
+      sort: filters.sort ?? '',
+      minSalary: filters.minSalary?.toString() ?? '',
+      maxSalary: filters.maxSalary?.toString() ?? '',
+      distance: filters.distance?.toString() ?? '',
+      latitude: filters.latitude?.toString() ?? '',
+      longitude: filters.longitude?.toString() ?? '',
+    });
+
+    const result = await api.get(`${API_URL}/paged?${params.toString()}`);
+    return result.data;
+  },
+
+  async geocode(location: string) {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${location}`);
+    const data = await res.json();
+    if (data.length > 0) {
+      return {
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon),
+      };
+    }
+    return null;
+  },
+
   async getAll(): Promise<JobOffer[]> {
     const result = await api.get(API_URL);
     return result.data;

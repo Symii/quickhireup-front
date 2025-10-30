@@ -4,7 +4,7 @@
       <h1 class="display-5 fw-bold text-primary-gradient">Wyniki wyszukiwania</h1>
 
       <p class="text-muted">
-        Znaleziono {{ filteredJobs.length }} ofert pracy pasujących do Twoich kryteriów.
+        Znaleziono <strong>{{ totalCount }}</strong> ofert pracy pasujących do Twoich kryteriów.
       </p>
     </header>
 
@@ -22,17 +22,6 @@
         </div>
 
         <div class="col-md-3">
-          <label class="form-label">Lokalizacja</label>
-
-          <input
-            type="text"
-            v-model="filters.location"
-            class="form-control"
-            placeholder="np. Warszawa"
-          />
-        </div>
-
-        <div class="col-md-2">
           <label class="form-label">Rodzaj pracy</label>
 
           <select v-model="filters.type" class="form-select">
@@ -48,7 +37,36 @@
           </select>
         </div>
 
-        <div class="col-md-2">
+        <div class="col-md-3">
+          <label class="form-label">Lokalizacja</label>
+
+          <input
+            type="text"
+            v-model="filters.location"
+            class="form-control"
+            placeholder="np. Warszawa"
+          />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Odległość</label>
+
+          <select v-model="filters.distance" class="form-select">
+            <option value="">+0 km</option>
+
+            <option value="10">+10 km</option>
+
+            <option value="20">+20 km</option>
+
+            <option value="30">+30 km</option>
+
+            <option value="50">+50 km</option>
+
+            <option value="100">+100 km</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
           <label class="form-label">Doświadczenie</label>
 
           <select v-model="filters.experience" class="form-select">
@@ -64,7 +82,45 @@
           </select>
         </div>
 
-        <div class="col-md-2 text-end">
+        <div class="col-md-3">
+          <label class="form-label">Wynagrodzenie od</label>
+
+          <input
+            type="number"
+            v-model.number="filters.minSalary"
+            class="form-control"
+            placeholder="np. 5000"
+          />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Wynagrodzenie do</label>
+
+          <input
+            type="number"
+            v-model.number="filters.maxSalary"
+            class="form-control"
+            placeholder="np. 12000"
+          />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Sortowanie</label>
+
+          <select v-model="filters.sort" class="form-select">
+            <option value="">Domyślne</option>
+
+            <option value="newest">Najnowsze</option>
+
+            <option value="oldest">Najstarsze</option>
+
+            <option value="salaryAsc">Wynagrodzenie rosnąco</option>
+
+            <option value="salaryDesc">Wynagrodzenie malejąco</option>
+          </select>
+        </div>
+
+        <div class="col-md-2 text-end ms-auto">
           <button class="btn btn-gradient w-100" @click="resetFilters">Wyczyść</button>
         </div>
       </div>
@@ -78,7 +134,7 @@
               <div class="company-icon me-3">{{ job.company[0] }}</div>
 
               <div>
-                <h5 class="card-title fw-semibold mb-0">{{ job.title }}</h5>
+                <h5 class="card-title fw-semibold mb-0">{{ job.jobTitle }}</h5>
 
                 <small class="text-muted">{{ job.company }}</small>
               </div>
@@ -91,7 +147,7 @@
             <div class="d-flex justify-content-between text-muted small">
               <span><i class="fa-regular fa-map me-1"></i>{{ job.location }}</span>
 
-              <span><i class="fas fa-clock me-1"></i>{{ job.type }}</span>
+              <span><i class="fas fa-clock me-1"></i>{{ job.contractType }}</span>
             </div>
 
             <RouterLink :to="`/oferta/${job.id}`">
@@ -139,175 +195,156 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import jobOfferService from '@/api/services/jobOfferService';
+import type { JobOfferFilters } from '@/api/types/filters/jobOfferFilters';
+import type { JobOffer } from '@/api/types/jobOffer';
+import { ref, computed, watch, onMounted } from 'vue';
 
-interface Job {
-  id: number;
-  title: string;
-  company: string;
-  location: string;
-  type: string;
-  experience: string;
-  description: string;
-}
+const jobs = ref<JobOffer[]>([]);
+const totalPages = ref(1);
+const totalCount = ref(0);
+const currentPage = ref(1);
+const pageSize = 6;
 
-const jobs = ref<Job[]>([
-  {
-    id: 1,
-    title: 'Frontend Developer',
-    company: 'TechNova',
-    location: 'Warszawa',
-    type: 'Pełny etat',
-    experience: '1-3 lata',
-    description: 'Budowa aplikacji w Vue 3.',
-  },
-  {
-    id: 2,
-    title: 'Backend Developer',
-    company: 'CodeWave',
-    location: 'Zdalnie',
-    type: 'Pełny etat',
-    experience: '3-5 lat',
-    description: 'Tworzenie API w Node.js.',
-  },
-  {
-    id: 3,
-    title: 'UI/UX Designer',
-    company: 'Designify',
-    location: 'Kraków',
-    type: 'Część etatu',
-    experience: '1-3 lata',
-    description: 'Projektowanie interfejsów.',
-  },
-  {
-    id: 4,
-    title: 'DevOps Engineer',
-    company: 'CloudOps',
-    location: 'Zdalnie',
-    type: 'Pełny etat',
-    experience: '5+ lat',
-    description: 'Utrzymanie infrastruktury w AWS.',
-  },
-  {
-    id: 5,
-    title: 'QA Tester',
-    company: 'SoftCheck',
-    location: 'Łódź',
-    type: 'Pełny etat',
-    experience: '1-3 lata',
-    description: 'Testowanie aplikacji webowych.',
-  },
-  {
-    id: 6,
-    title: 'Data Analyst',
-    company: 'DataMinds',
-    location: 'Poznań',
-    type: 'Pełny etat',
-    experience: '3-5 lat',
-    description: 'Analiza danych biznesowych.',
-  },
-  {
-    id: 7,
-    title: 'HR Specialist',
-    company: 'PeopleFirst',
-    location: 'Warszawa',
-    type: 'Część etatu',
-    experience: '1-3 lata',
-    description: 'Wsparcie działu HR.',
-  },
-  {
-    id: 8,
-    title: 'Fullstack Developer',
-    company: 'WebCraft',
-    location: 'Wrocław',
-    type: 'Pełny etat',
-    experience: '3-5 lat',
-    description: 'React + Node.js.',
-  },
-  {
-    id: 9,
-    title: 'Project Manager',
-    company: 'InnoTech',
-    location: 'Warszawa',
-    type: 'Pełny etat',
-    experience: '5+ lat',
-    description: 'Zarządzanie projektami IT.',
-  },
-  {
-    id: 10,
-    title: 'Marketing Specialist',
-    company: 'AdFlow',
-    location: 'Kraków',
-    type: 'Pełny etat',
-    experience: '1-3 lata',
-    description: 'Tworzenie kampanii online.',
-  },
-  {
-    id: 11,
-    title: 'AI Engineer',
-    company: 'FutureAI',
-    location: 'Zdalnie',
-    type: 'Pełny etat',
-    experience: '5+ lat',
-    description: 'Budowa modeli ML.',
-  },
-]);
-
-const filters = ref({
+const filters = ref<JobOfferFilters>({
   keyword: '',
   location: '',
+  distance: '',
+  latitude: null,
+  longitude: null,
   type: '',
   experience: '',
+  minSalary: null,
+  maxSalary: null,
+  sort: '',
 });
 
-const filteredJobs = computed(() => {
-  return jobs.value.filter((job) => {
-    const keywordMatch =
-      job.title.toLowerCase().includes(filters.value.keyword.toLowerCase()) ||
-      job.company.toLowerCase().includes(filters.value.keyword.toLowerCase());
-    const locationMatch = filters.value.location
-      ? job.location.toLowerCase().includes(filters.value.location.toLowerCase())
-      : true;
-    const typeMatch = filters.value.type ? job.type === filters.value.type : true;
-    const expMatch = filters.value.experience ? job.experience === filters.value.experience : true;
+import { useRoute, useRouter } from 'vue-router';
 
-    return keywordMatch && locationMatch && typeMatch && expMatch;
-  });
-});
+const route = useRoute();
+const router = useRouter();
 
-const currentPage = ref(1);
-const perPage = 6;
-const totalPages = computed(() => Math.ceil(filteredJobs.value.length / perPage));
+filters.value = {
+  keyword: String(route.query.keyword || ''),
+  location: String(route.query.location || ''),
+  distance: String(route.query.distance || ''),
+  latitude: route.query.latitude ? Number(route.query.latitude) : null,
+  longitude: route.query.longitude ? Number(route.query.longitude) : null,
+  type: String(route.query.type || ''),
+  experience: String(route.query.experience || ''),
+  minSalary: route.query.minSalary ? Number(route.query.minSalary) : null,
+  maxSalary: route.query.maxSalary ? Number(route.query.maxSalary) : null,
+  sort: '',
+};
 
-const pageInput = ref(1);
+const sortFromQuery = Array.isArray(route.query.sort) ? route.query.sort[0] : route.query.sort;
 
-watch(currentPage, () => {
-  pageInput.value = currentPage.value;
-});
+if (
+  sortFromQuery === 'newest' ||
+  sortFromQuery === 'oldest' ||
+  sortFromQuery === 'salaryAsc' ||
+  sortFromQuery === 'salaryDesc'
+) {
+  filters.value.sort = sortFromQuery;
+} else {
+  filters.value.sort = '';
+}
+
+watch(
+  filters,
+  () => {
+    const query: Record<string, string | number> = {};
+
+    Object.entries(filters.value).forEach(([key, value]) => {
+      if (value !== '' && value !== null && value !== undefined) {
+        query[key] = value;
+      }
+    });
+
+    router.replace({ query });
+  },
+  { deep: true },
+);
+
+let filterTimeout: ReturnType<typeof setTimeout> | undefined;
+
+watch(
+  () => filters.value.location,
+  async (loc) => {
+    if (!loc) {
+      filters.value.latitude = null;
+      filters.value.longitude = null;
+      return;
+    }
+
+    const result = await jobOfferService.geocode(loc);
+    if (result) {
+      filters.value.latitude = result.lat;
+      filters.value.longitude = result.lng;
+    }
+  },
+);
+
+watch(
+  filters,
+  () => {
+    clearTimeout(filterTimeout);
+    filterTimeout = setTimeout(() => {
+      currentPage.value = 1;
+      loadJobs();
+    }, 300);
+  },
+  { deep: true },
+);
+
+const loadJobs = async () => {
+  if (filters.value.location) {
+    const result = await jobOfferService.geocode(filters.value.location);
+    if (result) {
+      filters.value.latitude = result.lat;
+      filters.value.longitude = result.lng;
+    }
+  }
+
+  const response = await jobOfferService.getPaged(currentPage.value, pageSize, filters.value);
+
+  jobs.value = response.items;
+  totalPages.value = response.totalPages;
+  totalCount.value = response.totalCount;
+};
+
+watch(currentPage, loadJobs);
+
+onMounted(loadJobs);
 
 const changePage = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
+    pageInput.value = page;
   }
 };
 
-const goToPage = () => {
-  if (!pageInput.value || pageInput.value < 1 || pageInput.value > totalPages.value) {
-    pageInput.value = currentPage.value;
-    return;
-  }
-  changePage(Number(pageInput.value));
-};
-
-const paginatedJobs = computed(() => {
-  const start = (currentPage.value - 1) * perPage;
-  return filteredJobs.value.slice(start, start + perPage);
-});
+const pageInput = ref(1);
+const goToPage = () => changePage(pageInput.value);
 
 const resetFilters = () => {
-  filters.value = { keyword: '', location: '', type: '', experience: '' };
+  filters.value = {
+    keyword: '',
+    location: '',
+    type: '',
+    experience: '',
+    distance: '',
+    minSalary: null,
+    maxSalary: null,
+    sort: '',
+    latitude: null,
+    longitude: null,
+  };
   currentPage.value = 1;
+  loadJobs();
 };
+
+const paginatedJobs = computed(() => jobs.value);
 </script>
 
 <style scoped>

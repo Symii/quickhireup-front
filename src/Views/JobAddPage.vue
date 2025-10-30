@@ -145,12 +145,25 @@
 
                 <input
                   type="text"
-                  v-model="form.salary"
-                  placeholder="Np. 6000-8000 zł"
-                  :class="['form-control', { 'is-invalid': errors.salary }]"
+                  v-model="form.salaryFrom"
+                  placeholder="Np. 6000 zł"
+                  :class="['form-control', { 'is-invalid': errors.salaryFrom }]"
                 />
 
-                <div class="invalid-feedback">{{ errors.salary }}</div>
+                <div class="invalid-feedback">{{ errors.salaryFrom }}</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Wynagrodzenie</label>
+
+                <input
+                  type="text"
+                  v-model="form.salaryTo"
+                  placeholder="Np. 8000 zł"
+                  :class="['form-control', { 'is-invalid': errors.salaryTo }]"
+                />
+
+                <div class="invalid-feedback">{{ errors.salaryTo }}</div>
               </div>
 
               <div class="mb-3">
@@ -206,7 +219,9 @@
 
                 <p><strong>Umowa:</strong> {{ form.contractType }}</p>
 
-                <p><strong>Wynagrodzenie:</strong> {{ form.salary }}</p>
+                <p><strong>Wynagrodzenie od:</strong> {{ form.salaryFrom }}</p>
+
+                <p><strong>Wynagrodzenie do:</strong> {{ form.salaryTo }}</p>
 
                 <hr />
 
@@ -261,7 +276,7 @@
 import jobOfferService from '@/api/services/jobOfferService';
 import type { JobOffer } from '@/api/types/jobOffer';
 import router from '@/router';
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 
 export default {
   setup() {
@@ -307,10 +322,13 @@ export default {
       employmentType: '',
       experience: '',
       contractType: '',
-      salary: '',
+      salaryTo: 0,
+      salaryFrom: 0,
       description: '',
       qualifications: '',
       agreeRegulation: false,
+      longitude: undefined,
+      latitude: undefined,
     });
 
     const validateStep = (step: number): boolean => {
@@ -319,7 +337,8 @@ export default {
       if (step === 1) {
         if (!form.jobTitle) errors.jobTitle = 'Błąd: Proszę podać tytuł stanowiska.';
         if (!form.company) errors.company = 'Błąd: Proszę podać nazwę firmy.';
-        if (!form.location) errors.location = 'Błąd: Proszę podać lokalizację.';
+        if (!form.location || !form.longitude || !form.latitude)
+          errors.location = 'Błąd: Proszę podać lokalizację.';
         if (!form.employmentType)
           errors.employmentType = 'Błąd: Proszę wybrać rodzaj zatrudnienia.';
       }
@@ -327,7 +346,8 @@ export default {
       if (step === 2) {
         if (!form.experience) errors.experience = 'Błąd: Proszę wybrać poziom doświadczenia.';
         if (!form.contractType) errors.contractType = 'Błąd: Proszę wybrać rodzaj umowy.';
-        if (!form.salary) errors.salary = 'Błąd: Proszę podać wynagrodzenie.';
+        if (form.salaryFrom < 0) errors.salaryFrom = 'Błąd: Proszę podać wynagrodzenie.';
+        if (form.salaryTo < form.salaryFrom) errors.salaryTo = 'Błąd: Proszę podać wynagrodzenie.';
         if (!form.description) errors.description = 'Błąd: Proszę wpisać opis stanowiska.';
         if (!form.qualifications) errors.qualifications = 'Błąd: Proszę podać wymagania.';
       }
@@ -374,6 +394,26 @@ export default {
       `Tutaj uzupełnij szczegóły stanowiska: umowa, wynagrodzenie, opis obowiązków.`,
       `Sprawdź dane i zaakceptuj regulamin przed publikacją.`,
     ];
+
+    const userCoord = ref<{ lat: number; lng: number } | null>(null);
+
+    watch(
+      () => form.location,
+      async (loc: string) => {
+        if (!loc) {
+          userCoord.value = null;
+          return;
+        }
+        userCoord.value = await jobOfferService.geocode(loc);
+        if (userCoord.value) {
+          form.latitude = userCoord.value.lat;
+          form.longitude = userCoord.value.lng;
+        } else {
+          form.latitude = undefined;
+          form.longitude = undefined;
+        }
+      },
+    );
 
     return {
       currentStep,

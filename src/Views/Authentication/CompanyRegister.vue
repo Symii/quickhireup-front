@@ -81,8 +81,24 @@ const isFormValid = computed(() => {
   );
 });
 
-function submitCompanyRegister() {
-  alert(`Firma: ${companyName.value}\nNIP: ${nip.value}\nEmail: ${email.value}`);
+import api from '../../api/authentication/axiosInstance';
+
+async function submitCompanyRegister() {
+  const API_URL = 'http://localhost:5000/api/account';
+  try {
+    const payload = {
+      companyName: companyName.value,
+      nip: nip.value,
+      email: email.value,
+      password: password.value,
+    };
+
+    const response = await api.post(`${API_URL}/register-company`, payload);
+
+    alert(response.data.message);
+  } catch (error: unknown) {
+    console.log(error);
+  }
 }
 </script>
 

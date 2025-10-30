@@ -9,31 +9,40 @@
 
   <div class="search-form-container">
     <form class="search-form">
-      <input type="text" placeholder="Stanowisko, firma, słowo kluczowe" />
+      <input type="text" v-model="keyword" placeholder="Stanowisko, firma, słowo kluczowe" />
 
-      <select>
-        <option>Kategoria</option>
+      <select v-model="type">
+        <option value="">Rodzaj pracy</option>
+
+        <option>Pełny etat</option>
+
+        <option>Część etatu</option>
+
+        <option>Zdalnie</option>
+
+        <option>Hybrydowo</option>
       </select>
 
-      <input type="text" placeholder="Lokalizacja" />
-      <select>
-        <option>Odległość +0 km</option>
+      <input type="text" v-model="location" placeholder="Lokalizacja" />
 
-        <option>Odległość +10 km</option>
+      <select v-model="distance">
+        <option value="">+0 km</option>
 
-        <option>Odległość +20 km</option>
+        <option value="10">+10 km</option>
 
-        <option>Odległość +30 km</option>
+        <option value="20">+20 km</option>
 
-        <option>Odległość +50 km</option>
+        <option value="30">+30 km</option>
 
-        <option>Odległość +100 km</option>
+        <option value="50">+50 km</option>
+
+        <option value="100">+100 km</option>
       </select>
     </form>
 
-    <RouterLink to="/oferty">
-      <button class="search-btn"><i class="fa-brands fa-searchengin"></i>&nbsp;Szukaj</button>
-    </RouterLink>
+    <button class="search-btn" @click="search">
+      <i class="fa-brands fa-searchengin"></i> Szukaj
+    </button>
   </div>
 
   <div class="job-board container py-5">
@@ -53,7 +62,9 @@
               </div>
             </div>
 
-            <p class="card-text text-muted flex-grow-1">{{ job.salary }}</p>
+            <p class="card-text text-muted flex-grow-1">
+              {{ job.salaryFrom }} - {{ job.salaryTo }} PLN
+            </p>
 
             <div class="d-flex justify-content-between text-muted small mb-3">
               <span><i class="fa-regular fa-map me-1"></i>{{ job.location }}</span>
@@ -115,6 +126,27 @@
 import jobOfferService from '@/api/services/jobOfferService';
 import type { JobOffer } from '@/api/types/jobOffer';
 import { ref, onMounted } from 'vue';
+
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const search = () => {
+  router.push({
+    path: '/oferty',
+    query: {
+      keyword: keyword.value,
+      type: type.value,
+      location: location.value,
+      distance: distance.value,
+    },
+  });
+};
+
+const keyword = ref('');
+const type = ref('');
+const location = ref('');
+const distance = ref('');
 
 const displayedNumber = ref(0);
 
