@@ -1,6 +1,6 @@
-import api from '../authentication/axiosInstance';
 import type { UpdateUserDto } from '../types/updateUserDto';
 import type { User } from '../types/user';
+import api from './api';
 
 const API_URL = 'http://localhost:5000/api/users';
 

@@ -1,15 +1,20 @@
+import { useAuthStore } from '@/api/authentication/authStore';
 import { createRouter, createWebHistory } from 'vue-router';
-import { useAuth } from '@/composables/useAuth';
-import { ref } from 'vue';
 
-export const isRedirecting = ref(false);
+import 'vue-router';
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    requiresAuth?: boolean;
+    roles?: string[];
+  }
+}
 
 const routes = [
   {
     path: '/',
     name: 'Home',
     component: () => import('@/Views/HomePage.vue'),
-    meta: { requiresAuth: true },
   },
   { path: '/o-nas', name: 'About', component: () => import('@/Views/AboutPage.vue') },
   { path: '/kontakt', name: 'Contact', component: () => import('@/Views/ContactPage.vue') },
@@ -40,6 +45,7 @@ const routes = [
     path: '/generator',
     name: 'Generator',
     component: () => import('@/Views/JobDescriptionGenerator.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/logout',
@@ -71,16 +77,19 @@ const routes = [
     path: '/profil',
     name: 'Profil',
     component: () => import('@/Views/UserProfilePage.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/ustawienia',
     name: 'Ustawienia',
     component: () => import('@/Views/SettingsPage.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/zapisane',
     name: 'Zapisane',
     component: () => import('@/Views/SavedJobsPage.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/pracodawcy',
@@ -91,16 +100,19 @@ const routes = [
     path: '/firma/dodaj-ogloszenie',
     name: 'Dodaj ogłoszenie',
     component: () => import('@/Views/JobAddPage.vue'),
+    meta: { requiresAuth: true, roles: ['Company'] },
   },
   {
     path: '/firma/edytuj-ogloszenie/:id',
     name: 'Edytuj ogłoszenie',
     component: () => import('@/Views/JobAddPage.vue'),
+    meta: { requiresAuth: true, roles: ['Company'] },
   },
   {
     path: '/admin/stworz-szablon',
     name: 'Stwórz szablon',
     component: () => import('@/Views/AdminTemplateCreatePage.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/oferty',
@@ -121,26 +133,31 @@ const routes = [
     path: '/aplikuj/:id',
     name: 'Aplikuj na stanowisko',
     component: () => import('@/Views/JobApplicationPage.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/firma/moje-ogloszenia',
     name: 'Moje ogłoszenia',
     component: () => import('@/Views/EmployerJobListPage.vue'),
+    meta: { requiresAuth: true, roles: ['Company'] },
   },
   {
     path: '/firma/kandydaci/:jobId',
     name: 'Kandydaci na ogłoszenie',
     component: () => import('@/Views/JobCandidatesPage.vue'),
+    meta: { requiresAuth: true, roles: ['Company'] },
   },
   {
     path: '/moje-aplikacje',
     name: 'Moje aplikacje',
     component: () => import('@/Views/CandidateApplicationsPage.vue'),
+    meta: { requiresAuth: true, roles: ['Candidate'] },
   },
   {
     path: '/admin/uzytkownicy',
     name: 'Lista użytkowników',
     component: () => import('@/Views/UsersListPage.vue'),
+    meta: { requiresAuth: true, roles: ['Admin'] },
   },
   {
     path: '/job-success',
@@ -150,6 +167,21 @@ const routes = [
       offerId: route.query.offerId,
       jobTitle: route.query.jobTitle,
     }),
+    meta: { requiresAuth: true, roles: ['Company'] },
+  },
+  {
+    path: '/unauthorized',
+    component: () => import('@/Views/ErrorPage.vue'),
+    props: { type: '401', message: 'Nie masz wymaganych uprawnień.' },
+  },
+  {
+    path: '/server-error',
+    component: () => import('@/Views/ErrorPage.vue'),
+    props: {
+      type: '500',
+      message:
+        'Coś poszło nie tak po naszej stronie. Spróbuj ponownie za chwilę lub skontaktuj się z nami, aby zgłosić błąd.',
+    },
   },
 ];
 
@@ -165,24 +197,20 @@ const router = createRouter({
   },
 });
 
-router.beforeEach((to, from, next) => {
-  const auth = useAuth();
+router.beforeEach(async (to) => {
+  const auth = useAuthStore();
 
-  if (to.meta.requiresAuth && !auth.isLoggedIn.value && from.path === '/login') {
-    isRedirecting.value = true;
-    next('/login');
-  } else if (to.meta.requiresAuth && auth.isLoggedIn.value) {
-    next();
-  } else if (!to.meta.requiresAuth) {
-    next();
-  } else {
-    isRedirecting.value = true;
-    next('/login');
+  if (auth.token && !auth.user) {
+    await auth.fetchCurrentUser();
   }
-});
 
-router.afterEach(() => {
-  isRedirecting.value = false;
+  if (to.meta.requiresAuth && !auth.token) {
+    return '/login';
+  }
+
+  if (to.meta.roles && !to.meta.roles.includes(auth.user?.role ?? '')) {
+    return '/unauthorized';
+  }
 });
 
 export default router;

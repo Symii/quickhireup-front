@@ -59,23 +59,24 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuth } from '@/composables/useAuth';
-import type { UserRegisterDto } from '@/api/authentication/types/auth';
+import { useNotification } from '@/composables/useNotification';
+import { useAuthStore } from '@/api/authentication/authStore';
 
 const router = useRouter();
-const { handleRegister, loading, error } = useAuth();
+const auth = useAuthStore();
+const notification = useNotification();
 
-const name = ref<string>('');
-const email = ref<string>('');
-const password = ref<string>('');
-const confirmPassword = ref<string>('');
+const name = ref('');
+const email = ref('');
+const password = ref('');
+const confirmPassword = ref('');
 
-const isEmailValid = (email: string): boolean => {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
-};
+const loading = ref(false);
+const error = ref<string | null>(null);
 
-const isFormValid = computed<boolean>(() => {
+const isEmailValid = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+const isFormValid = computed(() => {
   return (
     name.value.trim().length >= 3 &&
     isEmailValid(email.value) &&
@@ -84,20 +85,21 @@ const isFormValid = computed<boolean>(() => {
   );
 });
 
-async function submitRegister(): Promise<void> {
+async function submitRegister() {
   if (!isFormValid.value) return;
 
-  const payload: UserRegisterDto = {
-    userName: name.value.trim(),
-    email: email.value.trim(),
-    password: password.value,
-  };
+  loading.value = true;
+  error.value = null;
 
   try {
-    await handleRegister(payload);
-    alert('Rejestracja zakończona sukcesem! Możesz się teraz zalogować.');
-    router.push('/');
-  } catch {}
+    await auth.register(name.value.trim(), email.value.trim(), password.value);
+    notification.showMessage('Rejestracja zakończona sukcesem 🎉 Teraz możesz się zalogować.');
+    router.push('/login');
+  } catch {
+    error.value = 'Rejestracja nie powiodła się — sprawdź dane.';
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 

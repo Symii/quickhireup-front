@@ -54,6 +54,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useNotification } from '@/composables/useNotification';
+import { useAuthStore } from '@/api/authentication/authStore';
+
+const router = useRouter();
+const auth = useAuthStore();
+const notification = useNotification();
 
 const companyName = ref('');
 const nip = ref('');
@@ -61,15 +68,15 @@ const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 
+const loading = ref(false);
+const error = ref<string | null>(null);
+
 const isNipValid = (nip: string) => {
-  const cleanNip = nip.replace(/[\s-]/g, '');
-  return /^[0-9]{10}$/.test(cleanNip);
+  const clean = nip.replace(/[\s-]/g, '');
+  return /^[0-9]{10}$/.test(clean);
 };
 
-const isEmailValid = (email: string) => {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
-};
+const isEmailValid = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const isFormValid = computed(() => {
   return (
@@ -81,23 +88,25 @@ const isFormValid = computed(() => {
   );
 });
 
-import api from '../../api/authentication/axiosInstance';
-
 async function submitCompanyRegister() {
-  const API_URL = 'http://localhost:5000/api/account';
+  if (!isFormValid.value) return;
+
+  loading.value = true;
+  error.value = null;
+
   try {
-    const payload = {
-      companyName: companyName.value,
-      nip: nip.value,
-      email: email.value,
-      password: password.value,
-    };
-
-    const response = await api.post(`${API_URL}/register-company`, payload);
-
-    alert(response.data.message);
-  } catch (error: unknown) {
-    console.log(error);
+    await auth.registerCompany(
+      companyName.value.trim(),
+      nip.value.trim(),
+      email.value.trim(),
+      password.value,
+    );
+    notification.showMessage('Konto firmowe zostało utworzone ✅');
+    router.push('/login');
+  } catch {
+    error.value = 'Rejestracja firmowa nie powiodła się. Sprawdź dane.';
+  } finally {
+    loading.value = false;
   }
 }
 </script>

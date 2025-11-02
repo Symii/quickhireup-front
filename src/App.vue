@@ -21,15 +21,8 @@ import NavbarMenu from './components/NavbarMenu.vue';
 import FooterMenu from './components/FooterMenu.vue';
 
 import { useNotification } from './composables/useNotification';
-import { useAuth } from '@/composables/useAuth';
-import { onMounted } from 'vue';
 
 const { message, visible } = useNotification();
-const { initAuth } = useAuth();
-
-onMounted(() => {
-  initAuth();
-});
 </script>
 
 <style>

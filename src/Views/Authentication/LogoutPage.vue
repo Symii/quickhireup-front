@@ -3,13 +3,12 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/api/authentication/authStore';
 import { useRouter } from 'vue-router';
-import { useAuth } from '@/composables/useAuth';
 
 const router = useRouter();
-const { logout } = useAuth();
+const auth = useAuthStore();
 
-logout().then(() => {
-  router.push('/login');
-});
+auth.logout();
+router.push('/login');
 </script>

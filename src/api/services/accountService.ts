@@ -1,5 +1,5 @@
-import api from '../authentication/axiosInstance';
 import type { UserShort } from '../types/user';
+import api from './api';
 
 const API_URL = 'http://localhost:5000/api/account';
 

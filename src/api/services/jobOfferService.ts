@@ -1,6 +1,6 @@
-import api from '../authentication/axiosInstance';
 import type { JobOfferFilters } from '../types/filters/jobOfferFilters';
 import type { JobOffer } from '../types/jobOffer';
+import api from './api';
 
 const API_URL = 'http://localhost:5000/api/joboffer';
 

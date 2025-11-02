@@ -55,30 +55,42 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuth } from '@/composables/useAuth';
 import { useNotification } from '@/composables/useNotification';
+import { useAuthStore } from '@/api/authentication/authStore';
 
 const notification = useNotification();
 const router = useRouter();
-const { handleLogin, error, loading, isLoggedIn } = useAuth();
+const auth = useAuthStore();
 
 const email = ref('');
 const password = ref('');
+
+const loading = ref(false);
+const error = ref<string | null>(null);
 
 const isEmailValid = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const isFormValid = computed(() => isEmailValid(email.value) && password.value.length >= 6);
 
 onMounted(() => {
-  if (isLoggedIn.value) {
+  if (auth.token) {
     notification.showMessage('Jesteś już zalogowany.');
     router.push('/');
   }
 });
 
 async function submitLogin() {
+  loading.value = true;
+  error.value = null;
+
   try {
-    await handleLogin({ email: email.value, password: password.value });
-  } catch {}
+    await auth.login(email.value, password.value);
+    notification.showMessage('Zalogowano pomyślnie');
+    router.push('/');
+  } catch {
+    error.value = 'Nieprawidłowy email lub hasło';
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 

@@ -1,4 +1,5 @@
-import api from '../authentication/axiosInstance';
+import api from './api';
+
 const API_URL = 'http://localhost:5000/api/employers';
 
 export default {
