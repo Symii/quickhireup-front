@@ -143,7 +143,7 @@
     <div v-if="generating" class="mt-3 p-3 form-card shadow-sm bg-light text-center">
       <p>Trwa generowanie opisu...</p>
 
-      <p>Czas oczekiwania: {{ formattedTime }} / przewidywany 3 minuty</p>
+      <p>Czas oczekiwania: {{ formattedTime }}</p>
 
       <div class="progress">
         <div
