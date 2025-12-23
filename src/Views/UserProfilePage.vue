@@ -13,7 +13,7 @@
         <div class="profile-card shadow-sm p-4">
           <div class="profile-photo-wrapper position-relative mb-3">
             <img
-              :src="profilePhoto ? `http://localhost:5000${profilePhoto}` : defaultPhoto"
+              :src="previewPhoto || profilePhoto || defaultPhoto"
               alt="Zdjęcie profilowe"
               class="profile-photo rounded-circle"
             />
@@ -51,6 +51,7 @@
                 class="form-control"
                 required
                 :class="{ 'is-invalid': errors.firstName }"
+                @input="markUnsaved"
               />
 
               <div class="invalid-feedback">To pole jest wymagane.</div>
@@ -65,6 +66,7 @@
                 class="form-control"
                 required
                 :class="{ 'is-invalid': errors.secondName }"
+                @input="markUnsaved"
               />
 
               <div class="invalid-feedback">To pole jest wymagane.</div>
@@ -79,6 +81,7 @@
                 class="form-control"
                 required
                 :class="{ 'is-invalid': errors.email }"
+                @input="markUnsaved"
               />
 
               <div class="invalid-feedback">Podaj poprawny adres e-mail.</div>
@@ -92,10 +95,15 @@
                 class="form-control"
                 rows="4"
                 placeholder="Opowiedz krótko o sobie, swoich umiejętnościach i doświadczeniu..."
+                @input="markUnsaved"
               ></textarea>
             </div>
 
-            <div class="text-end">
+            <div class="text-end mb-3">
+              <span v-if="unsavedChanges" class="text-danger ms-2 unsaved-changes">
+                Masz niezapisane zmiany!
+              </span>
+
               <button
                 type="submit"
                 class="btn btn-primary"
@@ -127,8 +135,9 @@ import type { UpdateUserDto } from '@/api/types/updateUserDto';
 import { ref, reactive, onMounted } from 'vue';
 
 const primaryColor = '#ff5666';
-const defaultPhoto = 'ceo.jpeg';
-const profilePhoto = ref(null as string | null);
+const defaultPhoto = 'default-profile-image.jpg';
+const profilePhoto = ref('');
+const previewPhoto = ref<string | null>(null);
 
 const userData = reactive({
   id: '',
@@ -148,6 +157,7 @@ const errors = reactive({
 const saving = ref(false);
 const successMessage = ref('');
 const errorMessage = ref('');
+const unsavedChanges = ref(false);
 
 const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -158,25 +168,19 @@ const validateForm = () => {
   return !errors.firstName && !errors.secondName && !errors.email;
 };
 
-const onFileChange = async (e: Event) => {
+const markUnsaved = () => {
+  unsavedChanges.value = true;
+};
+
+const selectedFile = ref<File | null>(null);
+
+const onFileChange = (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0];
-  if (!file) {
-    return;
-  }
+  if (!file) return;
 
-  const formData = new FormData();
-  formData.append('file', file);
-
-  try {
-    const response = await userService.uploadProfilePhoto(userData.id, formData);
-    profilePhoto.value = response.photoUrl;
-
-    errorMessage.value = '';
-    successMessage.value = 'Zdjęcie profilowe zostało zmienione!';
-  } catch (err) {
-    console.error(err);
-    errorMessage.value = 'Wystąpił błąd podczas zmiany zdjęcia.';
-  }
+  selectedFile.value = file;
+  previewPhoto.value = URL.createObjectURL(file);
+  markUnsaved();
 };
 
 async function saveProfile() {
@@ -186,23 +190,39 @@ async function saveProfile() {
   successMessage.value = '';
   errorMessage.value = '';
 
-  const dto: UpdateUserDto = {
-    firstName: userData.firstName,
-    secondName: userData.secondName,
-    email: userData.email,
-    bio: userData.bio,
-  };
+  try {
+    if (selectedFile.value) {
+      const formData = new FormData();
+      formData.append('file', selectedFile.value);
+      const response = await userService.uploadProfilePhoto(userData.id, formData);
+      profilePhoto.value = `http://localhost:5000${response.photoUrl}`;
+      previewPhoto.value = null;
+      selectedFile.value = null;
+    }
 
-  await userService.update(userData.id, dto);
-  successMessage.value = '✅ Zmiany zostały zapisane pomyślnie!';
-  saving.value = false;
+    const dto: UpdateUserDto = {
+      firstName: userData.firstName,
+      secondName: userData.secondName,
+      email: userData.email,
+      bio: userData.bio,
+    };
+
+    await userService.update(userData.id, dto);
+    successMessage.value = '✅ Zmiany zostały zapisane pomyślnie!';
+    unsavedChanges.value = false;
+  } catch (err) {
+    console.error(err);
+    errorMessage.value = 'Wystąpił błąd podczas zapisywania zmian.';
+  } finally {
+    saving.value = false;
+  }
 }
 
 onMounted(async () => {
   try {
     const data = await accountService.getCurrentUser();
     Object.assign(userData, data);
-    profilePhoto.value = data.photoUrl;
+    profilePhoto.value = `http://localhost:5000${data.photoUrl}`;
   } catch (error) {
     console.error('Błąd podczas ładowania danych użytkownika:', error);
   }
@@ -326,5 +346,11 @@ button.btn-primary:disabled {
   background: linear-gradient(to right, var(--primary), var(--primary-dark));
   margin: 12px auto;
   border-radius: 2px;
+}
+
+.unsaved-changes {
+  margin-right: 10px;
+  color: red;
+  font-weight: bold;
 }
 </style>

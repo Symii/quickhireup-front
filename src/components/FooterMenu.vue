@@ -1,7 +1,7 @@
 <template>
   <footer>
     <div class="container footer-columns">
-      <div>
+      <div v-if="isCandidate">
         <h4>Dla kandydatów</h4>
 
         <ul>
@@ -13,7 +13,7 @@
         </ul>
       </div>
 
-      <div>
+      <div v-if="isCompany">
         <h4>Dla firm</h4>
 
         <ul>
@@ -34,15 +34,17 @@
         </ul>
       </div>
 
-      <div>
+      <div v-if="isCompany || isAdmin">
         <h4>Narzędzia</h4>
 
         <ul>
-          <li><RouterLink to="/generator">Generator opisów</RouterLink></li>
+          <li v-if="isCompany"><RouterLink to="/generator">Generator opisów</RouterLink></li>
 
-          <li><RouterLink to="/admin/stworz-szablon">Kreator szablonów</RouterLink></li>
+          <li v-if="isAdmin">
+            <RouterLink to="/admin/stworz-szablon">Kreator szablonów</RouterLink>
+          </li>
 
-          <li><RouterLink to="/admin/uzytkownicy">Użytkownicy</RouterLink></li>
+          <li v-if="isAdmin"><RouterLink to="/admin/uzytkownicy">Użytkownicy</RouterLink></li>
         </ul>
       </div>
     </div>
@@ -62,6 +64,21 @@
     </div>
   </footer>
 </template>
+
+<script setup lang="ts">
+import accountService from '@/api/services/accountService';
+import { RoleName } from '@/constants/RoleNames';
+import { computed, onMounted, ref } from 'vue';
+
+const currentUser = ref<{ role: string } | null>(null);
+const isAdmin = computed(() => currentUser.value?.role === RoleName.ADMIN);
+const isCompany = computed(() => currentUser.value?.role === RoleName.COMPANY);
+const isCandidate = computed(() => currentUser.value?.role === RoleName.CANDIDATE);
+
+onMounted(async () => {
+  currentUser.value = await accountService.getCurrentUser();
+});
+</script>
 
 <style>
 footer {

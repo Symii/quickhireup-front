@@ -121,7 +121,7 @@
         </div>
 
         <div class="col-md-2 text-end ms-auto">
-          <button class="btn btn-gradient w-100" @click="resetFilters">Wyczyść</button>
+          <button class="btn btn-gradient w-100" @click="applyFilters">Szukaj</button>
         </div>
       </div>
     </div>
@@ -266,46 +266,24 @@ watch(
   { deep: true },
 );
 
-let filterTimeout: ReturnType<typeof setTimeout> | undefined;
+const applyFilters = async () => {
+  currentPage.value = 1;
 
-watch(
-  () => filters.value.location,
-  async (loc) => {
-    if (!loc) {
-      filters.value.latitude = null;
-      filters.value.longitude = null;
-      return;
-    }
-
-    const result = await jobOfferService.geocode(loc);
-    if (result) {
-      filters.value.latitude = result.lat;
-      filters.value.longitude = result.lng;
-    }
-  },
-);
-
-watch(
-  filters,
-  () => {
-    clearTimeout(filterTimeout);
-    filterTimeout = setTimeout(() => {
-      currentPage.value = 1;
-      loadJobs();
-    }, 300);
-  },
-  { deep: true },
-);
-
-const loadJobs = async () => {
   if (filters.value.location) {
     const result = await jobOfferService.geocode(filters.value.location);
     if (result) {
       filters.value.latitude = result.lat;
       filters.value.longitude = result.lng;
     }
+  } else {
+    filters.value.latitude = null;
+    filters.value.longitude = null;
   }
 
+  await loadJobs();
+};
+
+const loadJobs = async () => {
   const response = await jobOfferService.getPaged(currentPage.value, pageSize, filters.value);
 
   jobs.value = response.items;
@@ -326,23 +304,6 @@ const changePage = (page: number) => {
 
 const pageInput = ref(1);
 const goToPage = () => changePage(pageInput.value);
-
-const resetFilters = () => {
-  filters.value = {
-    keyword: '',
-    location: '',
-    type: '',
-    experience: '',
-    distance: '',
-    minSalary: null,
-    maxSalary: null,
-    sort: '',
-    latitude: null,
-    longitude: null,
-  };
-  currentPage.value = 1;
-  loadJobs();
-};
 
 const paginatedJobs = computed(() => jobs.value);
 </script>

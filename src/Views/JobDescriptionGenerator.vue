@@ -50,15 +50,15 @@
               >
                 <option disabled value="">Wybierz doświadczenie</option>
 
-                <option>Brak doświadczenia</option>
+                <option :value="1">Brak doświadczenia</option>
 
-                <option>Do 1 roku</option>
+                <option :value="2">Do 1 roku</option>
 
-                <option>1-3 lata</option>
+                <option :value="3">1-3 lata</option>
 
-                <option>3-5 lat</option>
+                <option :value="4">3-5 lat</option>
 
-                <option>Powyżej 5 lat</option>
+                <option :value="5">Powyżej 5 lat</option>
               </select>
 
               <div v-if="errors.experience" class="invalid-feedback">
@@ -76,13 +76,13 @@
               >
                 <option disabled value="">Wybierz rodzaj umowy</option>
 
-                <option>Umowa o pracę</option>
+                <option :value="1">Umowa o pracę</option>
 
-                <option>Umowa zlecenie</option>
+                <option :value="2">Umowa zlecenie</option>
 
-                <option>Umowa o dzieło</option>
+                <option :value="3">Umowa o dzieło</option>
 
-                <option>Kontrakt B2B</option>
+                <option :value="4">Kontrakt B2B</option>
               </select>
 
               <div v-if="errors.contractType" class="invalid-feedback">
@@ -100,11 +100,11 @@
               >
                 <option disabled value="">Wybierz rodzaj zatrudnienia</option>
 
-                <option>Zdalnie</option>
+                <option :value="1">Zdalnie</option>
 
-                <option>Stacjonarnie</option>
+                <option :value="2">Stacjonarnie</option>
 
-                <option>Hybrydowo</option>
+                <option :value="3">Hybrydowo</option>
               </select>
 
               <div v-if="errors.employmentType" class="invalid-feedback">
@@ -169,7 +169,7 @@
       <h4>Historia wygenerowanych opisów</h4>
 
       <div
-        v-for="item in paginatedHistory"
+        v-for="item in history"
         :key="item.jobTitle + item.location + item.description"
         class="form-card shadow-sm p-3 mb-3 bg-light"
       >
@@ -220,7 +220,8 @@ interface History {
   description: string;
 }
 
-import { computed, reactive, ref, watch } from 'vue';
+import api from '@/api/services/api';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 export default {
   setup() {
@@ -231,9 +232,9 @@ export default {
     const form = reactive({
       jobTitle: '',
       location: '',
-      experience: '',
-      contractType: '',
-      employmentType: '',
+      experience: null as number | null,
+      contractType: null as number | null,
+      employmentType: null as number | null,
     });
 
     const errors = reactive({
@@ -246,25 +247,10 @@ export default {
 
     const loading = ref(false);
     const generatedDescription = ref('');
-    const history = ref<History[]>([
-      { jobTitle: 'Specjalista A', location: 'Warszawa', description: 'Opis A' },
-      { jobTitle: 'Specjalista B', location: 'Kraków', description: 'Opis B' },
-      { jobTitle: 'Specjalista C', location: 'Poznań', description: 'Opis C' },
-      { jobTitle: 'Specjalista D', location: 'Gdańsk', description: 'Opis D' },
-      { jobTitle: 'Specjalista E', location: 'Wrocław', description: 'Opis E' },
-      { jobTitle: 'Specjalista F', location: 'Łódź', description: 'Opis F' },
-    ]);
+    const history = ref<History[]>([]);
 
-    const itemsPerPage = 5;
+    const itemsPerPage = 2;
     const currentPage = ref(1);
-
-    const totalPages = computed(() => Math.ceil(history.value.length / itemsPerPage));
-
-    const paginatedHistory = computed(() => {
-      const start = (currentPage.value - 1) * itemsPerPage;
-      const end = start + itemsPerPage;
-      return history.value.slice(start, end);
-    });
 
     const pageInput = ref(1);
 
@@ -275,6 +261,7 @@ export default {
     const changePage = (page: number) => {
       if (page >= 1 && page <= totalPages.value) {
         currentPage.value = page;
+        fetchHistory(page);
       }
     };
 
@@ -303,17 +290,8 @@ export default {
       startTimer();
 
       try {
-        const response = await fetch('http://localhost:5000/api/JobDescription/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
-        });
+        const { data } = await api.post('/JobDescription/generate', form);
 
-        if (!response.ok) {
-          throw new Error(`Błąd serwera: ${response.statusText}`);
-        }
-
-        const data = await response.json();
         generatedDescription.value = data.description || 'Brak opisu z serwera';
 
         history.value.unshift({
@@ -353,6 +331,24 @@ export default {
       return minutes > 0 ? `${minutes} min ${seconds} s` : `${seconds} s`;
     });
 
+    const totalPages = ref(1);
+
+    const fetchHistory = async (page = 1) => {
+      try {
+        const { data } = await api.get('/JobDescription/history', {
+          params: { page, pageSize: itemsPerPage },
+        });
+        history.value = data.items;
+        totalPages.value = data.totalPages;
+      } catch (error) {
+        console.error('Nie udało się pobrać historii:', error);
+      }
+    };
+
+    onMounted(() => {
+      fetchHistory();
+    });
+
     return {
       form,
       errors,
@@ -361,7 +357,6 @@ export default {
       history,
       currentPage,
       totalPages,
-      paginatedHistory,
       elapsedTime,
       generating,
       formattedTime,

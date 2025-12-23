@@ -141,7 +141,7 @@
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Wynagrodzenie</label>
+                <label class="form-label">Wynagrodzenie OD</label>
 
                 <input
                   type="text"
@@ -154,7 +154,7 @@
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Wynagrodzenie</label>
+                <label class="form-label">Wynagrodzenie DO</label>
 
                 <input
                   type="text"
@@ -347,7 +347,8 @@ export default {
         if (!form.experience) errors.experience = 'Błąd: Proszę wybrać poziom doświadczenia.';
         if (!form.contractType) errors.contractType = 'Błąd: Proszę wybrać rodzaj umowy.';
         if (form.salaryFrom < 0) errors.salaryFrom = 'Błąd: Proszę podać wynagrodzenie.';
-        if (form.salaryTo < form.salaryFrom) errors.salaryTo = 'Błąd: Proszę podać wynagrodzenie.';
+        if (form.salaryTo < form.salaryFrom)
+          errors.salaryTo = 'Błąd: Wynagrodzenie DO musi być większe niż wynagrodzenie OD.';
         if (!form.description) errors.description = 'Błąd: Proszę wpisać opis stanowiska.';
         if (!form.qualifications) errors.qualifications = 'Błąd: Proszę podać wymagania.';
       }
