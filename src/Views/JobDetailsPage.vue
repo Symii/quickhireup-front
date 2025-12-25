@@ -53,7 +53,7 @@
 
           <p class="text-muted small">{{ employer.description }}</p>
 
-          <RouterLink to="/profil-pracodwawcy/1">
+          <RouterLink to="/profil-pracodawcy/1">
             <button
               class="btn btn-outline-primary mt-3"
               :style="{ borderColor: primaryColor, color: primaryColor }"

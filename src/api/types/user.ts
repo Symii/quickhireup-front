@@ -23,6 +23,11 @@ export interface User {
   secondName: string;
   refreshToken?: string | null;
   refreshTokenExpiryTime: string;
+
+  jobAlertsEnabled: boolean;
+  applicationUpdatesEnabled: boolean;
+  showCv: boolean;
+  showProfile: boolean;
 }
 
 export interface CV {
@@ -37,4 +42,9 @@ export interface UserShort {
   role: string;
   bio: string;
   photoUrl: string;
+
+  jobAlertsEnabled: boolean;
+  applicationUpdatesEnabled: boolean;
+  showCv: boolean;
+  showProfile: boolean;
 }

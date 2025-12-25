@@ -162,12 +162,12 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios';
 import { reactive, ref, computed, onMounted } from 'vue';
 import accountService from '@/api/services/accountService';
 import userService from '@/api/services/usersService';
+import { useAuthStore } from '@/api/authentication/authStore';
 
-const defaultPhoto = 'ceo.jpeg';
+const defaultPhoto = 'default-profile-image.jpg';
 const profilePhoto = ref(null as string | null);
 const userData = reactive({
   id: '',
@@ -217,40 +217,47 @@ const saveSettings = async () => {
   errorMessage.value = '';
 
   try {
+    await accountService.updateSettings({
+      jobAlerts: settings.notifications.jobAlerts,
+      applicationUpdates: settings.notifications.applicationUpdates,
+      showCV: settings.privacy.showCV,
+      showProfile: settings.privacy.showProfile,
+    });
+
     if (settings.newPassword && settings.currentPassword) {
       await userService.changePassword(
         settings.currentPassword,
         settings.newPassword,
         settings.confirmPassword,
       );
-      successMessage.value = 'Hasło zostało zmienione pomyślnie!';
-      settings.currentPassword = '';
-      settings.newPassword = '';
-      settings.confirmPassword = '';
-    } else {
-      successMessage.value = 'Ustawienia zapisane pomyślnie!';
     }
-  } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      const axiosError = err;
-      errorMessage.value =
-        axiosError.response?.data || 'Wystąpił błąd podczas zapisywania ustawień.';
-    } else {
-      errorMessage.value = 'Wystąpił nieoczekiwany błąd.';
-    }
+
+    successMessage.value = 'Ustawienia zapisane pomyślnie!';
+  } catch {
+    errorMessage.value = 'Wystąpił błąd zapisu ustawień.';
   } finally {
     saving.value = false;
   }
 };
 
 onMounted(async () => {
-  try {
-    const data = await accountService.getCurrentUser();
-    Object.assign(userData, data);
-    profilePhoto.value = data.photoUrl;
-  } catch (error) {
-    console.error('Błąd podczas ładowania danych użytkownika:', error);
+  const auth = useAuthStore();
+
+  const currentUser = computed(() => auth.user);
+
+  if (!currentUser.value) {
+    return;
   }
+
+  Object.assign(userData, currentUser.value);
+
+  settings.notifications.jobAlerts = currentUser.value.jobAlertsEnabled;
+  settings.notifications.applicationUpdates = currentUser.value.applicationUpdatesEnabled;
+
+  settings.privacy.showCV = currentUser.value.showCv;
+  settings.privacy.showProfile = currentUser.value.showProfile;
+
+  profilePhoto.value = currentUser.value.photoUrl ?? null;
 });
 </script>
 

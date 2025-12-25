@@ -76,7 +76,7 @@
             jesteśmy tu dla Ciebie.
           </p>
 
-          <a href="/kontakt" class="btn-generator">📩 Skontaktuj się</a>
+          <a href="/kontakt" class="btn-generator">Skontaktuj się</a>
         </div>
       </div>
     </section>

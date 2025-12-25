@@ -129,10 +129,10 @@
 </template>
 
 <script setup lang="ts">
-import accountService from '@/api/services/accountService';
+import { useAuthStore } from '@/api/authentication/authStore';
 import userService from '@/api/services/usersService';
 import type { UpdateUserDto } from '@/api/types/updateUserDto';
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 
 const primaryColor = '#ff5666';
 const defaultPhoto = 'default-profile-image.jpg';
@@ -220,9 +220,14 @@ async function saveProfile() {
 
 onMounted(async () => {
   try {
-    const data = await accountService.getCurrentUser();
-    Object.assign(userData, data);
-    profilePhoto.value = `http://localhost:5000${data.photoUrl}`;
+    const auth = useAuthStore();
+
+    const currentUser = computed(() => auth.user);
+    Object.assign(userData, currentUser.value);
+
+    if (currentUser.value?.photoUrl) {
+      profilePhoto.value = `http://localhost:5000${currentUser.value.photoUrl}`;
+    }
   } catch (error) {
     console.error('Błąd podczas ładowania danych użytkownika:', error);
   }

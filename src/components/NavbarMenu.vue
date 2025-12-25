@@ -24,11 +24,15 @@
 
         <div v-if="dropdownOpen" class="nav-dropdown-menu">
           <ul>
-            <li><RouterLink to="/profil">Profil</RouterLink></li>
+            <template v-if="isLoggedIn">
+              <li><RouterLink to="/profil">Profil</RouterLink></li>
 
-            <li><RouterLink to="/ustawienia">Ustawienia</RouterLink></li>
+              <li><RouterLink to="/ustawienia">Ustawienia</RouterLink></li>
 
-            <li><RouterLink to="/logout">Wyloguj się</RouterLink></li>
+              <li><RouterLink to="/logout">Wyloguj się</RouterLink></li>
+            </template>
+
+            <li v-else><RouterLink to="/login">Zaloguj się</RouterLink></li>
           </ul>
         </div>
       </div>
@@ -50,35 +54,41 @@
 
         <ul class="mobile-nav-links">
           <li>
-            <RouterLink @click.native="toggleMobileMenu" to="/oferty"> Oferty pracy </RouterLink>
+            <RouterLink @click="toggleMobileMenu" to="/oferty"> Oferty pracy </RouterLink>
           </li>
 
           <li>
-            <RouterLink @click.native="toggleMobileMenu" to="/pracodawcy">
+            <RouterLink @click="toggleMobileMenu" to="/pracodawcy">
               Profile pracodawców
             </RouterLink>
           </li>
 
           <li>
-            <RouterLink @click.native="toggleMobileMenu" to="/zapisane">
-              Zapisane ogłoszenia
-            </RouterLink>
+            <RouterLink @click="toggleMobileMenu" to="/zapisane"> Zapisane ogłoszenia </RouterLink>
           </li>
 
-          <li><RouterLink @click.native="toggleMobileMenu" to="/profil">Profil</RouterLink></li>
+          <template v-if="isLoggedIn">
+            <li><RouterLink @click="toggleMobileMenu" to="/profil">Profil</RouterLink></li>
 
-          <li>
-            <RouterLink @click.native="toggleMobileMenu" to="/ustawienia">Ustawienia</RouterLink>
+            <li>
+              <RouterLink @click="toggleMobileMenu" to="/ustawienia">Ustawienia</RouterLink>
+            </li>
+
+            <li>
+              <RouterLink @click="toggleMobileMenu" to="/logout">Wyloguj się</RouterLink>
+            </li>
+          </template>
+
+          <li v-else>
+            <RouterLink @click="toggleMobileMenu" to="/login">Zaloguj się</RouterLink>
           </li>
 
-          <li>
-            <RouterLink @click.native="toggleMobileMenu" to="/logout">Wyloguj się</RouterLink>
-          </li>
-
-          <li class="for-companies-mobile">
+          <li v-if="isCompany" class="for-companies-mobile">
             <span>DLA FIRM</span>
 
-            <a href="#" @click.prevent>Dodaj ogłoszenie</a>
+            <RouterLink @click="toggleMobileMenu" to="/firma/dodaj-ogloszenie"
+              >Dodaj ogłoszenie</RouterLink
+            >
           </li>
         </ul>
       </div>
@@ -87,7 +97,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import accountService from '@/api/services/accountService';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { RouterLink } from 'vue-router';
 
 const dropdownOpen = ref(false);
@@ -109,21 +120,29 @@ function toggleMobileMenu() {
   }
 }
 
-const accountWrapper = ref(null);
+const accountWrapper = ref<HTMLElement | null>(null);
 
-function onClickOutside(event) {
-  if (accountWrapper.value && !accountWrapper.value.contains(event.target)) {
+function onClickOutside(event: MouseEvent) {
+  const target = event.target;
+  if (!(target instanceof Node)) return;
+
+  if (accountWrapper.value && !accountWrapper.value.contains(target)) {
     closeDropdown();
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener('click', onClickOutside);
+
+  await accountService.fetchCurrentUser();
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', onClickOutside);
 });
+
+const isLoggedIn = computed(() => accountService.isAuthenticated());
+const isCompany = computed(() => accountService.isCompany());
 </script>
 
 <style>

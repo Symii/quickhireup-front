@@ -23,19 +23,7 @@
       </div>
     </div>
 
-    <section class="partners-slider mb-5">
-      <div class="partners-track" ref="track">
-        <div
-          class="partner"
-          v-for="(partner, index) in partners.concat(partners)"
-          :key="index + '-' + partner.name"
-        >
-          <img :src="partner.logo" :alt="partner.name" />
-
-          <h3 class="partner-name">{{ partner.name }}</h3>
-        </div>
-      </div>
-    </section>
+    <PartnersSlide />
 
     <section class="promo-partners mt-5">
       <div class="promo-content">
@@ -49,7 +37,7 @@
             stwórzmy nowe możliwości dla kandydatów oraz przedsiębiorstw.
           </p>
 
-          <a href="/kontakt" class="btn-generator">📩 Skontaktuj się</a>
+          <RouterLink to="/kontakt" class="btn-generator">Skontaktuj się</RouterLink>
         </div>
       </div>
     </section>
@@ -57,76 +45,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
+import PartnersSlide from './Components/PartnersSlide.vue';
 
 const partners = ref([
   {
-    name: 'WorkPro',
-    logo: 'https://cdn-icons-png.flaticon.com/512/5968/5968705.png',
-    description: 'Lider wśród agencji rekrutacyjnych IT.',
+    name: 'Uniwersytet Pomorski w Słupsku',
+    logo: 'upsl_profile.jpg',
+    description: 'Państwowa szkoła wyższa w Polsce z siedzibą w Słupsku.',
   },
   {
-    name: 'HireNow',
-    logo: 'https://cdn-icons-png.flaticon.com/512/888/888879.png',
-    description: 'Innowacyjne podejście do zatrudniania.',
+    name: 'Witkac Software',
+    logo: 'witkac_profile.svg',
+    description: 'Witkac to rozwiązanie dla nowoczesnego samorządu.',
   },
   {
-    name: 'DevTalent',
-    logo: 'https://cdn-icons-png.flaticon.com/512/921/921347.png',
-    description: 'Specjalizacja w rekrutacji programistów.',
-  },
-  {
-    name: 'PeopleFirst',
-    logo: 'https://cdn-icons-png.flaticon.com/512/2972/2972558.png',
-    description: 'Partner HR dla nowoczesnych firm.',
-  },
-  {
-    name: 'SkillMatch',
-    logo: 'https://cdn-icons-png.flaticon.com/512/4363/4363898.png',
-    description: 'Łączymy umiejętności z możliwościami.',
-  },
-  {
-    name: 'FutureHire',
-    logo: 'https://cdn-icons-png.flaticon.com/512/3182/3182584.png',
-    description: 'Tworzymy przyszłość rynku pracy.',
-  },
-  {
-    name: 'TalentBridge',
-    logo: 'https://cdn-icons-png.flaticon.com/512/3405/3405870.png',
-    description: 'Most między firmami a talentami.',
-  },
-  {
-    name: 'NextStep',
-    logo: 'https://cdn-icons-png.flaticon.com/512/3468/3468330.png',
-    description: 'Twój kolejny krok w karierze.',
-  },
-  {
-    name: 'CareerBoost',
-    logo: 'https://cdn-icons-png.flaticon.com/512/1048/1048941.png',
-    description: 'Przyspiesz swoją ścieżkę zawodową.',
+    name: 'Kaliop Poland',
+    logo: 'kaliop_profile.png',
+    description:
+      'Kaliop wspiera Cię w projektowaniu, rozwoju i wydajności Twojego cyfrowego ekosystemu.',
   },
 ]);
-
-const track = ref<HTMLElement | null>(null);
-
-onMounted(() => {
-  const scrollStep = 0.5;
-
-  function autoScroll() {
-    const el = track.value;
-    if (!el) return;
-
-    el.scrollLeft += scrollStep;
-
-    if (el.scrollLeft >= el.scrollWidth / 2) {
-      el.scrollLeft = 0;
-    }
-
-    requestAnimationFrame(autoScroll);
-  }
-
-  requestAnimationFrame(autoScroll);
-});
 </script>
 
 <style scoped>
@@ -172,47 +111,12 @@ onMounted(() => {
 .partner-name {
   font-weight: 700;
   font-size: 1.1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .partner-description {
   font-size: 0.95rem;
-}
-
-.partners-slider {
-  background: var(--bg-light);
-  padding: 2rem 0;
-  overflow: hidden;
-}
-
-.partners-track {
-  display: flex;
-  gap: 2rem;
-  overflow-x: auto;
-  white-space: nowrap;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  padding: 10px 0;
-}
-
-.partners-track::-webkit-scrollbar {
-  display: none;
-}
-
-.partners-track .partner {
-  flex: 0 0 auto;
-  width: 160px;
-  background: white;
-  border-radius: 1rem;
-  padding: 1rem;
-  text-align: center;
-  box-shadow: var(--shadow);
-}
-
-.partners-track img {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  margin-bottom: 0.5rem;
 }
 
 .promo-partners {

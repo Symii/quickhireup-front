@@ -120,7 +120,7 @@ const routes = [
     component: () => import('@/Views/JobListPage.vue'),
   },
   {
-    path: '/profil-pracodwawcy/:id',
+    path: '/profil-pracodawcy/:id',
     name: 'Profil pracodawcy',
     component: () => import('@/Views/EmployerProfilePage.vue'),
   },

@@ -1,7 +1,7 @@
 <template>
   <footer>
     <div class="container footer-columns">
-      <div v-if="isCandidate">
+      <div v-if="!isLoggedIn || isCandidate">
         <h4>Dla kandydatów</h4>
 
         <ul>
@@ -67,17 +67,16 @@
 
 <script setup lang="ts">
 import accountService from '@/api/services/accountService';
-import { RoleName } from '@/constants/RoleNames';
-import { computed, onMounted, ref } from 'vue';
-
-const currentUser = ref<{ role: string } | null>(null);
-const isAdmin = computed(() => currentUser.value?.role === RoleName.ADMIN);
-const isCompany = computed(() => currentUser.value?.role === RoleName.COMPANY);
-const isCandidate = computed(() => currentUser.value?.role === RoleName.CANDIDATE);
+import { computed, onMounted } from 'vue';
 
 onMounted(async () => {
-  currentUser.value = await accountService.getCurrentUser();
+  await accountService.fetchCurrentUser();
 });
+
+const isLoggedIn = computed(() => accountService.isAuthenticated());
+const isAdmin = computed(() => accountService.isAdmin());
+const isCompany = computed(() => accountService.isCompany());
+const isCandidate = computed(() => accountService.isCandidate());
 </script>
 
 <style>
