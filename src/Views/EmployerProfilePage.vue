@@ -1,106 +1,155 @@
 <template>
   <div class="container mt-20">
-    <header class="company-header text-center mb-5">
-      <h1>{{ employerData.name }}</h1>
-
-      <p class="lead">{{ employerData.industry }} • {{ employerData.location }}</p>
-    </header>
-
-    <section class="company-content row justify-content-center">
-      <div class="col-md-4 mb-4 text-center">
-        <div class="company-card shadow-sm p-4">
-          <div class="company-photo-wrapper position-relative mb-3">
-            <img
-              v-if="employerPhoto"
-              :src="employerPhoto"
-              alt="Logo firmy"
-              class="company-photo rounded-circle"
-            />
-
-            <div
-              v-else
-              class="placeholder-logo d-flex align-items-center justify-content-center rounded-circle"
-            >
-              <i class="fa-solid fa-building fa-2x text-white"></i>
-            </div>
-          </div>
-
-          <h4 class="mb-1">{{ employerData.name }}</h4>
-
-          <p class="text-muted mb-1">{{ employerData.industry }}</p>
-
-          <p class="text-muted small">{{ employerData.location }}</p>
-
-          <div class="decor-line"></div>
-
-          <p class="text-muted small">{{ employerData.description }}</p>
-        </div>
+    <div v-if="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Ładowanie...</span>
       </div>
+    </div>
 
-      <div class="col-md-8">
-        <div class="company-card shadow-sm p-4 bg-light">
-          <h3 class="mb-4" :style="{ color: primaryColor }">
-            Oferty pracy w {{ employerData.name }}
-          </h3>
+    <div v-else-if="error" class="alert alert-danger text-center">
+      {{ error }}
+    </div>
 
-          <div v-if="jobOffers.length" class="row g-3">
-            <div v-for="offer in jobOffers" :key="offer.id" class="col-md-6">
-              <div class="job-card p-3 shadow-sm h-100">
-                <h5 class="mb-1">{{ offer.title }}</h5>
+    <div v-else-if="employerData">
+      <header class="company-header text-center mb-5">
+        <h1>{{ employerData.name }}</h1>
 
-                <p class="text-muted small mb-2">{{ offer.location }}</p>
+        <p class="lead">{{ employerData.industry }} • {{ employerData.location }}</p>
+      </header>
 
-                <p class="text-muted small">{{ offer.type }}</p>
+      <section class="company-content row justify-content-center">
+        <div class="col-md-4 mb-4 text-center">
+          <div class="company-card shadow-sm p-4">
+            <div class="company-photo-wrapper position-relative mb-3">
+              <img
+                v-if="employerData.photoUrl"
+                :src="`http://localhost:5000/${employerData.photoUrl}`"
+                alt="Logo firmy"
+                class="company-photo rounded-circle"
+              />
+              <div
+                v-else
+                class="placeholder-logo d-flex align-items-center justify-content-center rounded-circle mx-auto"
+                :style="{ backgroundColor: primaryColor }"
+              >
+                <span class="text-white fw-bold h3 mb-0">{{ employerData.name[0] }}</span>
+              </div>
+            </div>
 
-                <div class="text-end mt-3">
-                  <RouterLink to="/oferta/1">
-                    <button
-                      class="btn btn-outline-primary btn-sm"
-                      :style="{ borderColor: primaryColor, color: primaryColor }"
-                    >
-                      Zobacz szczegóły
-                    </button>
-                  </RouterLink>
+            <h4 class="mb-1">{{ employerData.name }}</h4>
+
+            <p class="text-muted mb-1">{{ employerData.industry }}</p>
+
+            <p class="text-muted small">{{ employerData.location }}</p>
+
+            <div class="decor-line my-3"></div>
+
+            <p class="text-muted small">{{ employerData.description }}</p>
+          </div>
+        </div>
+
+        <div class="col-md-8">
+          <div class="company-card shadow-sm p-4 bg-light">
+            <h3 class="mb-4" :style="{ color: primaryColor }">
+              Oferty pracy w {{ employerData.name }}
+            </h3>
+
+            <div v-if="employerData.jobOffers && employerData.jobOffers.length" class="row g-3">
+              <div v-for="offer in employerData.jobOffers" :key="offer.id" class="col-md-6">
+                <div class="job-card p-3 shadow-sm h-100 bg-white">
+                  <h5 class="mb-1">{{ offer.jobTitle }}</h5>
+
+                  <p class="text-muted small mb-2">{{ offer.location }}</p>
+
+                  <p class="text-muted small">{{ offer.employmentType }}</p>
+
+                  <p class="text-muted small">
+                    <strong>{{ offer.salary }}</strong>
+                  </p>
+
+                  <div class="text-end mt-3">
+                    <RouterLink :to="`/oferta/${offer.id}`">
+                      <button
+                        class="btn btn-outline-primary btn-sm"
+                        :style="{ borderColor: primaryColor, color: primaryColor }"
+                      >
+                        Zobacz szczegóły
+                      </button>
+                    </RouterLink>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div v-else class="text-center text-muted py-4">
-            <i class="fa-solid fa-briefcase fa-2x mb-3"></i>
-
-            <p>Ten pracodawca nie ma jeszcze aktywnych ofert pracy.</p>
+            <div v-else class="text-center text-muted py-4">
+              <p>Ten pracodawca nie ma jeszcze aktywnych ofert pracy.</p>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import api from '@/api/services/api';
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 
+interface JobOffer {
+  id: string;
+  jobTitle: string;
+  location: string;
+  employmentType: string;
+  salary: string;
+}
+
+interface Employer {
+  id: string;
+  name: string;
+  industry: string;
+  location: string;
+  description: string;
+  photoUrl?: string;
+  jobOffers: JobOffer[];
+}
+
+const route = useRoute();
 const primaryColor = '#ff5666';
 
-const employerData = reactive({
-  name: 'TechNova',
-  industry: 'IT / Software',
-  location: 'Warszawa',
-  description: 'Firma tworząca nowoczesne aplikacje webowe i mobilne.',
+const employerData = ref<Employer | null>(null);
+const isLoading = ref(true);
+const error = ref<string | null>(null);
+
+const fetchEmployerData = async () => {
+  const employerId = route.params.id;
+
+  if (!employerId) {
+    error.value = 'Brak identyfikatora pracodawcy.';
+    isLoading.value = false;
+    return;
+  }
+
+  try {
+    const response = await api.get(`http://localhost:5000/api/employers/${employerId}`);
+
+    if (!response) {
+      throw new Error('Nie udało się pobrać danych pracodawcy.');
+    }
+
+    const data = await response.data;
+    employerData.value = data;
+  } catch (err) {
+    console.error(err);
+    error.value = 'Wystąpił błąd podczas ładowania profilu.';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchEmployerData();
 });
-
-const employerPhoto = ref('');
-
-const jobOffers = reactive([
-  {
-    id: 1,
-    title: 'Frontend Developer (Vue.js)',
-    location: 'Warszawa / zdalnie',
-    type: 'Pełny etat',
-  },
-  { id: 2, title: 'Backend Developer (Node.js)', location: 'Warszawa', type: 'Pełny etat' },
-  { id: 3, title: 'UX/UI Designer', location: 'Zdalnie', type: 'Kontrakt' },
-]);
 </script>
 
 <style scoped>

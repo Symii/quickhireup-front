@@ -63,7 +63,7 @@ export default {
   },
 
   async update(id: string, jobOffer: JobOffer) {
-    const result = await api.put(`${API_URL}/update/${id}`, jobOffer);
+    const result = await api.put(`${API_URL}/${id}`, jobOffer);
     return result.data;
   },
 

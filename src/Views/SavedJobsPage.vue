@@ -10,12 +10,18 @@
     </header>
 
     <section class="jobs-content row">
-      <template v-if="savedJobs.length">
+      <div v-if="isLoading" class="text-center col-12 py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+
+        <p class="mt-2">Wczytywanie Twoich ofert...</p>
+      </div>
+
+      <template v-else-if="savedJobs.length">
         <div v-for="job in savedJobs" :key="job.id" class="col-md-6 mb-4">
           <div class="job-card shadow-sm p-4">
             <div class="d-flex justify-content-between align-items-start mb-2">
               <div>
-                <h5 class="mb-1">{{ job.title }}</h5>
+                <h5 class="mb-1">{{ job.jobTitle }}</h5>
 
                 <p class="text-muted mb-1">{{ job.company }}</p>
 
@@ -30,7 +36,9 @@
             <p class="text-muted small mb-3">{{ job.description }}</p>
 
             <div class="text-end">
-              <RouterLink :to="job.url" class="btn btn-gradient">Zobacz ogłoszenie</RouterLink>
+              <RouterLink :to="`oferta/${job.id}`" class="btn btn-gradient"
+                >Zobacz ogłoszenie</RouterLink
+              >
             </div>
           </div>
         </div>
@@ -55,42 +63,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import api from '@/api/services/api';
+import { useNotification } from '@/composables/useNotification';
+import { onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
 interface Job {
-  id: number;
-  title: string;
+  id: string;
+  jobTitle: string;
   company: string;
   location: string;
   description: string;
-  url: string;
 }
 
-const savedJobs = ref<Job[]>([
-  {
-    id: 1,
-    title: 'Frontend Developer (Vue.js)',
-    company: 'TechNova',
-    location: 'Warszawa, Polska',
-    description:
-      'Buduj nowoczesne aplikacje SPA z Vue 3 i Tailwind CSS. Dołącz do zgranego zespołu frontendowego!',
-    url: '',
-  },
-  {
-    id: 2,
-    title: 'Backend Developer (Node.js)',
-    company: 'CodeWave',
-    location: 'Zdalnie',
-    description:
-      'Twórz szybkie i bezpieczne API w Node.js, z użyciem NestJS, PostgreSQL i Dockera.',
-    url: '',
-  },
-]);
+const savedJobs = ref<Job[]>([]);
+const isLoading = ref(true);
+const notification = useNotification();
 
-const removeJob = (id: number) => {
-  savedJobs.value = savedJobs.value.filter((job) => job.id !== id);
+const fetchSavedJobs = async () => {
+  try {
+    isLoading.value = true;
+    const response = await api.get('/JobOffer/my-saved-jobs');
+    savedJobs.value = response.data;
+  } catch {
+    notification.showMessage('Nie udało się pobrać zapisanych ofert', 'error');
+  } finally {
+    isLoading.value = false;
+  }
 };
+
+const removeJob = async (id: string) => {
+  try {
+    await api.post(`/JobOffer/toggle-save/${id}`);
+
+    savedJobs.value = savedJobs.value.filter((job) => job.id !== id);
+
+    notification.showMessage('Usunięto ofertę z zapisanych', 'info');
+  } catch {
+    notification.showMessage('Błąd podczas usuwania oferty', 'error');
+  }
+};
+
+onMounted(fetchSavedJobs);
 </script>
 
 <style scoped>

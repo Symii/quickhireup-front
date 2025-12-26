@@ -1,17 +1,29 @@
 import { ref } from 'vue';
 
-const message = ref<string | null>(null);
-const visible = ref(false);
+export type NotificationType = 'success' | 'error' | 'info';
 
-function showMessage(msg: string, timeout = 3000) {
-  message.value = msg;
-  visible.value = true;
-  setTimeout(() => {
-    visible.value = false;
-    message.value = null;
-  }, timeout);
+interface Notification {
+  id: number;
+  message: string;
+  type: NotificationType;
+  timeout: number;
 }
 
+const notifications = ref<Notification[]>([]);
+
 export function useNotification() {
-  return { message, visible, showMessage };
+  function showMessage(msg: string, type: NotificationType = 'success', timeout = 4000) {
+    const id = Date.now();
+    notifications.value.push({ id, message: msg, type, timeout });
+
+    setTimeout(() => {
+      removeNotification(id);
+    }, timeout);
+  }
+
+  function removeNotification(id: number) {
+    notifications.value = notifications.value.filter((n) => n.id !== id);
+  }
+
+  return { notifications, showMessage, removeNotification };
 }

@@ -72,13 +72,15 @@
           <select v-model="filters.experience" class="form-select">
             <option value="">Dowolne</option>
 
-            <option>Brak</option>
+            <option>Brak doświadczenia</option>
+
+            <option>Do 1 roku</option>
 
             <option>1-3 lata</option>
 
             <option>3-5 lat</option>
 
-            <option>5+ lat</option>
+            <option>Powyżej 5 lat</option>
           </select>
         </div>
 

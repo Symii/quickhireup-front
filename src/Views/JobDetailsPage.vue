@@ -29,8 +29,8 @@
         <div class="company-card shadow-sm p-4 text-center bg-light">
           <div class="company-photo-wrapper mb-3">
             <img
-              v-if="employer.logo"
-              :src="employer.logo"
+              v-if="user?.photoUrl"
+              :src="`http://localhost:5000/${user?.photoUrl}`"
               alt="Logo firmy"
               class="company-photo rounded-circle"
             />
@@ -43,17 +43,19 @@
             </div>
           </div>
 
-          <h4 class="mb-1">{{ employer.name }}</h4>
+          <h4 class="mb-1">{{ user?.firstName }}</h4>
 
-          <p class="text-muted mb-1">{{ employer.industry }}</p>
+          <p class="text-muted mb-1">{{ user?.secondName }}</p>
 
-          <p class="text-muted small">{{ employer.location }}</p>
-
+          <p class="text-muted small">
+            Słupsk
+            <!-- TODO: Dodać lokalizacje {{ job?.user.location }}-->
+          </p>
           <div class="decor-line"></div>
 
-          <p class="text-muted small">{{ employer.description }}</p>
+          <p class="text-muted small">{{ user?.bio }}</p>
 
-          <RouterLink to="/profil-pracodawcy/1">
+          <RouterLink :to="`/profil-pracodawcy/${user?.id}`">
             <button
               class="btn btn-outline-primary mt-3"
               :style="{ borderColor: primaryColor, color: primaryColor }"
@@ -66,6 +68,16 @@
     </section>
 
     <div class="apply-bar text-center shadow-sm p-4 mt-5 bg-white">
+      <button
+        v-if="isLoggedIn"
+        class="btn btn-outline-primary btn-lg px-4 me-3"
+        @click="toggleSaveJob"
+        :class="{ 'text-danger border-danger': isSaved }"
+      >
+        <i :class="isSaved ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+        {{ isSaved ? 'Zapisano' : 'Zapisz' }}
+      </button>
+
       <RouterLink to="/aplikuj/1">
         <button
           class="btn btn-primary btn-lg px-5"
@@ -79,29 +91,63 @@
 </template>
 
 <script setup lang="ts">
+import accountService from '@/api/services/accountService';
+import api from '@/api/services/api';
 import jobOfferService from '@/api/services/jobOfferService';
+import usersService from '@/api/services/usersService';
 import type { JobOffer } from '@/api/types/jobOffer';
-import { onMounted, reactive, ref } from 'vue';
+import type { User } from '@/api/types/user';
+import { useNotification } from '@/composables/useNotification';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
+const notification = useNotification();
 const route = useRoute();
 const id = route.params.id as string;
 
 const job = ref<JobOffer | null>(null);
+const user = ref<User | null>(null);
+const isLoggedIn = computed(() => accountService.isAuthenticated());
 
 onMounted(async () => {
   job.value = await jobOfferService.getById(id);
+
+  const userId = job.value?.userId;
+  user.value = await usersService.getById(userId);
+
+  if (isLoggedIn.value) {
+    const response = await api.get(`/JobOffer/is-saved/${job.value.id}`);
+    isSaved.value = response.data.isSaved;
+  }
 });
 
 const primaryColor = '#ff5666';
 
-const employer = reactive({
-  name: 'TechNova',
-  industry: 'IT / Software',
-  location: 'Warszawa',
-  description: 'Firma tworząca nowoczesne aplikacje webowe i mobilne.',
-  logo: '',
-});
+const isSaved = ref(false);
+const isLoading = ref(false);
+
+const toggleSaveJob = async () => {
+  if (isLoading.value || !job.value) {
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    const response = await api.post(`/JobOffer/toggle-save/${job.value.id}`);
+
+    isSaved.value = response.data.isSaved;
+
+    const message = isSaved.value
+      ? `Dodano do zapisanych: ${job.value?.jobTitle}`
+      : `Usunięto z zapisanych: ${job.value?.jobTitle}`;
+
+    notification.showMessage(message, isSaved.value ? 'success' : 'info');
+  } catch {
+    notification.showMessage('Błąd połączenia z serwerem', 'error');
+  } finally {
+    isLoading.value = false;
+  }
+};
 </script>
 
 <style scoped>
@@ -190,7 +236,10 @@ const employer = reactive({
 .mt-20 {
   margin-top: 20px;
 }
-
+.btn-outline-primary {
+  color: #ff5666;
+  border-color: #ff5666;
+}
 .btn-outline-primary:hover {
   background-color: #ff5666;
   color: white !important;

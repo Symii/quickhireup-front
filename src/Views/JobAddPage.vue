@@ -1,9 +1,15 @@
 <template>
   <div class="container mt-20">
     <header class="form-header text-center mb-5">
-      <h1>Dodaj ogłoszenie o pracę</h1>
+      <h1>{{ pageTitle }}</h1>
 
-      <p class="lead">Wypełnij formularz krok po kroku, aby opublikować swoje ogłoszenie.</p>
+      <p class="lead">
+        {{
+          isEditMode
+            ? 'Zaktualizuj dane swojego ogłoszenia.'
+            : 'Wypełnij formularz krok po kroku, aby opublikować ogłoszenie.'
+        }}
+      </p>
     </header>
 
     <section class="row justify-content-center">
@@ -275,14 +281,27 @@
 <script lang="ts">
 import jobOfferService from '@/api/services/jobOfferService';
 import type { JobOffer } from '@/api/types/jobOffer';
+import { useNotification } from '@/composables/useNotification';
 import router from '@/router';
-import { reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 export default {
   setup() {
+    const notification = useNotification();
+    const route = useRoute();
     const currentStep = ref(1);
-    const stepLabels = ['Dane podstawowe', 'Szczegóły stanowiska', 'Podsumowanie'];
     const loading = ref(false);
+
+    const isEditMode = computed(() => !!route.params.id);
+    const offerId = route.params.id as string;
+
+    const pageTitle = computed(() =>
+      isEditMode.value ? 'Edytuj ogłoszenie' : 'Dodaj ogłoszenie o pracę',
+    );
+
+    const stepLabels = ['Dane podstawowe', 'Szczegóły stanowiska', 'Podsumowanie'];
+
     const selectedTemplate = ref('');
     const errors = reactive<Record<string, string>>({});
 
@@ -316,6 +335,7 @@ export default {
     ];
 
     const form = reactive<JobOffer>({
+      userId: '',
       jobTitle: '',
       company: '',
       location: '',
@@ -348,7 +368,7 @@ export default {
         if (!form.contractType) errors.contractType = 'Błąd: Proszę wybrać rodzaj umowy.';
         if (form.salaryFrom < 0) errors.salaryFrom = 'Błąd: Proszę podać wynagrodzenie.';
         if (form.salaryTo < form.salaryFrom)
-          errors.salaryTo = 'Błąd: Wynagrodzenie DO musi być większe niż wynagrodzenie OD.';
+          errors.salaryTo = `Błąd: Wynagrodzenie DO musi być większe niż ${form.salaryFrom}.`;
         if (!form.description) errors.description = 'Błąd: Proszę wpisać opis stanowiska.';
         if (!form.qualifications) errors.qualifications = 'Błąd: Proszę podać wymagania.';
       }
@@ -371,15 +391,18 @@ export default {
       if (!validateStep(3)) return;
       loading.value = true;
       try {
-        const created = await jobOfferService.create(form);
-
-        router.push({
-          name: 'job-success',
-          query: {
-            offerId: created.id,
-            jobTitle: created.jobTitle,
-          },
-        });
+        if (isEditMode.value) {
+          await jobOfferService.update(offerId, form);
+          notification.showMessage('Zaktualizowano ogłoszenie pomyślnie');
+        } else {
+          const created = await jobOfferService.create(form);
+          await router.push({
+            name: 'job-success',
+            query: { offerId: created.id, jobTitle: created.jobTitle },
+          });
+        }
+      } catch (error) {
+        console.error('Błąd zapisu:', error);
       } finally {
         loading.value = false;
       }
@@ -416,6 +439,20 @@ export default {
       },
     );
 
+    onMounted(async () => {
+      if (isEditMode.value) {
+        loading.value = true;
+        try {
+          const data = await jobOfferService.getById(offerId);
+          Object.assign(form, data);
+        } catch (error) {
+          console.error('Błąd podczas pobierania ogłoszenia:', error);
+        } finally {
+          loading.value = false;
+        }
+      }
+    });
+
     return {
       currentStep,
       stepLabels,
@@ -425,6 +462,9 @@ export default {
       loading,
       errors,
       instructions,
+      pageTitle,
+      isEditMode,
+
       nextStep,
       prevStep,
       onTemplateChange,
