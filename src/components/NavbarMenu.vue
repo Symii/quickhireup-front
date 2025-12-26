@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar">
     <div class="navbar-left">
-      <RouterLink to="/" class="logo">quickhireup.pl</RouterLink>
+      <RouterLink to="/" class="logo">quickhireup</RouterLink>
 
       <ul class="nav-links">
         <li><RouterLink to="/oferty">Oferty pracy</RouterLink></li>
@@ -55,7 +55,7 @@
     <transition name="fade">
       <div v-if="mobileMenuOpen" class="mobile-menu">
         <div class="mobile-menu-header">
-          <RouterLink to="/" class="logo">quickhireup.pl</RouterLink>
+          <RouterLink to="/" class="logo">quickhireup</RouterLink>
 
           <button class="close-btn" @click="toggleMobileMenu">&times;</button>
         </div>
