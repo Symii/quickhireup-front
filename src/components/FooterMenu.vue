@@ -7,7 +7,9 @@
         <ul>
           <li><RouterLink to="/oferty">Oferty pracy</RouterLink></li>
 
-          <li><RouterLink to="/moje-aplikacje">Moje aplikacje</RouterLink></li>
+          <li v-if="isLoggedIn && isCandidate">
+            <RouterLink to="/moje-aplikacje">Moje aplikacje</RouterLink>
+          </li>
 
           <li><RouterLink to="/pomoc">Pomoc</RouterLink></li>
         </ul>
@@ -66,6 +68,7 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/api/authentication/authStore';
 import accountService from '@/api/services/accountService';
 import { computed, onMounted } from 'vue';
 
@@ -73,7 +76,8 @@ onMounted(async () => {
   await accountService.fetchCurrentUser();
 });
 
-const isLoggedIn = computed(() => accountService.isAuthenticated());
+const auth = useAuthStore();
+const isLoggedIn = computed(() => auth.user != null);
 const isAdmin = computed(() => accountService.isAdmin());
 const isCompany = computed(() => accountService.isCompany());
 const isCandidate = computed(() => accountService.isCandidate());

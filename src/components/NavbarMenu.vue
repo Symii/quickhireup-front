@@ -13,31 +13,39 @@
     <div class="hamburger" @click="toggleMobileMenu">&#9776;</div>
 
     <div class="navbar-right">
-      <div class="favorites-icon" style="font-size: 30px">
-        <RouterLink to="/zapisane">★</RouterLink>
-      </div>
+      <template v-if="isLoggedIn">
+        <div class="favorites-icon" style="font-size: 30px">
+          <RouterLink to="/zapisane">★</RouterLink>
+        </div>
 
-      <div class="account-wrapper" ref="accountWrapper">
+        <div class="account-wrapper" ref="accountWrapper">
+          <div class="account-btn" @click="toggleDropdown">
+            <div class="profile-avatar-container">
+              <img :src="userPhoto" alt="Profile" class="nav-profile-img" />
+            </div>
+
+            {{ userName }} <span class="arrow">▼</span>
+          </div>
+
+          <div v-if="dropdownOpen" class="nav-dropdown-menu">
+            <ul>
+              <li><RouterLink @click="toggleDropdown" to="/profil">Profil</RouterLink></li>
+
+              <li><RouterLink @click="toggleDropdown" to="/ustawienia">Ustawienia</RouterLink></li>
+
+              <li><RouterLink @click="toggleDropdown" to="/logout">Wyloguj się</RouterLink></li>
+            </ul>
+          </div>
+        </div>
+      </template>
+
+      <div v-else class="account-wrapper">
         <div class="account-btn" @click="toggleDropdown">
-          Moje konto <span class="arrow">▼</span>
-        </div>
-
-        <div v-if="dropdownOpen" class="nav-dropdown-menu">
-          <ul>
-            <template v-if="isLoggedIn">
-              <li><RouterLink to="/profil">Profil</RouterLink></li>
-
-              <li><RouterLink to="/ustawienia">Ustawienia</RouterLink></li>
-
-              <li><RouterLink to="/logout">Wyloguj się</RouterLink></li>
-            </template>
-
-            <li v-else><RouterLink to="/login">Zaloguj się</RouterLink></li>
-          </ul>
+          <RouterLink class="login-btn" @click="toggleDropdown" to="/login">Zaloguj się</RouterLink>
         </div>
       </div>
 
-      <div class="for-companies">
+      <div v-if="isCompany" class="for-companies">
         <span>DLA FIRM</span>
 
         <RouterLink to="/firma/dodaj-ogloszenie">Dodaj ogłoszenie</RouterLink>
@@ -97,6 +105,7 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/api/authentication/authStore';
 import accountService from '@/api/services/accountService';
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { RouterLink } from 'vue-router';
@@ -141,8 +150,24 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', onClickOutside);
 });
 
-const isLoggedIn = computed(() => accountService.isAuthenticated());
+const auth = useAuthStore();
+const isLoggedIn = computed(() => auth.user != null);
 const isCompany = computed(() => accountService.isCompany());
+
+const userPhoto = computed(() => {
+  if (auth.user?.photoUrl) {
+    return `http://localhost:5000${auth.user.photoUrl}`;
+  }
+  return '/default-profile-image.jpg';
+});
+
+const userName = computed(() => {
+  if (auth.user) {
+    return `${auth.user.firstName} ${auth.user.secondName}`;
+  }
+
+  return 'Moje konto';
+});
 </script>
 
 <style>
@@ -177,6 +202,15 @@ body {
   border-radius: 20px;
   white-space: nowrap;
   text-decoration: none;
+}
+
+.login-btn {
+  background-color: #fc4c4e;
+  color: white !important;
+  font-weight: bold;
+  white-space: nowrap;
+  text-decoration: none;
+  padding: 5px 20px;
 }
 
 a:hover {
@@ -393,5 +427,29 @@ a:hover {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.account-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.profile-avatar-container {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #ff5666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-profile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>

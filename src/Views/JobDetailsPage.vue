@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import accountService from '@/api/services/accountService';
+import { useAuthStore } from '@/api/authentication/authStore';
 import api from '@/api/services/api';
 import jobOfferService from '@/api/services/jobOfferService';
 import usersService from '@/api/services/usersService';
@@ -107,7 +107,8 @@ const id = route.params.id as string;
 
 const job = ref<JobOffer | null>(null);
 const user = ref<User | null>(null);
-const isLoggedIn = computed(() => accountService.isAuthenticated());
+const auth = useAuthStore();
+const isLoggedIn = computed(() => auth.user != null);
 
 onMounted(async () => {
   job.value = await jobOfferService.getById(id);
