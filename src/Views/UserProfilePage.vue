@@ -135,7 +135,7 @@ import type { UpdateUserDto } from '@/api/types/updateUserDto';
 import { ref, reactive, onMounted, computed } from 'vue';
 
 const primaryColor = '#ff5666';
-const defaultPhoto = 'default-profile-image.jpg';
+const defaultPhoto = 'quick-hire-up-logo.png';
 const profilePhoto = ref('');
 const previewPhoto = ref<string | null>(null);
 

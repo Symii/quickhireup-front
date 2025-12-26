@@ -158,7 +158,7 @@ const userPhoto = computed(() => {
   if (auth.user?.photoUrl) {
     return `http://localhost:5000${auth.user.photoUrl}`;
   }
-  return '/default-profile-image.jpg';
+  return '/quick-hire-up-logo.png';
 });
 
 const userName = computed(() => {

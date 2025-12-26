@@ -167,7 +167,7 @@ import accountService from '@/api/services/accountService';
 import userService from '@/api/services/usersService';
 import { useAuthStore } from '@/api/authentication/authStore';
 
-const defaultPhoto = 'default-profile-image.jpg';
+const defaultPhoto = 'quick-hire-up-logo.png';
 const profilePhoto = ref(null as string | null);
 const userData = reactive({
   id: '',

@@ -1,5 +1,13 @@
 <template>
   <section class="partners-page container py-5">
+    <div class="quickhireup-title-wrapper text-center mb-4">
+      <h2 class="quickhireup-main-title display-3 fw-bolder text-primary-gradient">QuickHireUp</h2>
+    </div>
+
+    <div class="logo-wrapper text-center mb-5">
+      <img src="/quick-hire-up-logo.png" alt="QuickHireUp Logo" class="main-logo" />
+    </div>
+
     <header class="text-center mb-5">
       <h1 class="display-4 fw-bold text-primary-gradient">Nasi Partnerzy</h1>
 
@@ -160,5 +168,53 @@ const partners = ref([
   header h1 {
     font-size: 1.75rem;
   }
+
+  .main-logo {
+    height: 140px;
+    padding: 1rem;
+  }
+
+  .quickhireup-main-title {
+    font-size: 2.5rem;
+  }
+}
+
+.logo-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.main-logo {
+  height: 200px;
+  width: auto;
+  object-fit: contain;
+
+  background: #ffffff;
+  border-radius: 2rem;
+  border: 2px solid var(--border);
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.main-logo:hover {
+  transform: scale(1.02);
+}
+
+.quickhireup-title-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.quickhireup-main-title {
+  font-size: 3.5rem;
+  line-height: 1.2;
+  margin-top: 1rem;
+
+  background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
 }
 </style>
