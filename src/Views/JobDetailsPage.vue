@@ -78,7 +78,7 @@
         {{ isSaved ? 'Zapisano' : 'Zapisz' }}
       </button>
 
-      <RouterLink to="/aplikuj/1">
+      <RouterLink :to="`/aplikuj/${job?.id}`">
         <button
           class="btn btn-primary btn-lg px-5"
           :style="{ backgroundColor: primaryColor, borderColor: primaryColor }"

@@ -166,6 +166,9 @@ import { reactive, ref, computed, onMounted } from 'vue';
 import accountService from '@/api/services/accountService';
 import userService from '@/api/services/usersService';
 import { useAuthStore } from '@/api/authentication/authStore';
+import { useNotification } from '@/composables/useNotification';
+
+const notification = useNotification();
 
 const defaultPhoto = 'quick-hire-up-logo.png';
 const profilePhoto = ref(null as string | null);
@@ -233,8 +236,10 @@ const saveSettings = async () => {
     }
 
     successMessage.value = 'Ustawienia zapisane pomyślnie!';
+    notification.showMessage('Ustawienia zostały zaktualizowane.', 'success');
   } catch {
     errorMessage.value = 'Wystąpił błąd zapisu ustawień.';
+    notification.showMessage('Błąd połączenia z serwerem', 'error');
   } finally {
     saving.value = false;
   }

@@ -396,6 +396,7 @@ export default {
           notification.showMessage('Zaktualizowano ogłoszenie pomyślnie');
         } else {
           const created = await jobOfferService.create(form);
+          notification.showMessage('Dodano ogłoszenie pomyślnie');
           await router.push({
             name: 'job-success',
             query: { offerId: created.id, jobTitle: created.jobTitle },

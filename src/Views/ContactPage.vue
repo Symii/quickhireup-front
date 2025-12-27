@@ -100,6 +100,10 @@
 import { reactive, ref, onMounted } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useNotification } from '@/composables/useNotification';
+import api from '@/api/services/api';
+
+const notification = useNotification();
 
 const form = reactive({
   name: '',
@@ -125,17 +129,33 @@ const validateForm = () => {
   return !Object.values(errors).some(Boolean);
 };
 
-function submitForm() {
-  if (!validateForm()) return;
+async function submitForm() {
+  if (!validateForm()) {
+    notification.showMessage('Proszę poprawić błędy w formularzu.', 'error');
+    return;
+  }
+
   loading.value = true;
-  setTimeout(() => {
-    alert('Wiadomość została wysłana!');
+
+  try {
+    const response = await api.post('http://localhost:5000/api/contact', form);
+
+    if (!response.data) {
+      notification.showMessage('Wystąpił błąd podczas wysyłania wiadomości.', 'error');
+      throw new Error('Wystąpił błąd podczas wysyłania wiadomości.');
+    }
+
+    notification.showMessage('Wiadomość została wysłana pomyślnie.', 'success');
+
     form.name = '';
     form.email = '';
     form.subject = '';
     form.message = '';
+  } catch {
+    notification.showMessage('Wystąpił błąd podczas wysyłania wiadomości.', 'error');
+  } finally {
     loading.value = false;
-  }, 1000);
+  }
 }
 
 onMounted(() => {
@@ -144,13 +164,12 @@ onMounted(() => {
   const map = L.map('map').setView([latitude, longitude], 16);
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
     subdomains: 'abcd',
     maxZoom: 19,
   }).addTo(map);
 
-  L.marker([latitude, longitude]).addTo(map).openPopup();
+  L.marker([latitude, longitude]).addTo(map);
 });
 </script>
 

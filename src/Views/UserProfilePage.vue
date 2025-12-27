@@ -132,8 +132,10 @@
 import { useAuthStore } from '@/api/authentication/authStore';
 import userService from '@/api/services/usersService';
 import type { UpdateUserDto } from '@/api/types/updateUserDto';
+import { useNotification } from '@/composables/useNotification';
 import { ref, reactive, onMounted, computed } from 'vue';
 
+const notification = useNotification();
 const primaryColor = '#ff5666';
 const defaultPhoto = 'quick-hire-up-logo.png';
 const profilePhoto = ref('');
@@ -208,11 +210,13 @@ async function saveProfile() {
     };
 
     await userService.update(userData.id, dto);
-    successMessage.value = '✅ Zmiany zostały zapisane pomyślnie!';
+    successMessage.value = 'Zmiany zostały zapisane pomyślnie!';
     unsavedChanges.value = false;
+    notification.showMessage('Zmiany zostały zapisane pomyślnie!', 'success');
   } catch (err) {
     console.error(err);
     errorMessage.value = 'Wystąpił błąd podczas zapisywania zmian.';
+    notification.showMessage('Błąd połączenia z serwerem', 'error');
   } finally {
     saving.value = false;
   }

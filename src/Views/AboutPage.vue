@@ -76,7 +76,7 @@
             jesteśmy tu dla Ciebie.
           </p>
 
-          <a href="/kontakt" class="btn-generator">Skontaktuj się</a>
+          <RouterLink to="/kontakt" class="btn-generator">Skontaktuj się</RouterLink>
         </div>
       </div>
     </section>

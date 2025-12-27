@@ -16,7 +16,7 @@
 
     <navbar-menu v-if="!$route.meta.hideNavFooter" />
 
-    <router-view />
+    <router-view :key="$route.fullPath" />
 
     <footer-menu v-if="!$route.meta.hideNavFooter" />
   </div>

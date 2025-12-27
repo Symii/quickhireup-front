@@ -36,17 +36,21 @@
         </ul>
       </div>
 
-      <div v-if="isCompany || isAdmin">
+      <div v-if="isLoggedIn && (isCompany || isAdmin)">
         <h4>Narzędzia</h4>
 
         <ul>
           <li v-if="isCompany"><RouterLink to="/generator">Generator opisów</RouterLink></li>
 
-          <li v-if="isAdmin">
-            <RouterLink to="/admin/stworz-szablon">Kreator szablonów</RouterLink>
-          </li>
+          <template v-if="isAdmin">
+            <li>
+              <RouterLink to="/admin/stworz-szablon">Kreator szablonów</RouterLink>
+            </li>
 
-          <li v-if="isAdmin"><RouterLink to="/admin/uzytkownicy">Użytkownicy</RouterLink></li>
+            <li><RouterLink to="/admin/uzytkownicy">Użytkownicy</RouterLink></li>
+
+            <li><RouterLink to="/admin/wiadomosci">Wiadomości</RouterLink></li>
+          </template>
         </ul>
       </div>
     </div>

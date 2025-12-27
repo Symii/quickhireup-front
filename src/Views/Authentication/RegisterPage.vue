@@ -93,7 +93,7 @@ async function submitRegister() {
 
   try {
     await auth.register(name.value.trim(), email.value.trim(), password.value);
-    notification.showMessage('Rejestracja zakończona sukcesem 🎉 Teraz możesz się zalogować.');
+    notification.showMessage('Rejestracja zakończona sukcesem! Teraz możesz się zalogować.');
     router.push('/login');
   } catch {
     error.value = 'Rejestracja nie powiodła się — sprawdź dane.';

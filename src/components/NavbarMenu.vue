@@ -45,7 +45,7 @@
         </div>
       </div>
 
-      <div v-if="isCompany" class="for-companies">
+      <div v-if="isLoggedIn && isCompany" class="for-companies">
         <span>DLA FIRM</span>
 
         <RouterLink to="/firma/dodaj-ogloszenie">Dodaj ogłoszenie</RouterLink>

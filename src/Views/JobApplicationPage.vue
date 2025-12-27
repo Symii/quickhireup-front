@@ -158,7 +158,16 @@
 </template>
 
 <script setup lang="ts">
+import api from '@/api/services/api';
+import { useNotification } from '@/composables/useNotification';
+import router from '@/router';
 import { reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+const notification = useNotification();
+const route = useRoute();
+
+const jobIdFromUrl = route.params.id as string;
 
 interface ApplicationForm {
   name: string;
@@ -211,8 +220,10 @@ const validateStep = (step: number) => {
     if (!form.education) errors.education = 'Proszę podać wykształcenie';
   }
 
-  if (step === 3 && !form.agreePrivacy)
-    errors.agreePrivacy = 'Błąd: Musisz zaakceptować politykę prywatności';
+  if (step === 3) {
+    if (!form.cv) errors.agreePrivacy = 'Błąd: Musisz załączyć plik CV';
+    if (!form.agreePrivacy) errors.agreePrivacy = 'Błąd: Musisz zaakceptować politykę prywatności';
+  }
 
   return Object.values(errors).every((v) => !v);
 };
@@ -225,22 +236,48 @@ const prevStep = () => {
   if (currentStep.value > 1) currentStep.value--;
 };
 
-const handleSubmit = async () => {
-  if (!validateStep(3)) return;
-
-  loading.value = true;
-  try {
-    await new Promise((r) => setTimeout(r, 1200));
-    alert('✅ Twoja aplikacja została wysłana!');
-  } finally {
-    loading.value = false;
-  }
-};
-
 const onFileChange = (e: Event) => {
   const file = (e.target as HTMLInputElement).files?.[0] || null;
   form.cv = file;
   form.cvName = file?.name || '';
+};
+
+const handleSubmit = async () => {
+  if (!validateStep(3)) return;
+
+  loading.value = true;
+
+  const formData = new FormData();
+  formData.append('JobAdvertisementId', jobIdFromUrl);
+  formData.append('Name', form.name);
+  formData.append('Email', form.email);
+  formData.append('Phone', form.phone);
+  formData.append('Experience', form.experience);
+  formData.append('Education', form.education);
+  formData.append('CoverLetter', form.coverLetter);
+  formData.append('AgreePrivacy', form.agreePrivacy.toString());
+
+  if (form.cv) {
+    formData.append('CvFile', form.cv);
+  }
+
+  try {
+    const response = await api.post('http://localhost:5000/api/applications', formData);
+
+    if (!response.data) {
+      notification.showMessage('Wystąpił błąd podczas wysyłania.', 'error');
+      throw new Error('Wystąpił błąd podczas wysyłania.');
+    }
+
+    notification.showMessage('Twoja aplikacja została wysłana pomyślnie!', 'success');
+    router.push({
+      name: 'application-success',
+    });
+  } catch {
+    notification.showMessage('Błąd połączenia z serwerem', 'error');
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
 

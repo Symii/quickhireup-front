@@ -51,7 +51,11 @@
             </p>
 
             <div class="d-flex gap-2 mt-auto">
-              <a :href="candidate.cvUrl" target="_blank" class="btn btn-outline-primary w-100">
+              <a
+                :href="getCvFullUrl(candidate.cvUrl)"
+                target="_blank"
+                class="btn btn-outline-primary w-100"
+              >
                 <i class="fa-solid fa-file-pdf me-2"></i> CV
               </a>
             </div>
@@ -63,69 +67,68 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import api from '@/api/services/api';
+import { useNotification } from '@/composables/useNotification';
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 interface Candidate {
-  id: number;
+  id: string;
   name: string;
   email: string;
   tel: string;
   experience: string;
   location: string;
   cvUrl: string;
-  jobId: number;
+  jobId: string;
+  jobTitle: string;
 }
 
-interface Job {
-  id: number;
-  title: string;
-}
-
-const jobs: Job[] = [
-  { id: 1, title: 'Frontend Developer' },
-  { id: 3, title: 'UI/UX Designer' },
-];
-
-const allCandidates = ref<Candidate[]>([
-  {
-    id: 1,
-    name: 'Jan Kowalski',
-    email: 'jan.kowalski@example.com',
-    tel: '123-456-789',
-    experience: '3 lata',
-    location: 'Warszawa',
-    cvUrl: '/cv/jan_kowalski.pdf',
-    jobId: 1,
-  },
-  {
-    id: 2,
-    name: 'Anna Nowak',
-    email: 'anna.nowak@example.com',
-    tel: '987-654-321',
-    experience: '5 lat',
-    location: 'Kraków',
-    cvUrl: '/cv/anna_nowak.pdf',
-    jobId: 1,
-  },
-  {
-    id: 3,
-    name: 'Piotr Wiśniewski',
-    email: 'piotr.wisniewski@example.com',
-    tel: '555-666-777',
-    experience: '2 lata',
-    location: 'Gdańsk',
-    cvUrl: '/cv/piotr_wisniewski.pdf',
-    jobId: 3,
-  },
-]);
-
+const notification = useNotification();
 const route = useRoute();
-const jobId = Number(route.params.jobId);
+const jobId = route.params.jobId as string;
 
-const jobTitle = computed(() => jobs.find((j) => j.id === jobId)?.title || 'Nieznane stanowisko');
+const candidates = ref<Candidate[]>([]);
+const jobTitle = ref('Ładowanie...');
+const loading = ref(true);
 
-const candidates = computed(() => allCandidates.value.filter((c) => c.jobId === jobId));
+const fetchCandidates = async () => {
+  loading.value = true;
+  try {
+    const response = await api.get(`http://localhost:5000/api/applications/job/${jobId}`);
+
+    if (!response.data) {
+      if (response.status === 403) {
+        notification.showMessage('Nie masz uprawnień do wyświetlenia tych kandydatów.', 'error');
+        throw new Error('Nie masz uprawnień do wyświetlenia tych kandydatów.');
+      }
+
+      notification.showMessage('Błąd podczas ładowania kandydatów.', 'error');
+      throw new Error('Błąd podczas pobierania kandydatów.');
+    }
+
+    const data = response.data;
+    candidates.value = data;
+
+    if (data.length > 0) {
+      jobTitle.value = data[0].jobTitle;
+    } else {
+      jobTitle.value = 'Brak danych o stanowisku';
+    }
+  } catch {
+    notification.showMessage('Błąd podczas ładowania kandydatów.', 'error');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const getCvFullUrl = (cvPath: string) => {
+  return `http://localhost:5000/${cvPath}`;
+};
+
+onMounted(() => {
+  fetchCandidates();
+});
 </script>
 
 <style scoped>

@@ -96,11 +96,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 interface Application {
-  id: number;
-  jobId: number;
+  id: string; // Zmienione na string, bo w .NET masz string/GUID
+  jobId: string;
   jobTitle: string;
   company: string;
   location: string;
@@ -109,44 +109,39 @@ interface Application {
   status: 'submitted' | 'in_progress' | 'rejected' | 'accepted' | 'withdrawn';
 }
 
-const allApplications = ref<Application[]>([
-  {
-    id: 1,
-    jobId: 1,
-    jobTitle: 'Frontend Developer',
-    company: 'TechNova',
-    location: 'Warszawa',
-    type: 'Pełny etat',
-    submittedAt: '2025-10-10T14:30:00Z',
-    status: 'in_progress',
-  },
-  {
-    id: 2,
-    jobId: 4,
-    jobTitle: 'DevOps Engineer',
-    company: 'CloudOps',
-    location: 'Zdalnie',
-    type: 'Pełny etat',
-    submittedAt: '2025-09-20T09:15:00Z',
-    status: 'rejected',
-  },
-  {
-    id: 3,
-    jobId: 11,
-    jobTitle: 'AI Engineer',
-    company: 'FutureAI',
-    location: 'Zdalnie',
-    type: 'Pełny etat',
-    submittedAt: '2025-10-15T12:45:00Z',
-    status: 'accepted',
-  },
-]);
+const allApplications = ref<Application[]>([]);
+const loading = ref(true);
+
+const fetchApplications = async () => {
+  loading.value = true;
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch('http://localhost:5000/api/applications/my-applications', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Błąd podczas pobierania danych');
+
+    const data = await response.json();
+    allApplications.value = data;
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchApplications();
+});
 
 const applications = computed(() => allApplications.value);
 
 const currentPage = ref(1);
 const perPage = 6;
-const totalPages = computed(() => Math.ceil(applications.value.length / perPage));
+const totalPages = computed(() => Math.ceil(applications.value.length / perPage) || 1);
 const pageInput = ref(1);
 
 const paginatedApps = computed(() => {
@@ -157,6 +152,7 @@ const paginatedApps = computed(() => {
 const changePage = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
+    pageInput.value = page;
   }
 };
 
@@ -168,70 +164,57 @@ const goToPage = () => {
   changePage(pageInput.value);
 };
 
-const withdraw = (appId: number) => {
+const withdraw = async (appId: string) => {
   if (confirm('Czy na pewno chcesz wycofać tę aplikację?')) {
-    alert(`Aplikacja o id ${appId} została wycofana.`);
-    const idx = allApplications.value.findIndex((a) => a.id === appId);
-    if (idx !== -1) {
-      allApplications.value[idx].status = 'withdrawn';
+    try {
+      const idx = allApplications.value.findIndex((a) => a.id === appId);
+      if (idx !== -1) {
+        allApplications.value[idx].status = 'withdrawn';
+      }
+      alert('Aplikacja została wycofana.');
+    } catch {
+      alert('Nie udało się wycofać aplikacji.');
     }
   }
 };
 
 const formatDate = (iso: string) => {
+  if (!iso) return '-';
   const d = new Date(iso);
   return d.toLocaleDateString('pl-PL', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
 const statusLabel = (status: Application['status']) => {
-  switch (status) {
-    case 'submitted':
-      return 'Złożona';
-    case 'in_progress':
-      return 'W trakcie';
-    case 'rejected':
-      return 'Odrzucona';
-    case 'accepted':
-      return 'Przyjęta';
-    case 'withdrawn':
-      return 'Wycofana';
-    default:
-      return 'Nieznany';
-  }
+  const labels = {
+    submitted: 'Złożona',
+    in_progress: 'W trakcie',
+    rejected: 'Odrzucona',
+    accepted: 'Przyjęta',
+    withdrawn: 'Wycofana',
+  };
+  return labels[status] || 'Nieznany';
 };
 
 const statusClass = (status: Application['status']) => {
-  switch (status) {
-    case 'submitted':
-      return 'badge-bg-secondary';
-    case 'in_progress':
-      return 'badge-bg-primary';
-    case 'rejected':
-      return 'badge-bg-danger';
-    case 'accepted':
-      return 'badge-bg-success';
-    case 'withdrawn':
-      return 'badge-bg-warning';
-    default:
-      return 'badge-bg-secondary';
-  }
+  const classes = {
+    submitted: 'badge-bg-secondary',
+    in_progress: 'badge-bg-primary',
+    rejected: 'badge-bg-danger',
+    accepted: 'badge-bg-success',
+    withdrawn: 'badge-bg-warning',
+  };
+  return classes[status] || 'badge-bg-secondary';
 };
 
 const statusIcon = (status: Application['status']) => {
-  switch (status) {
-    case 'submitted':
-      return 'fa-regular fa-envelope';
-    case 'in_progress':
-      return 'fa-solid fa-hourglass-half';
-    case 'rejected':
-      return 'fa-solid fa-x';
-    case 'accepted':
-      return 'fa-solid fa-lightbulb';
-    case 'withdrawn':
-      return 'fa-regular fa-circle-left';
-    default:
-      return 'fa-regular fa-circle-question';
-  }
+  const icons = {
+    submitted: 'fa-regular fa-envelope',
+    in_progress: 'fa-solid fa-hourglass-half',
+    rejected: 'fa-solid fa-x',
+    accepted: 'fa-solid fa-lightbulb',
+    withdrawn: 'fa-regular fa-circle-left',
+  };
+  return icons[status] || 'fa-regular fa-circle-question';
 };
 </script>
 
