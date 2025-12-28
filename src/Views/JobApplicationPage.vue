@@ -7,7 +7,7 @@
     </header>
 
     <section class="row justify-content-center">
-      <div class="col-md-6 mb-4">
+      <div class="col-lg-6 mb-4">
         <div class="form-card shadow-sm p-4">
           <div class="steps mb-4">
             <div v-for="n in 3" :key="n" class="step" :class="{ active: currentStep === n }">
@@ -146,7 +146,7 @@
         </div>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-lg-4 mb-4">
         <div class="form-card shadow-sm p-4 bg-light">
           <h4>Instrukcja – {{ stepLabels[currentStep - 1] }}</h4>
 

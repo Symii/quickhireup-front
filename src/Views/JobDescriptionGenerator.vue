@@ -7,7 +7,7 @@
     </header>
 
     <section class="form-content row justify-content-center">
-      <div class="col-md-5 mb-4">
+      <div class="col-lg-5 mb-4">
         <div class="form-card shadow-sm p-4">
           <form @submit.prevent="submitForm" novalidate>
             <div class="mb-3">
@@ -121,7 +121,7 @@
         </div>
       </div>
 
-      <div class="col-md-5">
+      <div class="col-lg-5 mb-4">
         <div class="form-card shadow-sm p-4 bg-light text-center">
           <h4>Instrukcja</h4>
 

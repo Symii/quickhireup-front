@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar">
     <div class="navbar-left">
-      <RouterLink to="/" class="logo">quickhireup</RouterLink>
+      <RouterLink to="/" class="logo ml-1">quickhireup</RouterLink>
 
       <ul class="nav-links">
         <li><RouterLink to="/oferty">Oferty pracy</RouterLink></li>
@@ -405,7 +405,7 @@ a:hover {
   text-decoration: none;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1000px) {
   .nav-links,
   .navbar-right {
     display: none;
@@ -451,5 +451,9 @@ a:hover {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.ml-1 {
+  margin-left: 8px;
 }
 </style>

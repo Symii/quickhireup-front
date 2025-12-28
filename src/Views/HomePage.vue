@@ -23,7 +23,7 @@
         <option>Hybrydowo</option>
       </select>
 
-      <input type="text" v-model="location" placeholder="Lokalizacja" />
+      <LocationAutocomplete v-model="location" placeholder="np. Warszawa" />
 
       <select v-model="distance">
         <option value="">+0 km</option>
@@ -117,6 +117,7 @@ import { ref, onMounted } from 'vue';
 
 import { useRouter } from 'vue-router';
 import PartnersSlide from './Components/PartnersSlide.vue';
+import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
 
 const router = useRouter();
 

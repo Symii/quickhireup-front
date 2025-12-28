@@ -40,11 +40,10 @@
         <div class="col-md-3">
           <label class="form-label">Lokalizacja</label>
 
-          <input
-            type="text"
+          <LocationAutocomplete
             v-model="filters.location"
-            class="form-control"
             placeholder="np. Warszawa"
+            class="additional-padding"
           />
         </div>
 
@@ -200,6 +199,7 @@
 import jobOfferService from '@/api/services/jobOfferService';
 import type { JobOfferFilters } from '@/api/types/filters/jobOfferFilters';
 import type { JobOffer } from '@/api/types/jobOffer';
+import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
 import { ref, computed, watch, onMounted } from 'vue';
 
 const jobs = ref<JobOffer[]>([]);
@@ -252,22 +252,6 @@ if (
   filters.value.sort = '';
 }
 
-watch(
-  filters,
-  () => {
-    const query: Record<string, string | number> = {};
-
-    Object.entries(filters.value).forEach(([key, value]) => {
-      if (value !== '' && value !== null && value !== undefined) {
-        query[key] = value;
-      }
-    });
-
-    router.replace({ query });
-  },
-  { deep: true },
-);
-
 const applyFilters = async () => {
   currentPage.value = 1;
 
@@ -281,6 +265,14 @@ const applyFilters = async () => {
     filters.value.latitude = null;
     filters.value.longitude = null;
   }
+
+  const query: Record<string, string | number> = {};
+  Object.entries(filters.value).forEach(([key, value]) => {
+    if (value !== '' && value !== null && value !== undefined) {
+      query[key] = value;
+    }
+  });
+  router.replace({ query });
 
   await loadJobs();
 };
@@ -397,5 +389,10 @@ const paginatedJobs = computed(() => jobs.value);
   background-color: #ff5666;
   color: white;
   border-color: #ff5666;
+}
+
+.additional-padding :deep(input.form-control) {
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 </style>

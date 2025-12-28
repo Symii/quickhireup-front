@@ -40,7 +40,9 @@
         <h4>Narzędzia</h4>
 
         <ul>
-          <li v-if="isCompany"><RouterLink to="/generator">Generator opisów</RouterLink></li>
+          <li v-if="isCompany || isAdmin">
+            <RouterLink to="/generator">Generator opisów</RouterLink>
+          </li>
 
           <template v-if="isAdmin">
             <li>

@@ -4,7 +4,7 @@
       <div>
         <h1 class="display-6 fw-bold text-primary-gradient">Skrzynka odbiorcza</h1>
 
-        <p class="text-muted" v-if="!selectedMessage">Zarządzaj wiadomościami od użytkowników</p>
+        <p class="text-muted">Zarządzaj wiadomościami od użytkowników</p>
       </div>
 
       <button
@@ -12,6 +12,8 @@
         class="btn btn-outline-secondary"
         @click="selectedMessage = null"
       >
+        <i class="fa-regular fa-circle-left me-2"></i>
+
         Powrót do listy
       </button>
     </header>
@@ -121,7 +123,7 @@
           :href="'mailto:' + selectedMessage.email + '?subject=Re: ' + selectedMessage.subject"
           class="btn btn-primary"
         >
-          <i class="fa-solid fa-paper-plane me-2"></i> Odpowiedz e-mailem
+          <i class="fa-solid fa-paper-plane me-2"></i> Napisz e-mail
         </a>
       </div>
     </div>

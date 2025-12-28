@@ -13,7 +13,7 @@
     </header>
 
     <section class="row justify-content-center">
-      <div class="col-md-6 mb-4">
+      <div class="col-lg-6 mb-4">
         <div class="form-card shadow-sm p-4">
           <div class="steps mb-4">
             <div v-for="n in 3" :key="n" class="step" :class="{ active: currentStep === n }">
@@ -27,16 +27,44 @@
             <div v-if="currentStep === 1">
               <h4 class="mb-3">Dane podstawowe</h4>
 
-              <div class="mb-3">
-                <label class="form-label">Szablon ogłoszenia</label>
+              <div class="mb-3 position-relative">
+                <label class="form-label">Wyszukaj i wybierz szablon</label>
 
-                <select v-model="selectedTemplate" @change="onTemplateChange" class="form-control">
-                  <option value="">Brak (wypełnij ręcznie)</option>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fa-brands fa-searchengin"></i></span>
 
-                  <option v-for="tpl in templates" :key="tpl.id" :value="tpl.id">
-                    {{ tpl.name }}
-                  </option>
-                </select>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Wpisz nazwę szablonu..."
+                    v-model="templateSearchQuery"
+                    @focus="showTemplateDropdown = true"
+                  />
+                </div>
+
+                <ul
+                  v-if="showTemplateDropdown && filteredTemplates.length > 0"
+                  class="list-group position-absolute w-100 shadow-sm z-3"
+                  style="max-height: 200px; overflow-y: auto"
+                >
+                  <li
+                    class="list-group-item list-group-item-action cursor-pointer"
+                    @click="applyTemplate(null)"
+                  >
+                    <em>Brak (wyczyść pola)</em>
+                  </li>
+
+                  <li
+                    v-for="tpl in filteredTemplates"
+                    :key="tpl.id"
+                    class="list-group-item list-group-item-action cursor-pointer"
+                    @click="applyTemplate(tpl)"
+                  >
+                    <strong>{{ tpl.name }}</strong> <br />
+
+                    <small class="text-muted">{{ tpl.jobTitle }}</small>
+                  </li>
+                </ul>
               </div>
 
               <div class="mb-3">
@@ -66,10 +94,10 @@
               <div class="mb-3">
                 <label class="form-label">Lokalizacja</label>
 
-                <input
-                  type="text"
+                <LocationAutocomplete
                   v-model="form.location"
-                  :class="['form-control', { 'is-invalid': errors.location }]"
+                  class="additional-padding"
+                  :class="[{ 'is-invalid': errors.location }]"
                 />
 
                 <div class="invalid-feedback">{{ errors.location }}</div>
@@ -150,9 +178,9 @@
                 <label class="form-label">Wynagrodzenie OD</label>
 
                 <input
-                  type="text"
+                  type="number"
                   v-model="form.salaryFrom"
-                  placeholder="Np. 6000 zł"
+                  placeholder="Np. 6000"
                   :class="['form-control', { 'is-invalid': errors.salaryFrom }]"
                 />
 
@@ -163,9 +191,9 @@
                 <label class="form-label">Wynagrodzenie DO</label>
 
                 <input
-                  type="text"
+                  type="number"
                   v-model="form.salaryTo"
-                  placeholder="Np. 8000 zł"
+                  placeholder="Np. 8000"
                   :class="['form-control', { 'is-invalid': errors.salaryTo }]"
                 />
 
@@ -197,7 +225,7 @@
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Oferujemy (opcjonalnie)</label>
+                <label class="form-label">Oferujemy <small>(opcjonalnie)</small></label>
 
                 <textarea v-model="form.benefits" rows="3" :class="['form-control']"></textarea>
               </div>
@@ -267,7 +295,7 @@
         </div>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-lg-4 mb-4">
         <div class="form-card shadow-sm p-4 bg-light">
           <h4>Instrukcja – {{ stepLabels[currentStep - 1] }}</h4>
 
@@ -279,19 +307,90 @@
 </template>
 
 <script lang="ts">
+import api from '@/api/services/api';
 import jobOfferService from '@/api/services/jobOfferService';
 import type { JobOffer } from '@/api/types/jobOffer';
+import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
 import { useNotification } from '@/composables/useNotification';
 import router from '@/router';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
+interface JobTemplate {
+  id: string;
+  name: string;
+  jobTitle: string;
+  experience: string;
+  contractType: string;
+  employmentType: string;
+  salaryFrom: number;
+  salaryTo: number;
+  description: string;
+  qualifications: string;
+  benefits?: string;
+}
+
 export default {
+  components: {
+    LocationAutocomplete,
+  },
   setup() {
     const notification = useNotification();
     const route = useRoute();
     const currentStep = ref(1);
     const loading = ref(false);
+
+    const templates = ref<JobTemplate[]>([]);
+    const templateSearchQuery = ref('');
+    const showTemplateDropdown = ref(false);
+    const apiUrlTemplates = 'http://localhost:5000/api/JobTemplates';
+
+    const fetchTemplates = async () => {
+      try {
+        const response = await api.get(apiUrlTemplates);
+        if (response.status === 200) {
+          templates.value = response.data;
+        }
+      } catch (error) {
+        console.error('Błąd pobierania szablonów:', error);
+      }
+    };
+
+    const filteredTemplates = computed(() => {
+      if (!templateSearchQuery.value) return templates.value;
+      const query = templateSearchQuery.value.toLowerCase();
+      return templates.value.filter(
+        (t) => t.name.toLowerCase().includes(query) || t.jobTitle.toLowerCase().includes(query),
+      );
+    });
+
+    const applyTemplate = (tpl: JobTemplate | null) => {
+      if (tpl) {
+        form.jobTitle = tpl.jobTitle;
+        form.experience = tpl.experience;
+        form.contractType = tpl.contractType;
+        form.employmentType = tpl.employmentType;
+        form.salaryFrom = tpl.salaryFrom;
+        form.salaryTo = tpl.salaryTo;
+        form.description = tpl.description;
+        form.qualifications = tpl.qualifications;
+        form.benefits = tpl.benefits || '';
+        templateSearchQuery.value = tpl.name;
+      } else {
+        templateSearchQuery.value = '';
+        form.jobTitle = '';
+        form.experience = '';
+        form.contractType = '';
+        form.employmentType = '';
+        form.salaryFrom = 0;
+        form.salaryTo = 0;
+        form.description = '';
+        form.qualifications = '';
+        form.benefits = '';
+        templateSearchQuery.value = '';
+      }
+      showTemplateDropdown.value = false;
+    };
 
     const isEditMode = computed(() => !!route.params.id);
     const offerId = route.params.id as string;
@@ -304,35 +403,6 @@ export default {
 
     const selectedTemplate = ref('');
     const errors = reactive<Record<string, string>>({});
-
-    const templates = [
-      {
-        id: 'tpl1',
-        name: 'Junior Marketing Specialist',
-        data: {
-          jobTitle: 'Junior Marketing Specialist',
-          experience: 'Do 1 roku',
-          contractType: 'Umowa zlecenie',
-          employmentType: 'Zdalnie',
-          responsibilities: 'Pomoc przy tworzeniu kampanii reklamowych.',
-          qualifications: 'Podstawy marketingu, znajomość social media.',
-          salary: '4000-5000 zł',
-        },
-      },
-      {
-        id: 'tpl2',
-        name: 'Mid Web Developer',
-        data: {
-          jobTitle: 'Mid Web Developer',
-          experience: '1-3 lata',
-          contractType: 'Umowa o pracę',
-          employmentType: 'Hybrydowo',
-          responsibilities: 'Tworzenie i utrzymanie aplikacji webowych.',
-          qualifications: 'Vue, TypeScript, REST API.',
-          salary: '8000-11000 zł',
-        },
-      },
-    ];
 
     const form = reactive<JobOffer>({
       userId: '',
@@ -409,11 +479,6 @@ export default {
       }
     };
 
-    const onTemplateChange = () => {
-      const tpl = templates.find((t) => t.id === selectedTemplate.value);
-      if (tpl) Object.assign(form, tpl.data);
-    };
-
     const instructions = [
       `W tym kroku podaj podstawowe dane o stanowisku i firmie.`,
       `Tutaj uzupełnij szczegóły stanowiska: umowa, wynagrodzenie, opis obowiązków.`,
@@ -441,6 +506,8 @@ export default {
     );
 
     onMounted(async () => {
+      await fetchTemplates();
+
       if (isEditMode.value) {
         loading.value = true;
         try {
@@ -454,6 +521,17 @@ export default {
       }
     });
 
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.position-relative')) {
+        showTemplateDropdown.value = false;
+      }
+    };
+
+    onMounted(() => {
+      window.addEventListener('click', handleClickOutside);
+    });
+
     return {
       currentStep,
       stepLabels,
@@ -465,10 +543,13 @@ export default {
       instructions,
       pageTitle,
       isEditMode,
+      filteredTemplates,
+      showTemplateDropdown,
+      templateSearchQuery,
 
+      applyTemplate,
       nextStep,
       prevStep,
-      onTemplateChange,
       handleSubmit,
     };
   },
@@ -537,7 +618,8 @@ button.btn-primary:hover {
   margin-top: 20px;
 }
 
-.is-invalid {
+.is-invalid,
+.is-invalid :deep(input) {
   border-color: #dc3545 !important;
 }
 .invalid-feedback {
@@ -546,5 +628,10 @@ button.btn-primary:hover {
 }
 .text-danger {
   color: #dc3545 !important;
+}
+
+.additional-padding :deep(input.form-control) {
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 </style>

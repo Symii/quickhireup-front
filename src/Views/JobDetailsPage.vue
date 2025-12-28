@@ -78,7 +78,7 @@
         {{ isSaved ? 'Zapisano' : 'Zapisz' }}
       </button>
 
-      <RouterLink :to="`/aplikuj/${job?.id}`">
+      <RouterLink v-if="!isLoggedIn || isCandidate" :to="`/aplikuj/${job?.id}`">
         <button
           class="btn btn-primary btn-lg px-5"
           :style="{ backgroundColor: primaryColor, borderColor: primaryColor }"
@@ -109,6 +109,7 @@ const job = ref<JobOffer | null>(null);
 const user = ref<User | null>(null);
 const auth = useAuthStore();
 const isLoggedIn = computed(() => auth.user != null);
+const isCandidate = computed(() => auth.user?.role === 'Candidate');
 
 onMounted(async () => {
   job.value = await jobOfferService.getById(id);

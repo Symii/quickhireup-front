@@ -6,8 +6,8 @@
       <p class="lead">Tutaj możesz tworzyć, edytować i usuwać gotowe szablony ogłoszeń.</p>
     </header>
 
-    <section class="row justify-content-center">
-      <div class="col-md-5 mb-4">
+    <section class="row justify-content-center mb-4">
+      <div class="col-sm-12 col-lg-5 mb-4">
         <div class="form-card shadow-sm p-4">
           <h4>Lista szablonów</h4>
 
@@ -32,7 +32,7 @@
                   Edytuj
                 </button>
 
-                <button class="btn btn-sm btn-outline-danger" @click="deleteTemplate(tpl.id)">
+                <button class="btn btn-sm btn-outline-danger" @click="deleteTemplate(tpl.id!)">
                   Usuń
                 </button>
               </div>
@@ -41,7 +41,7 @@
         </div>
       </div>
 
-      <div class="col-md-6">
+      <div class="col-sm-12 col-lg-6">
         <div class="form-card shadow-sm p-4">
           <h4>{{ editingTemplate ? 'Edycja szablonu' : 'Nowy szablon' }}</h4>
 
@@ -60,7 +60,7 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Stanowisko</label>
+              <label class="form-label">Tytuł stanowiska</label>
 
               <input
                 v-model="form.jobTitle"
@@ -119,7 +119,7 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Rodzaj pracy</label>
+              <label class="form-label">Rodzaj zatrudnienia</label>
 
               <select
                 v-model="form.employmentType"
@@ -139,30 +139,44 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Wynagrodzenie</label>
+              <label class="form-label">Wynagrodzenie OD</label>
 
               <input
-                v-model="form.salary"
-                type="text"
+                v-model="form.salaryFrom"
+                type="number"
                 class="form-control"
-                placeholder="Np. 7000–9000 zł"
-                :class="{ 'is-invalid': errors.salary }"
+                placeholder="Np. 7000"
+                :class="{ 'is-invalid': errors.salaryFrom }"
               />
 
-              <div class="invalid-feedback">{{ errors.salary }}</div>
+              <div class="invalid-feedback">{{ errors.salaryFrom }}</div>
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Obowiązki</label>
+              <label class="form-label">Wynagrodzenie DO</label>
+
+              <input
+                v-model="form.salaryTo"
+                type="number"
+                class="form-control"
+                placeholder="Np. 9000"
+                :class="{ 'is-invalid': errors.salaryTo }"
+              />
+
+              <div class="invalid-feedback">{{ errors.salaryTo }}</div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Opis stanowiska</label>
 
               <textarea
-                v-model="form.responsibilities"
+                v-model="form.description"
                 rows="3"
                 class="form-control"
-                :class="{ 'is-invalid': errors.responsibilities }"
+                :class="{ 'is-invalid': errors.description }"
               ></textarea>
 
-              <div class="invalid-feedback">{{ errors.responsibilities }}</div>
+              <div class="invalid-feedback">{{ errors.description }}</div>
             </div>
 
             <div class="mb-3">
@@ -178,9 +192,27 @@
               <div class="invalid-feedback">{{ errors.qualifications }}</div>
             </div>
 
+            <div class="mb-3">
+              <label class="form-label">Oferujemy <small>(opcjonalnie)</small></label>
+
+              <textarea
+                v-model="form.benefits"
+                rows="3"
+                class="form-control"
+                :class="{ 'is-invalid': errors.benefits }"
+              ></textarea>
+
+              <div class="invalid-feedback">{{ errors.benefits }}</div>
+            </div>
+
             <div class="text-end">
-              <button class="btn btn-secondary me-2" type="button" @click="resetForm">
-                Wyczyść
+              <button
+                v-if="editingTemplate"
+                type="button"
+                class="btn btn-secondary me-2"
+                @click="cancelEdit"
+              >
+                Anuluj
               </button>
 
               <button class="btn btn-primary" type="submit">
@@ -195,7 +227,9 @@
 </template>
 
 <script lang="ts">
-import { reactive, ref } from 'vue';
+import api from '@/api/services/api';
+import { useNotification } from '@/composables/useNotification';
+import { reactive, ref, onMounted } from 'vue';
 
 interface TemplateForm {
   id?: string;
@@ -204,15 +238,19 @@ interface TemplateForm {
   experience: string;
   contractType: string;
   employmentType: string;
-  salary: string;
-  responsibilities: string;
+  salaryFrom: number;
+  salaryTo: number;
+  description: string;
   qualifications: string;
+  benefits?: string;
 }
 
 export default {
   setup() {
-    const templates = ref<TemplateForm[]>(JSON.parse(localStorage.getItem('jobTemplates') || '[]'));
+    const notification = useNotification();
+    const templates = ref<TemplateForm[]>([]);
     const editingTemplate = ref<TemplateForm | null>(null);
+    const apiUrl = 'http://localhost:5000/api/JobTemplates';
 
     const form = reactive<TemplateForm>({
       name: '',
@@ -220,12 +258,30 @@ export default {
       experience: '',
       contractType: '',
       employmentType: '',
-      salary: '',
-      responsibilities: '',
+      salaryFrom: 0,
+      salaryTo: 0,
+      description: '',
       qualifications: '',
+      benefits: '',
     });
 
     const errors = reactive<Record<string, string>>({});
+
+    const fetchTemplates = async () => {
+      try {
+        const response = await api.get(apiUrl);
+        if (response.status === 200) {
+          templates.value = await response.data;
+        }
+      } catch (error) {
+        console.error(error);
+        notification.showMessage('Błąd pobierania danych.', 'error');
+      }
+    };
+
+    onMounted(() => {
+      fetchTemplates();
+    });
 
     const validate = () => {
       Object.keys(errors).forEach((k) => (errors[k] = ''));
@@ -234,27 +290,59 @@ export default {
       if (!form.experience) errors.experience = 'Wybierz doświadczenie.';
       if (!form.contractType) errors.contractType = 'Wybierz rodzaj umowy.';
       if (!form.employmentType) errors.employmentType = 'Wybierz rodzaj pracy.';
-      if (!form.salary) errors.salary = 'Podaj wynagrodzenie.';
-      if (!form.responsibilities) errors.responsibilities = 'Podaj obowiązki.';
+      if (!form.salaryFrom) errors.salaryFrom = 'Podaj wynagrodzenie OD.';
+      if (form.salaryTo && form.salaryTo < form.salaryFrom)
+        errors.salaryTo = 'Wynagrodzenie DO musi być większe lub równe wynagrodzeniu OD.';
+      if (!form.description) errors.description = 'Podaj opis stanowiska.';
       if (!form.qualifications) errors.qualifications = 'Podaj wymagania.';
       return Object.values(errors).every((v) => !v);
     };
 
-    const saveToStorage = () =>
-      localStorage.setItem('jobTemplates', JSON.stringify(templates.value));
+    const resetForm = () => {
+      form.name = '';
+      form.jobTitle = '';
+      form.experience = '';
+      form.contractType = '';
+      form.employmentType = '';
+      form.salaryFrom = 0;
+      form.salaryTo = 0;
+      form.description = '';
+      form.qualifications = '';
+      form.benefits = '';
+      delete form.id;
+    };
 
-    const saveTemplate = () => {
-      if (!validate()) return;
-      if (editingTemplate.value) {
-        const idx = templates.value.findIndex((t) => t.id === editingTemplate.value?.id);
-        if (idx !== -1) templates.value[idx] = { ...form, id: editingTemplate.value.id };
-        editingTemplate.value = null;
-      } else {
-        templates.value.push({ ...form, id: Date.now().toString() });
-      }
-      saveToStorage();
+    const cancelEdit = () => {
+      editingTemplate.value = null;
       resetForm();
-      alert('✅ Szablon zapisany!');
+    };
+
+    const saveTemplate = async () => {
+      if (!validate()) return;
+
+      try {
+        let response;
+        if (editingTemplate.value && editingTemplate.value.id) {
+          response = await api.put(`${apiUrl}/${editingTemplate.value.id}`, {
+            ...form,
+            id: editingTemplate.value.id,
+          });
+        } else {
+          response = await api.post(apiUrl, form);
+        }
+
+        if (response.status === 200 || response.status === 201) {
+          notification.showMessage('Szablon zapisany pomyślnie.', 'success');
+          await fetchTemplates();
+          editingTemplate.value = null;
+          resetForm();
+        } else {
+          notification.showMessage('Wystąpił błąd podczas zapisywania.', 'error');
+        }
+      } catch (error) {
+        console.error(error);
+        notification.showMessage('Wystąpił błąd połączenia.', 'error');
+      }
     };
 
     const editTemplate = (tpl: TemplateForm) => {
@@ -262,25 +350,26 @@ export default {
       editingTemplate.value = tpl;
     };
 
-    const deleteTemplate = (id: string) => {
+    const deleteTemplate = async (id: string) => {
       if (confirm('Czy na pewno chcesz usunąć ten szablon?')) {
-        templates.value = templates.value.filter((t) => t.id !== id);
-        saveToStorage();
-      }
-    };
+        try {
+          const response = await api.delete(`${apiUrl}/${id}`);
 
-    const resetForm = () => {
-      Object.assign(form, {
-        name: '',
-        jobTitle: '',
-        experience: '',
-        contractType: '',
-        employmentType: '',
-        salary: '',
-        responsibilities: '',
-        qualifications: '',
-      });
-      editingTemplate.value = null;
+          if (response.status === 200 || response.status === 204) {
+            templates.value = templates.value.filter((t) => t.id !== id);
+            if (editingTemplate.value?.id === id) {
+              editingTemplate.value = null;
+              resetForm();
+            }
+            notification.showMessage('Szablon usunięty.', 'success');
+          } else {
+            notification.showMessage('Nie udało się usunąć szablonu.', 'error');
+          }
+        } catch (error) {
+          console.error(error);
+          notification.showMessage('Błąd połączenia.', 'error');
+        }
+      }
     };
 
     return {
@@ -291,7 +380,7 @@ export default {
       saveTemplate,
       editTemplate,
       deleteTemplate,
-      resetForm,
+      cancelEdit,
     };
   },
 };
