@@ -89,5 +89,21 @@ export const useAuthStore = defineStore('auth', {
         password,
       });
     },
+
+    async verifyEmail(userId: string, token: string) {
+      try {
+        await api.get(`/Account/confirm-email?userId=${userId}&token=${token}`);
+      } catch (error) {
+        throw error;
+      }
+    },
+
+    async resendConfirmation(email: string) {
+      try {
+        await api.post('/Account/resend-confirmation-email', { email });
+      } catch (error) {
+        throw error;
+      }
+    },
   },
 });

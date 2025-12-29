@@ -209,6 +209,11 @@ const routes = [
         'Coś poszło nie tak po naszej stronie. Spróbuj ponownie za chwilę lub skontaktuj się z nami, aby zgłosić błąd.',
     },
   },
+  {
+    path: '/verify-email',
+    name: '/verify-email',
+    component: () => import('@/Views/VerifyEmail.vue'),
+  },
 ];
 
 const router = createRouter({
@@ -231,7 +236,10 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.requiresAuth && !auth.token) {
-    return '/login';
+    return {
+      path: '/login',
+      query: { redirect: to.fullPath },
+    };
   }
 
   if (to.meta.roles && !to.meta.roles.includes(auth.user?.role ?? '')) {

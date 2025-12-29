@@ -10,6 +10,7 @@
       <div class="col-md-6 mb-4">
         <div class="form-card shadow-sm p-4">
           <h2>Skontaktuj się z <strong>nami</strong></h2>
+
           <p class="contact-lead">
             Masz pytania lub potrzebujesz wsparcia? Skontaktuj się z nami, odpowiemy najszybciej jak
             to możliwe.
@@ -18,6 +19,7 @@
           <form @submit.prevent="submitForm" novalidate>
             <div class="mb-3">
               <label class="form-label">Imię i nazwisko</label>
+
               <input
                 type="text"
                 v-model="form.name"
@@ -25,11 +27,13 @@
                 class="form-control"
                 :class="{ 'is-invalid': errors.name }"
               />
+
               <div v-if="errors.name" class="invalid-feedback">Proszę podać imię i nazwisko.</div>
             </div>
 
             <div class="mb-3">
               <label class="form-label">E-mail</label>
+
               <input
                 type="email"
                 v-model="form.email"
@@ -37,11 +41,13 @@
                 class="form-control"
                 :class="{ 'is-invalid': errors.email }"
               />
+
               <div v-if="errors.email" class="invalid-feedback">Proszę podać poprawny e-mail.</div>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Temat</label>
+
               <input
                 type="text"
                 v-model="form.subject"
@@ -49,11 +55,13 @@
                 class="form-control"
                 :class="{ 'is-invalid': errors.subject }"
               />
+
               <div v-if="errors.subject" class="invalid-feedback">Proszę podać temat.</div>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Wiadomość</label>
+
               <textarea
                 v-model="form.message"
                 placeholder="Treść wiadomości"
@@ -61,6 +69,7 @@
                 rows="5"
                 :class="{ 'is-invalid': errors.message }"
               ></textarea>
+
               <div v-if="errors.message" class="invalid-feedback">Proszę wpisać wiadomość.</div>
             </div>
 
@@ -77,17 +86,25 @@
         <div class="info-cards d-flex flex-column gap-3">
           <div class="info-card text-center">
             <i class="fa-solid fa-paper-plane fa-2x mb-3 text-primary"></i>
+
             <h4>Adres</h4>
+
             <p>ul. Krzysztofa Arciszewskiego 22A, 76-200 Słupsk</p>
           </div>
+
           <div class="info-card text-center">
             <i class="fa-solid fa-envelope fa-2x mb-3 text-primary"></i>
+
             <h4>Email</h4>
+
             <p>bok@quickhireup.com</p>
           </div>
+
           <div class="info-card text-center">
             <i class="fa-solid fa-comment fa-2x mb-3 text-primary"></i>
+
             <h4>Telefon</h4>
+
             <p>+48 123 456 789</p>
           </div>
         </div>

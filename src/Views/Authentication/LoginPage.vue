@@ -30,7 +30,18 @@
           <span v-else>Zaloguj się</span>
         </button>
 
-        <p v-if="error" style="color: red" aria-live="polite">{{ error }}</p>
+        <div v-if="error" class="error-container">
+          <p style="color: red">{{ error }}</p>
+
+          <button
+            v-if="showResendButton"
+            @click="handleResend"
+            :disabled="loading"
+            class="btn btn-outline-primary"
+          >
+            {{ loading ? 'Wysyłanie...' : 'Wyślij ponownie link aktywacyjny' }}
+          </button>
+        </div>
       </form>
 
       <p class="footer-text">
@@ -54,17 +65,18 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useNotification } from '@/composables/useNotification';
 import { useAuthStore } from '@/api/authentication/authStore';
+import type { AxiosError } from 'axios';
 
 const notification = useNotification();
 const router = useRouter();
+const route = useRoute();
 const auth = useAuthStore();
 
 const email = ref('');
 const password = ref('');
-
 const loading = ref(false);
 const error = ref<string | null>(null);
 
@@ -74,20 +86,50 @@ const isFormValid = computed(() => isEmailValid(email.value) && password.value.l
 onMounted(() => {
   if (auth.token) {
     notification.showMessage('Jesteś już zalogowany.');
-    router.push('/');
+    const redirectPath = (route.query.redirect as string) || '/';
+    router.push(redirectPath);
   }
 });
+
+const showResendButton = ref(false);
 
 async function submitLogin() {
   loading.value = true;
   error.value = null;
+  showResendButton.value = false;
 
   try {
     await auth.login(email.value, password.value);
     notification.showMessage('Zalogowano pomyślnie');
-    router.push('/');
+    const redirectPath = (route.query.redirect as string) || '/';
+    router.push(redirectPath);
+  } catch (err) {
+    const axiosError = err as AxiosError;
+
+    if (
+      axiosError.response?.status === 401 &&
+      axiosError.response?.data === 'E-mail nie został potwierdzony'
+    ) {
+      error.value = 'Twoje konto nie zostało jeszcze potwierdzone.';
+      showResendButton.value = true;
+      notification.showMessage('Konto nieaktywne. Potwierdź swój adres e-mail.', 'info');
+    } else {
+      error.value = 'Nieprawidłowy email lub hasło';
+      notification.showMessage('Błąd logowania.', 'error');
+    }
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function handleResend() {
+  loading.value = true;
+  try {
+    await auth.resendConfirmation(email.value);
+    notification.showMessage('Link aktywacyjny został wysłany ponownie. Sprawdź pocztę.');
+    showResendButton.value = false;
   } catch {
-    error.value = 'Nieprawidłowy email lub hasło';
+    notification.showMessage('Błąd podczas wysyłania maila.', 'error');
   } finally {
     loading.value = false;
   }
@@ -286,5 +328,16 @@ async function submitLogin() {
     transform: translate(-50%, -50%) scale(3.5);
     opacity: 0;
   }
+}
+
+.btn-outline-primary {
+  width: 100%;
+  height: 65px;
+  color: #ff5666;
+  border-color: #ff5666;
+}
+.btn-outline-primary:hover {
+  background-color: #ff5666;
+  color: white !important;
 }
 </style>

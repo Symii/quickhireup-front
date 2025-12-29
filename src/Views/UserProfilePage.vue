@@ -37,7 +37,7 @@
         </div>
       </div>
 
-      <div class="col-md-8">
+      <div class="col-md-8 mb-4">
         <div class="profile-card shadow-sm p-4 bg-light">
           <h3 class="mb-4" :style="{ color: primaryColor }">Edytuj dane profilu</h3>
 

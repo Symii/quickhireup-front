@@ -101,7 +101,7 @@ async function submitCompanyRegister() {
       email.value.trim(),
       password.value,
     );
-    notification.showMessage('Konto firmowe zostało utworzone ✅');
+    notification.showMessage('Rejestracja pomyślna! Sprawdź email, aby aktywować konto.');
     router.push('/login');
   } catch {
     error.value = 'Rejestracja firmowa nie powiodła się. Sprawdź dane.';

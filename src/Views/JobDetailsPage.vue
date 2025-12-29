@@ -67,6 +67,36 @@
       </div>
     </section>
 
+    <section class="location-section mt-4 mb-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-12">
+          <div class="map-card shadow-sm overflow-hidden">
+            <div class="row g-0">
+              <div class="col-md-8">
+                <div id="map" style="height: 350px; width: 100%"></div>
+              </div>
+
+              <div class="col-md-4 bg-white p-4 d-flex flex-column justify-content-center">
+                <h4 class="section-subtitle mt-0 mb-3">Lokalizacja pracy</h4>
+
+                <div class="d-flex align-items-start mb-3">
+                  <MapPinIcon class="icon" />
+
+                  <div>
+                    <p class="mb-0 fw-bold">{{ job?.location }}</p>
+                  </div>
+                </div>
+
+                <p class="text-muted small">
+                  Dokładny adres i instrukcje zostaną przekazane w procesie rekrutacji.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <div class="apply-bar text-center shadow-sm p-4 mt-5 bg-white">
       <button
         v-if="isLoggedIn"
@@ -91,6 +121,9 @@
 </template>
 
 <script setup lang="ts">
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
 import { useAuthStore } from '@/api/authentication/authStore';
 import api from '@/api/services/api';
 import jobOfferService from '@/api/services/jobOfferService';
@@ -100,6 +133,7 @@ import type { User } from '@/api/types/user';
 import { useNotification } from '@/composables/useNotification';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { MapPinIcon } from '@heroicons/vue/24/solid';
 
 const notification = useNotification();
 const route = useRoute();
@@ -111,6 +145,25 @@ const auth = useAuthStore();
 const isLoggedIn = computed(() => auth.user != null);
 const isCandidate = computed(() => auth.user?.role === 'Candidate');
 
+const initMap = () => {
+  const longitude = job.value?.longitude;
+  const latitude = job.value?.latitude;
+
+  if (longitude == null || latitude == null) {
+    return;
+  }
+
+  const map = L.map('map', { scrollWheelZoom: false }).setView([latitude, longitude], 11);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19,
+  }).addTo(map);
+
+  L.marker([latitude, longitude]).addTo(map);
+};
+
 onMounted(async () => {
   job.value = await jobOfferService.getById(id);
 
@@ -121,6 +174,10 @@ onMounted(async () => {
     const response = await api.get(`/JobOffer/is-saved/${job.value.id}`);
     isSaved.value = response.data.isSaved;
   }
+
+  setTimeout(() => {
+    initMap();
+  }, 100);
 });
 
 const primaryColor = '#ff5666';
@@ -209,7 +266,7 @@ const toggleSaveJob = async () => {
   bottom: 0;
   left: 0;
   width: 100%;
-  z-index: 10;
+  z-index: 99999;
 }
 
 .btn-primary {
@@ -245,5 +302,12 @@ const toggleSaveJob = async () => {
 .btn-outline-primary:hover {
   background-color: #ff5666;
   color: white !important;
+}
+
+.icon {
+  color: #ff5666;
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
 }
 </style>
