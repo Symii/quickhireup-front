@@ -27,7 +27,7 @@
 
           <h4 class="mb-1">{{ userData.firstName }} {{ userData.secondName }}</h4>
 
-          <p class="text-muted mb-1">{{ userData.role }}</p>
+          <p class="text-muted mb-1">{{ userRoleToString(userData.role) }}</p>
 
           <p class="text-muted small">{{ userData.email }}</p>
 
@@ -39,7 +39,9 @@
 
       <div class="col-md-8 mb-4">
         <div class="profile-card shadow-sm p-4 bg-light">
-          <h3 class="mb-4" :style="{ color: primaryColor }">Edytuj dane profilu</h3>
+          <h3 :style="{ color: primaryColor }">Edytuj dane profilu</h3>
+
+          <hr />
 
           <form @submit.prevent="saveProfile" novalidate>
             <div class="mb-3">
@@ -88,7 +90,7 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Opis / Bio</label>
+              <label class="form-label">Opis / Bio <small>(opcjonalne)</small></label>
 
               <textarea
                 v-model="userData.bio"
@@ -98,6 +100,57 @@
                 @input="markUnsaved"
               ></textarea>
             </div>
+
+            <template v-if="isLoggedIn && isCompany">
+              <h3 class="mt-5" :style="{ color: primaryColor }">Edytuj dane firmy</h3>
+
+              <hr />
+
+              <div class="mb-3">
+                <label class="form-label">Nazwa firmy</label>
+
+                <input
+                  type="text"
+                  v-model="userData.companyName"
+                  class="form-control"
+                  required
+                  :class="{ 'is-invalid': errors.companyName }"
+                  @input="markUnsaved"
+                />
+
+                <div class="invalid-feedback">To pole jest wymagane.</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">NIP</label>
+
+                <input
+                  type="text"
+                  v-model="userData.nip"
+                  class="form-control"
+                  required
+                  :class="{ 'is-invalid': errors.nip }"
+                  @input="markUnsaved"
+                />
+
+                <div class="invalid-feedback">To pole jest wymagane.</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Lokalizacja</label>
+
+                <input
+                  type="text"
+                  v-model="userData.location"
+                  class="form-control"
+                  required
+                  :class="{ 'is-invalid': errors.location }"
+                  @input="markUnsaved"
+                />
+
+                <div class="invalid-feedback">To pole jest wymagane.</div>
+              </div>
+            </template>
 
             <div class="text-end mb-3">
               <span v-if="unsavedChanges" class="text-danger ms-2 unsaved-changes">
@@ -130,6 +183,8 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '@/api/authentication/authStore';
+import accountService from '@/api/services/accountService';
+import roleService from '@/api/services/roleService';
 import userService from '@/api/services/usersService';
 import type { UpdateUserDto } from '@/api/types/updateUserDto';
 import { useNotification } from '@/composables/useNotification';
@@ -141,6 +196,10 @@ const defaultPhoto = 'quick-hire-up-logo.png';
 const profilePhoto = ref('');
 const previewPhoto = ref<string | null>(null);
 
+const auth = useAuthStore();
+const isLoggedIn = computed(() => auth.user != null);
+const isCompany = computed(() => accountService.isCompany());
+
 const userData = reactive({
   id: '',
   firstName: '',
@@ -148,12 +207,19 @@ const userData = reactive({
   role: '',
   email: '',
   bio: '',
+
+  companyName: '',
+  nip: '',
+  location: '',
 });
 
 const errors = reactive({
   firstName: false,
   secondName: false,
   email: false,
+  companyName: false,
+  nip: false,
+  location: false,
 });
 
 const saving = ref(false);
@@ -167,7 +233,17 @@ const validateForm = () => {
   errors.firstName = !userData.firstName.trim();
   errors.secondName = !userData.secondName.trim();
   errors.email = !validateEmail(userData.email);
-  return !errors.firstName && !errors.secondName && !errors.email;
+  errors.companyName = isCompany.value ? !userData.companyName?.trim() : false;
+  errors.nip = isCompany.value ? !userData.nip?.trim() : false;
+  errors.location = isCompany.value ? !userData.location?.trim() : false;
+  return (
+    !errors.firstName &&
+    !errors.secondName &&
+    !errors.email &&
+    !errors.companyName &&
+    !errors.nip &&
+    !errors.location
+  );
 };
 
 const markUnsaved = () => {
@@ -185,8 +261,14 @@ const onFileChange = (e: Event) => {
   markUnsaved();
 };
 
+const userRoleToString = (role: string) => {
+  return roleService.userRoleToString(role);
+};
+
 async function saveProfile() {
-  if (!validateForm()) return;
+  if (!validateForm()) {
+    return;
+  }
 
   saving.value = true;
   successMessage.value = '';
@@ -207,6 +289,10 @@ async function saveProfile() {
       secondName: userData.secondName,
       email: userData.email,
       bio: userData.bio,
+
+      companyName: isCompany.value ? userData.companyName : undefined,
+      nip: isCompany.value ? userData.nip : undefined,
+      location: isCompany.value ? userData.location : undefined,
     };
 
     await userService.update(userData.id, dto);

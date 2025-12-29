@@ -23,11 +23,17 @@
               />
             </div>
 
-            <h5 class="mb-1">{{ employer.firstName }}</h5>
+            <h5 class="mb-1">{{ employer.companyName }}</h5>
 
-            <p class="text-muted mb-1">{{ employer.secondName }}</p>
+            <p class="text-muted mb-1">
+              <MapPinIcon class="icon" />
+
+              {{ employer.location }}
+            </p>
 
             <p class="text-muted small mb-3">{{ employer.email }}</p>
+
+            <div class="decor-line"></div>
 
             <p class="text-muted small">{{ employer.bio }}</p>
 
@@ -62,6 +68,7 @@
 <script setup lang="ts">
 import employersService from '@/api/services/employersService';
 import type { User } from '@/api/types/user';
+import { MapPinIcon } from '@heroicons/vue/24/solid';
 import { ref, onMounted } from 'vue';
 
 const employers = ref<User[]>([]);
@@ -153,5 +160,19 @@ h5 {
 
 .mt-20 {
   margin-top: 20px;
+}
+
+.decor-line {
+  width: 30%;
+  height: 4px;
+  background: linear-gradient(to right, var(--primary), var(--primary-dark));
+  margin: 12px auto;
+  border-radius: 2px;
+}
+
+.icon {
+  color: #ff5666;
+  width: 20px;
+  height: 20px;
 }
 </style>

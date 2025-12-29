@@ -45,7 +45,7 @@ const routes = [
     path: '/generator',
     name: 'Generator',
     component: () => import('@/Views/JobDescriptionGenerator.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, roles: ['Company'] },
   },
   {
     path: '/logout',
@@ -213,6 +213,11 @@ const routes = [
     path: '/verify-email',
     name: '/verify-email',
     component: () => import('@/Views/VerifyEmail.vue'),
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    component: () => import('@/Views/ErrorPage.vue'),
+    props: { type: '404', message: 'Strona na ktorą próbujesz wejść nie istnieje.' },
   },
 ];
 

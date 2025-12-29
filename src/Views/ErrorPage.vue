@@ -7,6 +7,8 @@
         <i :class="iconClass"></i>
       </div>
 
+      <h1 class="error-code">{{ type }}</h1>
+
       <h1 class="mb-3">{{ title }}</h1>
 
       <p class="lead mb-4">
@@ -41,6 +43,8 @@ export default {
         case '401':
         case '403':
           return 'Brak dostępu';
+        case '404':
+          return 'Strona nie znaleziona';
         case '500':
           return 'Błąd serwera';
         default:
@@ -152,5 +156,12 @@ export default {
     transform: scale(1);
     opacity: 0.8;
   }
+}
+
+.error-code {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #ff5666;
+  margin-bottom: 1rem;
 }
 </style>

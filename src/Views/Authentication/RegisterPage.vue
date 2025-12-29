@@ -7,9 +7,15 @@
 
       <form @submit.prevent="submitRegister" class="register-form" novalidate>
         <div class="input-group">
-          <label for="name">Imię i nazwisko</label>
+          <label for="name">Imię</label>
 
           <input id="name" type="text" v-model="name" required />
+        </div>
+
+        <div class="input-group">
+          <label for="familyname">Nazwisko</label>
+
+          <input id="familyname" type="text" v-model="familyname" required />
         </div>
 
         <div class="input-group">
@@ -67,6 +73,7 @@ const auth = useAuthStore();
 const notification = useNotification();
 
 const name = ref('');
+const familyname = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
@@ -79,6 +86,7 @@ const isEmailValid = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.te
 const isFormValid = computed(() => {
   return (
     name.value.trim().length >= 3 &&
+    familyname.value.trim().length >= 3 &&
     isEmailValid(email.value) &&
     password.value.length >= 6 &&
     password.value === confirmPassword.value
@@ -92,7 +100,12 @@ async function submitRegister() {
   error.value = null;
 
   try {
-    await auth.register(name.value.trim(), email.value.trim(), password.value);
+    await auth.register(
+      name.value.trim(),
+      familyname.value.trim(),
+      email.value.trim(),
+      password.value,
+    );
     notification.showMessage('Rejestracja pomyślna! Sprawdź email, aby aktywować konto.');
     router.push('/login');
   } catch {

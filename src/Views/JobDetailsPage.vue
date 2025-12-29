@@ -1,5 +1,7 @@
 <template>
   <div class="container mt-20">
+    <AppliedAlert v-if="hasApplied" />
+
     <header class="offer-header text-center mb-5">
       <h1>{{ job?.jobTitle }}</h1>
 
@@ -43,14 +45,8 @@
             </div>
           </div>
 
-          <h4 class="mb-1">{{ user?.firstName }}</h4>
+          <h4 class="mb-1">{{ user?.companyName }}</h4>
 
-          <p class="text-muted mb-1">{{ user?.secondName }}</p>
-
-          <p class="text-muted small">
-            Słupsk
-            <!-- TODO: Dodać lokalizacje {{ job?.user.location }}-->
-          </p>
           <div class="decor-line"></div>
 
           <p class="text-muted small">{{ user?.bio }}</p>
@@ -100,22 +96,32 @@
     <div class="apply-bar text-center shadow-sm p-4 mt-5 bg-white">
       <button
         v-if="isLoggedIn"
-        class="btn btn-outline-primary btn-lg px-4 me-3"
+        class="btn btn-outline-primary btn-lg px-4 me-3 mb-1"
         @click="toggleSaveJob"
-        :class="{ 'text-danger border-danger': isSaved }"
+        :class="{ 'applied-button': isSaved }"
       >
-        <i :class="isSaved ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
+        <i :class="isSaved ? 'fa-solid fa-circle-check' : 'fa-regular fa-heart'"></i>
         {{ isSaved ? 'Zapisano' : 'Zapisz' }}
       </button>
 
-      <RouterLink v-if="!isLoggedIn || isCandidate" :to="`/aplikuj/${job?.id}`">
-        <button
-          class="btn btn-primary btn-lg px-5"
-          :style="{ backgroundColor: primaryColor, borderColor: primaryColor }"
-        >
-          Aplikuj teraz
+      <template v-if="!hasApplied">
+        <RouterLink v-if="!isLoggedIn || isCandidate" :to="`/aplikuj/${job?.id}`">
+          <button
+            class="btn btn-primary btn-lg px-5 mb-1"
+            :style="{ backgroundColor: primaryColor, borderColor: primaryColor }"
+          >
+            Aplikuj teraz
+          </button>
+        </RouterLink>
+      </template>
+
+      <template v-else>
+        <button class="btn btn-secondary btn-lg px-5 applied-button mb-1" disabled>
+          <i class="fa-solid fa-circle-check me-2"></i>
+
+          Już zaaplikowano
         </button>
-      </RouterLink>
+      </template>
     </div>
   </div>
 </template>
@@ -134,6 +140,8 @@ import { useNotification } from '@/composables/useNotification';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { MapPinIcon } from '@heroicons/vue/24/solid';
+import { RoleName } from '@/constants/RoleNames';
+import AppliedAlert from '@/components/AppliedAlert.vue';
 
 const notification = useNotification();
 const route = useRoute();
@@ -143,7 +151,8 @@ const job = ref<JobOffer | null>(null);
 const user = ref<User | null>(null);
 const auth = useAuthStore();
 const isLoggedIn = computed(() => auth.user != null);
-const isCandidate = computed(() => auth.user?.role === 'Candidate');
+const isCandidate = computed(() => auth.user?.role === RoleName.CANDIDATE);
+const hasApplied = ref(false);
 
 const initMap = () => {
   const longitude = job.value?.longitude;
@@ -173,6 +182,9 @@ onMounted(async () => {
   if (isLoggedIn.value) {
     const response = await api.get(`/JobOffer/is-saved/${job.value.id}`);
     isSaved.value = response.data.isSaved;
+
+    const appliedResponse = await api.get(`/Applications/check-application/${id}`);
+    hasApplied.value = appliedResponse.data.hasApplied;
   }
 
   setTimeout(() => {
@@ -309,5 +321,11 @@ const toggleSaveJob = async () => {
   width: 20px;
   height: 20px;
   margin-right: 5px;
+}
+
+.applied-button {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
 }
 </style>

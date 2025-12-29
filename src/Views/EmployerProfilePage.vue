@@ -12,9 +12,13 @@
 
     <div v-else-if="employerData">
       <header class="company-header text-center mb-5">
-        <h1>{{ employerData.name }}</h1>
+        <h1>{{ employerData.companyName }}</h1>
 
-        <p class="lead">{{ employerData.industry }} • {{ employerData.location }}</p>
+        <p class="lead">
+          <MapPinIcon class="icon" />
+
+          {{ employerData.location }}
+        </p>
       </header>
 
       <section class="company-content row justify-content-center">
@@ -32,15 +36,19 @@
                 class="placeholder-logo d-flex align-items-center justify-content-center rounded-circle mx-auto"
                 :style="{ backgroundColor: primaryColor }"
               >
-                <span class="text-white fw-bold h3 mb-0">{{ employerData.name[0] }}</span>
+                <span class="text-white fw-bold h3 mb-0">{{ employerData.companyName[0] }}</span>
               </div>
             </div>
 
-            <h4 class="mb-1">{{ employerData.name }}</h4>
+            <h4 class="mb-1">{{ employerData.companyName }}</h4>
 
-            <p class="text-muted mb-1">{{ employerData.industry }}</p>
+            <p class="text-muted mb-1">NIP: {{ employerData.nip }}</p>
 
-            <p class="text-muted small">{{ employerData.location }}</p>
+            <p class="text-muted small">
+              <MapPinIcon class="icon" style="color: #ff5666" />
+
+              {{ employerData.location }}
+            </p>
 
             <div class="decor-line my-3"></div>
 
@@ -51,7 +59,7 @@
         <div class="col-md-8">
           <div class="company-card shadow-sm p-4 bg-light">
             <h3 class="mb-4" :style="{ color: primaryColor }">
-              Oferty pracy w {{ employerData.name }}
+              Oferty pracy w {{ employerData.companyName }}
             </h3>
 
             <div v-if="employerData.jobOffers && employerData.jobOffers.length" class="row g-3">
@@ -93,6 +101,7 @@
 
 <script setup lang="ts">
 import api from '@/api/services/api';
+import { MapPinIcon } from '@heroicons/vue/24/solid';
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -106,8 +115,8 @@ interface JobOffer {
 
 interface Employer {
   id: string;
-  name: string;
-  industry: string;
+  companyName: string;
+  nip: string;
   location: string;
   description: string;
   photoUrl?: string;
@@ -220,5 +229,10 @@ onMounted(() => {
   background: linear-gradient(to right, #ff5666, #e14b59);
   margin: 12px auto;
   border-radius: 2px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
 }
 </style>

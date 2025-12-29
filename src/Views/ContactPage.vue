@@ -26,6 +26,7 @@
                 placeholder="Twoje imię i nazwisko"
                 class="form-control"
                 :class="{ 'is-invalid': errors.name }"
+                :disabled="isLoggedIn"
               />
 
               <div v-if="errors.name" class="invalid-feedback">Proszę podać imię i nazwisko.</div>
@@ -40,6 +41,7 @@
                 placeholder="Twój e-mail"
                 class="form-control"
                 :class="{ 'is-invalid': errors.email }"
+                :disabled="isLoggedIn"
               />
 
               <div v-if="errors.email" class="invalid-feedback">Proszę podać poprawny e-mail.</div>
@@ -114,11 +116,12 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, computed } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useNotification } from '@/composables/useNotification';
 import api from '@/api/services/api';
+import { useAuthStore } from '@/api/authentication/authStore';
 
 const notification = useNotification();
 
@@ -175,6 +178,9 @@ async function submitForm() {
   }
 }
 
+const auth = useAuthStore();
+const isLoggedIn = computed(() => auth.user != null);
+
 onMounted(() => {
   const longitude = 17.0424463;
   const latitude = 54.452509;
@@ -187,6 +193,11 @@ onMounted(() => {
   }).addTo(map);
 
   L.marker([latitude, longitude]).addTo(map);
+
+  if (isLoggedIn.value) {
+    form.name = `${auth.user?.firstName} ${auth.user?.secondName}`;
+    form.email = auth.user?.email || '';
+  }
 });
 </script>
 

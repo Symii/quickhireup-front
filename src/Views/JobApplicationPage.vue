@@ -158,10 +158,11 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/api/authentication/authStore';
 import api from '@/api/services/api';
 import { useNotification } from '@/composables/useNotification';
 import router from '@/router';
-import { reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const notification = useNotification();
@@ -270,7 +271,7 @@ const handleSubmit = async () => {
     }
 
     notification.showMessage('Twoja aplikacja została wysłana pomyślnie!', 'success');
-    router.push({
+    await router.push({
       name: 'application-success',
     });
   } catch {
@@ -279,6 +280,16 @@ const handleSubmit = async () => {
     loading.value = false;
   }
 };
+
+onMounted(() => {
+  const auth = useAuthStore();
+  const isLoggedIn = computed(() => auth.user != null);
+
+  if (isLoggedIn.value) {
+    form.name = `${auth.user?.firstName} ${auth.user?.secondName}`;
+    form.email = auth.user?.email || '';
+  }
+});
 </script>
 
 <style scoped>

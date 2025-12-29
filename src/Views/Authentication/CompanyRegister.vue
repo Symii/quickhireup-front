@@ -6,6 +6,10 @@
       <p class="subtitle">Utwórz konto firmowe, aby wystawiać ogłoszenia o pracę</p>
 
       <form @submit.prevent="submitCompanyRegister" class="register-form" novalidate>
+        <p class="subtitle" style="font-size: 1.4rem; margin-bottom: 0; color: #7e7e7e">
+          Wprowadź dane swojej firmy
+        </p>
+
         <div class="input-group">
           <label for="companyName">Nazwa firmy</label>
 
@@ -16,6 +20,29 @@
           <label for="nip">NIP</label>
 
           <input id="nip" type="text" v-model="nip" required />
+        </div>
+
+        <LocationAutocomplete
+          v-model="location"
+          placeholder="np. Warszawa"
+          class="location-input"
+          showLocationLabel
+        />
+
+        <p class="subtitle" style="font-size: 1.4rem; margin-bottom: 0; color: #7e7e7e">
+          Wprowadź dane do konta administracyjnego
+        </p>
+
+        <div class="input-group">
+          <label for="name">Imię</label>
+
+          <input id="name" type="text" v-model="name" required />
+        </div>
+
+        <div class="input-group">
+          <label for="familyname">Nazwisko</label>
+
+          <input id="familyname" type="text" v-model="familyname" required />
         </div>
 
         <div class="input-group">
@@ -57,6 +84,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useNotification } from '@/composables/useNotification';
 import { useAuthStore } from '@/api/authentication/authStore';
+import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -67,7 +95,9 @@ const nip = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
-
+const location = ref('');
+const name = ref('');
+const familyname = ref('');
 const loading = ref(false);
 const error = ref<string | null>(null);
 
@@ -83,6 +113,9 @@ const isFormValid = computed(() => {
     companyName.value.trim().length >= 2 &&
     isNipValid(nip.value) &&
     isEmailValid(email.value) &&
+    location.value.trim().length >= 2 &&
+    name.value.trim().length >= 2 &&
+    familyname.value.trim().length >= 2 &&
     password.value.length >= 6 &&
     password.value === confirmPassword.value
   );
@@ -100,6 +133,9 @@ async function submitCompanyRegister() {
       nip.value.trim(),
       email.value.trim(),
       password.value,
+      location.value.trim(),
+      name.value.trim(),
+      familyname.value.trim(),
     );
     notification.showMessage('Rejestracja pomyślna! Sprawdź email, aby aktywować konto.');
     router.push('/login');
@@ -170,6 +206,7 @@ async function submitCompanyRegister() {
   font-size: 0.95rem;
 }
 
+.location-input :deep(input),
 .input-group input {
   width: 100%;
   padding: 0.85rem 1rem;
@@ -182,6 +219,7 @@ async function submitCompanyRegister() {
   outline: none;
 }
 
+.location-input :deep(input):focus,
 .input-group input:focus {
   border-color: rgb(255, 86, 102);
   box-shadow: 0 0 8px rgba(255, 86, 102, 0.5);
@@ -237,5 +275,10 @@ async function submitCompanyRegister() {
   .title {
     font-size: 2rem;
   }
+}
+
+.location-input :deep(input) {
+  padding-top: 15px;
+  padding-bottom: 15px;
 }
 </style>

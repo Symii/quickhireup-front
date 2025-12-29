@@ -1,5 +1,7 @@
 <template>
   <div class="search-input-wrapper position-relative" ref="wrapperRef">
+    <label v-if="showLocationLabel">Lokalizacja</label>
+
     <input
       type="text"
       :value="modelValue"
@@ -37,6 +39,7 @@ interface NominatimSuggestion {
 defineProps({
   modelValue: { type: String, default: '' },
   placeholder: { type: String, default: 'Lokalizacja' },
+  showLocationLabel: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:modelValue', 'select']);

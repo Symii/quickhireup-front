@@ -99,7 +99,7 @@
 import { ref, computed, onMounted } from 'vue';
 
 interface Application {
-  id: string; // Zmienione na string, bo w .NET masz string/GUID
+  id: string;
   jobId: string;
   jobTitle: string;
   company: string;

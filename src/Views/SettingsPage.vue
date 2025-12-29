@@ -33,7 +33,9 @@
 
       <div class="col-md-8 mb-4">
         <div class="settings-card shadow-sm p-4 bg-light">
-          <h3 class="mb-4" :style="{ color: primaryColor }">Edytuj ustawienia</h3>
+          <h3 :style="{ color: primaryColor }">Edytuj ustawienia</h3>
+
+          <hr />
 
           <form @submit.prevent="saveSettings" novalidate>
             <div class="mb-4">

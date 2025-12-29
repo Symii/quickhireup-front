@@ -73,20 +73,32 @@ export const useAuthStore = defineStore('auth', {
       delete api.defaults.headers.common.Authorization;
     },
 
-    async register(userName: string, email: string, password: string) {
+    async register(name: string, familyName: string, email: string, password: string) {
       await api.post<unknown>('/account/register', {
-        userName,
+        name,
+        familyName,
         email,
         password,
       });
     },
 
-    async registerCompany(companyName: string, nip: string, email: string, password: string) {
+    async registerCompany(
+      companyName: string,
+      nip: string,
+      email: string,
+      password: string,
+      location: string,
+      name: string,
+      familyName: string,
+    ) {
       await api.post('/account/register-company', {
         companyName,
         nip,
         email,
         password,
+        location,
+        name,
+        familyName,
       });
     },
 

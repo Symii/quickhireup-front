@@ -28,6 +28,10 @@ export interface User {
   applicationUpdatesEnabled: boolean;
   showCv: boolean;
   showProfile: boolean;
+
+  companyName?: string;
+  nip?: string;
+  location?: string;
 }
 
 export interface CV {
@@ -47,4 +51,8 @@ export interface UserShort {
   applicationUpdatesEnabled: boolean;
   showCv: boolean;
   showProfile: boolean;
+
+  companyName?: string;
+  nip?: string;
+  location?: string;
 }
