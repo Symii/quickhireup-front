@@ -19,6 +19,7 @@ export default {
       distance: filters.distance?.toString() ?? '',
       latitude: filters.latitude?.toString() ?? '',
       longitude: filters.longitude?.toString() ?? '',
+      onlyMyOffers: filters.onlyMyOffers == 'true' ? 'true' : 'false',
     });
 
     const result = await api.get(`${API_URL}/paged?${params.toString()}`);
@@ -70,5 +71,10 @@ export default {
   async delete(id: string) {
     const result = await api.delete(`${API_URL}/${id}`);
     return result.data;
+  },
+
+  async toggleStatus(id: string) {
+    const response = await api.patch(`${API_URL}/${id}/toggle-status`);
+    return response.data;
   },
 };

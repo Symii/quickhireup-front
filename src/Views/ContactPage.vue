@@ -8,6 +8,8 @@
   <div class="contact-page container py-5">
     <section class="contact-form-section mb-5 row justify-content-center">
       <div class="col-md-6 mb-4">
+        <AlertMessage v-if="hasSent" message="Wiadomość została wysłana pomyślnie!" />
+
         <div class="form-card shadow-sm p-4">
           <h2>Skontaktuj się z <strong>nami</strong></h2>
 
@@ -122,8 +124,10 @@ import 'leaflet/dist/leaflet.css';
 import { useNotification } from '@/composables/useNotification';
 import api from '@/api/services/api';
 import { useAuthStore } from '@/api/authentication/authStore';
+import AlertMessage from '@/components/AlertMessage.vue';
 
 const notification = useNotification();
+const hasSent = ref(false);
 
 const form = reactive({
   name: '',
@@ -171,6 +175,8 @@ async function submitForm() {
     form.email = '';
     form.subject = '';
     form.message = '';
+
+    hasSent.value = true;
   } catch {
     notification.showMessage('Wystąpił błąd podczas wysyłania wiadomości.', 'error');
   } finally {

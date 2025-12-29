@@ -1,5 +1,5 @@
 import { useAuthStore } from '@/api/authentication/authStore';
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router';
 
 import 'vue-router';
 
@@ -169,15 +169,15 @@ const routes = [
     path: '/job-success',
     name: 'job-success',
     component: () => import('@/Views/SuccessPage.vue'),
-    props: (route: { query: { jobTitle: string; offerId: string } }) => ({
+    props: (route: RouteLocationNormalized) => ({
       title: 'Zapisano ogłoszenie',
       message: 'Twoje ogłoszenie zostało opublikowane:',
       highlight: route.query.jobTitle,
       icon: 'bi-check-circle-fill',
       primaryButtonText: 'Zobacz ogłoszenie',
       secondaryButtonText: 'Wróć do listy',
-      onPrimaryClick: () => router.push(`/oferta/${route.query.offerId}`),
-      onSecondaryClick: () => router.push('/'),
+      primaryPath: `/oferta/${route.query.offerId}`,
+      secondaryPath: '/',
     }),
     meta: { requiresAuth: true, roles: ['Company'] },
   },
@@ -185,15 +185,15 @@ const routes = [
     path: '/application-success',
     name: 'application-success',
     component: () => import('@/Views/SuccessPage.vue'),
-    props: (route: { query: { jobTitle: string } }) => ({
+    props: {
       title: 'Aplikacja wysłana!',
       message: 'Twoje CV trafiło do pracodawcy. Powodzenia na wybranym stanowisku!',
       icon: 'bi-send-check-fill',
       primaryButtonText: 'Szukaj innych ofert',
       secondaryButtonText: 'Moje aplikacje',
-      onPrimaryClick: () => router.push('/'),
-      onSecondaryClick: () => router.push('/moje-aplikacje'),
-    }),
+      primaryPath: '/',
+      secondaryPath: '/moje-aplikacje',
+    },
   },
   {
     path: '/unauthorized',

@@ -19,6 +19,8 @@
     <router-view :key="$route.fullPath" />
 
     <footer-menu v-if="!$route.meta.hideNavFooter" />
+
+    <ConfirmModal />
   </div>
 </template>
 
@@ -26,6 +28,7 @@
 import NavbarMenu from './components/NavbarMenu.vue';
 import FooterMenu from './components/FooterMenu.vue';
 import { useNotification, type NotificationType } from './composables/useNotification';
+import ConfirmModal from './components/ConfirmModal.vue';
 
 const { notifications } = useNotification();
 

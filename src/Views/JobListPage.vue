@@ -219,6 +219,7 @@ const filters = ref<JobOfferFilters>({
   minSalary: null,
   maxSalary: null,
   sort: '',
+  onlyMyOffers: 'false',
 });
 
 import { useRoute, useRouter } from 'vue-router';

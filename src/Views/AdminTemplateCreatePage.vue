@@ -228,6 +228,7 @@
 
 <script lang="ts">
 import api from '@/api/services/api';
+import { useConfirm } from '@/composables/useConfirm';
 import { useNotification } from '@/composables/useNotification';
 import { reactive, ref, onMounted } from 'vue';
 
@@ -350,25 +351,35 @@ export default {
       editingTemplate.value = tpl;
     };
 
-    const deleteTemplate = async (id: string) => {
-      if (confirm('Czy na pewno chcesz usunąć ten szablon?')) {
-        try {
-          const response = await api.delete(`${apiUrl}/${id}`);
+    const { confirm } = useConfirm();
 
-          if (response.status === 200 || response.status === 204) {
-            templates.value = templates.value.filter((t) => t.id !== id);
-            if (editingTemplate.value?.id === id) {
-              editingTemplate.value = null;
-              resetForm();
-            }
-            notification.showMessage('Szablon usunięty.', 'success');
-          } else {
-            notification.showMessage('Nie udało się usunąć szablonu.', 'error');
+    const deleteTemplate = async (id: string) => {
+      const isConfirmed = await confirm(
+        'Usuwanie szablonu',
+        'Czy na pewno chcesz usunąć ten szablon?',
+        { confirmText: 'Tak, usuń', cancelText: 'Nie, wróć' },
+      );
+
+      if (!isConfirmed) {
+        return;
+      }
+
+      try {
+        const response = await api.delete(`${apiUrl}/${id}`);
+
+        if (response.status === 200 || response.status === 204) {
+          templates.value = templates.value.filter((t) => t.id !== id);
+          if (editingTemplate.value?.id === id) {
+            editingTemplate.value = null;
+            resetForm();
           }
-        } catch (error) {
-          console.error(error);
-          notification.showMessage('Błąd połączenia.', 'error');
+          notification.showMessage('Szablon usunięty.', 'success');
+        } else {
+          notification.showMessage('Nie udało się usunąć szablonu.', 'error');
         }
+      } catch (error) {
+        console.error(error);
+        notification.showMessage('Błąd połączenia.', 'error');
       }
     };
 

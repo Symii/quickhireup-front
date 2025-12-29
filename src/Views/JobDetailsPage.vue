@@ -1,6 +1,9 @@
 <template>
   <div class="container mt-20">
-    <AppliedAlert v-if="hasApplied" />
+    <AlertMessage
+      v-if="hasApplied"
+      message="Już aplikowałeś na to stanowisko. Twoja aplikacja jest przetwarzana przez pracodawcę."
+    />
 
     <header class="offer-header text-center mb-5">
       <h1>{{ job?.jobTitle }}</h1>
@@ -141,7 +144,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { MapPinIcon } from '@heroicons/vue/24/solid';
 import { RoleName } from '@/constants/RoleNames';
-import AppliedAlert from '@/components/AppliedAlert.vue';
+import AlertMessage from '@/components/AlertMessage.vue';
 
 const notification = useNotification();
 const route = useRoute();

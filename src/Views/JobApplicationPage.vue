@@ -115,11 +115,11 @@
                 <textarea v-model="form.coverLetter" rows="4" class="form-control"></textarea>
               </div>
 
-              <div class="form-check mt-3">
+              <div class="form-check mb-2">
                 <input
                   type="checkbox"
                   v-model="form.agreePrivacy"
-                  class="form-check-input"
+                  class="custom-checkbox"
                   id="agreePrivacy"
                 />
 
@@ -160,6 +160,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/api/authentication/authStore';
 import api from '@/api/services/api';
+import { useConfirm } from '@/composables/useConfirm';
 import { useNotification } from '@/composables/useNotification';
 import router from '@/router';
 import { computed, onMounted, reactive, ref } from 'vue';
@@ -226,7 +227,13 @@ const validateStep = (step: number) => {
     if (!form.agreePrivacy) errors.agreePrivacy = 'Błąd: Musisz zaakceptować politykę prywatności';
   }
 
-  return Object.values(errors).every((v) => !v);
+  const isValid = Object.values(errors).every((v) => !v);
+
+  if (!isValid) {
+    notification.showMessage('Proszę poprawić błędy w formularzu.', 'error');
+  }
+
+  return isValid;
 };
 
 const nextStep = () => {
@@ -243,8 +250,22 @@ const onFileChange = (e: Event) => {
   form.cvName = file?.name || '';
 };
 
+const { confirm } = useConfirm();
+
 const handleSubmit = async () => {
-  if (!validateStep(3)) return;
+  if (!validateStep(3)) {
+    return;
+  }
+
+  const isConfirmed = await confirm(
+    'Wyślij aplikację',
+    'Czy na pewno chcesz wysłać swoją aplikację na to stanowisko?',
+    { confirmText: 'Tak, wyślij', cancelText: 'Nie, wróć' },
+  );
+
+  if (!isConfirmed) {
+    return;
+  }
 
   loading.value = true;
 
@@ -363,5 +384,56 @@ button.btn-primary:hover {
 }
 .text-danger {
   color: #dc3545 !important;
+}
+
+.form-check-label {
+  position: relative;
+  padding-left: 2.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.form-check-label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.form-check-label::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  width: 8px;
+  height: 12px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-100%) scale(0) rotate(45deg);
+  transform-origin: bottom left;
+  transition: transform 0.3s ease;
+}
+
+.custom-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.custom-checkbox:checked + .form-check-label::before {
+  background-color: #ff5666;
+  border-color: #ff5666;
+}
+
+.custom-checkbox:checked + .form-check-label::after {
+  transform: translateY(-100%) scale(1) rotate(45deg);
 }
 </style>

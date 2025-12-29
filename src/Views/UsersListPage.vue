@@ -71,6 +71,7 @@ import { ref, onMounted } from 'vue';
 import userService from '@/api/services/usersService';
 import UserForm from '@/components/UserForm.vue';
 import type { User } from '@/api/types/user';
+import { useConfirm } from '@/composables/useConfirm';
 
 const primaryColor = '#ff5666';
 const users = ref<User[]>([]);
@@ -84,11 +85,21 @@ function editUser(user: User) {
   selectedUser.value = { ...user };
 }
 
+const { confirm } = useConfirm();
+
 async function removeUser(id: string) {
-  if (confirm('Czy na pewno chcesz usunąć tego użytkownika?')) {
-    await userService.delete(id);
-    await loadUsers();
+  const isConfirmed = await confirm(
+    'Usuwanie użytkownika',
+    'Czy na pewno chcesz usunąć tego użytkownika?',
+    { confirmText: 'Tak, usuń', cancelText: 'Nie, wróć' },
+  );
+
+  if (!isConfirmed) {
+    return;
   }
+
+  await userService.delete(id);
+  await loadUsers();
 }
 
 function onUserSaved() {

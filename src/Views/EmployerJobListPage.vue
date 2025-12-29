@@ -28,7 +28,20 @@
               <div class="company-icon me-3">{{ job.company[0] }}</div>
 
               <div>
-                <h5 class="card-title fw-semibold mb-0">{{ job.jobTitle }}</h5>
+                <h5 class="card-title fw-semibold mb-0">
+                  {{ job.jobTitle }}
+
+                  <span
+                    v-if="!job.isActive"
+                    class="badge bg-secondary ms-2"
+                    style="font-size: 0.6rem"
+                    >Nieaktywne</span
+                  >
+
+                  <span v-else class="badge bg-success ms-2" style="font-size: 0.6rem"
+                    >Aktywne</span
+                  >
+                </h5>
 
                 <small class="text-muted">{{ job.company }}</small>
               </div>
@@ -48,14 +61,26 @@
               <span><i class="fas fa-clock me-1"></i>{{ job.contractType }}</span>
             </div>
 
-            <div class="d-flex gap-2 mt-auto">
-              <RouterLink :to="`/firma/edytuj-ogloszenie/${job.id}`">
+            <div class="d-flex gap-2 mt-auto flex-wrap">
+              <button
+                class="btn w-100 mb-2"
+                :class="job.isActive ? 'btn-outline-warning' : 'btn-outline-success'"
+                @click="toggleJobStatus(job)"
+              >
+                <i
+                  :class="job.isActive ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"
+                  class="me-2"
+                ></i>
+                {{ job.isActive ? 'Dezaktywuj' : 'Aktywuj' }}
+              </button>
+
+              <RouterLink :to="`/firma/edytuj-ogloszenie/${job.id}`" class="flex-grow-1">
                 <button class="btn btn-outline-primary w-100">
                   <i class="fa-solid fa-pen-to-square me-2"></i> Edytuj
                 </button>
               </RouterLink>
 
-              <RouterLink :to="`/firma/kandydaci/${job.id}`">
+              <RouterLink :to="`/firma/kandydaci/${job.id}`" class="flex-grow-1">
                 <button class="btn btn-gradient w-100">
                   <i class="fa-solid fa-user me-2"></i> Kandydaci
                 </button>
@@ -65,38 +90,150 @@
         </div>
       </div>
     </div>
+
+    <nav class="mt-5 d-flex justify-content-center align-items-center gap-3 pagination-custom">
+      <button
+        class="btn btn-outline-primary"
+        :disabled="currentPage === 1"
+        @click="changePage(currentPage - 1)"
+      >
+        ‹
+      </button>
+
+      <div class="d-flex align-items-center gap-2">
+        <input
+          type="number"
+          v-model.number="pageInput"
+          @change="goToPage"
+          class="form-control page-input"
+          :min="1"
+          :max="totalPages"
+          style="width: 70px; text-align: center"
+        />
+        <span class="text-muted">z {{ totalPages }} stron</span>
+      </div>
+
+      <button
+        class="btn btn-outline-primary"
+        :disabled="currentPage === totalPages"
+        @click="changePage(currentPage + 1)"
+      >
+        ›
+      </button>
+    </nav>
   </div>
 </template>
 
 <script setup lang="ts">
 import jobOfferService from '@/api/services/jobOfferService';
+import type { JobOfferFilters } from '@/api/types/filters/jobOfferFilters';
 import type { JobOffer } from '@/api/types/jobOffer';
+import { useConfirm } from '@/composables/useConfirm';
+import { useNotification } from '@/composables/useNotification';
 import { ref, onMounted } from 'vue';
 
+const notification = useNotification();
 const myJobs = ref<JobOffer[]>([]);
 const loading = ref(true);
+
+const currentPage = ref(1);
+const perPage = 6;
+const pageInput = ref(1);
+const totalPages = ref(1);
+const totalCount = ref(0);
+
+const changePage = async (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+    pageInput.value = page;
+
+    await fetchJobs();
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
+
+const goToPage = () => {
+  if (!pageInput.value || pageInput.value < 1 || pageInput.value > totalPages.value) {
+    pageInput.value = currentPage.value;
+    return;
+  }
+  changePage(pageInput.value);
+};
+
+const filters = ref<JobOfferFilters>({
+  keyword: '',
+  location: '',
+  distance: '',
+  latitude: null,
+  longitude: null,
+  type: '',
+  experience: '',
+  minSalary: null,
+  maxSalary: null,
+  sort: '',
+  onlyMyOffers: 'true',
+});
 
 const fetchJobs = async () => {
   loading.value = true;
   try {
-    const allJobs = await jobOfferService.getAll();
-    myJobs.value = allJobs;
-  } catch (error) {
-    console.error('Błąd pobierania ogłoszeń:', error);
+    filters.value.onlyMyOffers = 'true';
+    const response = await jobOfferService.getPaged(currentPage.value, perPage, filters.value);
+
+    myJobs.value = response.items;
+    totalPages.value = response.totalPages;
+    totalCount.value = response.totalCount;
+    pageInput.value = response.page;
+  } catch {
+    notification.showMessage('Bład pobierania ogłoszeń', 'error');
   } finally {
     loading.value = false;
   }
 };
 
+const { confirm } = useConfirm();
+
 const removeJob = async (id?: string) => {
-  if (!id) return;
-  if (!confirm('Czy na pewno chcesz usunąć to ogłoszenie?')) return;
+  if (!id) {
+    return;
+  }
+
+  const isConfirmed = await confirm(
+    'Usuwanie ogłoszenia',
+    'Czy na pewno chcesz usunąć to ogłoszenie?',
+    { confirmText: 'Tak, usuń', cancelText: 'Nie, wróć' },
+  );
+
+  if (!isConfirmed) {
+    return;
+  }
 
   try {
     await jobOfferService.delete(id);
+
     myJobs.value = myJobs.value.filter((job) => job.id !== id);
-  } catch (error) {
-    console.error('Błąd podczas usuwania ogłoszenia:', error);
+
+    if (myJobs.value.length === 0 && currentPage.value > 1) {
+      changePage(currentPage.value - 1);
+    }
+  } catch {
+    notification.showMessage('Błąd podczas usuwania ogłoszenia', 'error');
+  }
+};
+
+const toggleJobStatus = async (job: JobOffer) => {
+  try {
+    const response = await jobOfferService.toggleStatus(job.id!);
+    job.isActive = response.isActive;
+
+    if (job.isActive) {
+      notification.showMessage('Aktywowano ogłoszenie o pracę.');
+    } else {
+      notification.showMessage('Dezaktywowano ogłoszenie o pracę.', 'info');
+    }
+  } catch {
+    notification.showMessage('Błąd podczas zmiany statusu', 'error');
   }
 };
 

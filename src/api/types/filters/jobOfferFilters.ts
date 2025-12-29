@@ -9,4 +9,5 @@ export interface JobOfferFilters {
   minSalary?: number | null;
   maxSalary?: number | null;
   sort?: 'newest' | 'oldest' | 'salaryAsc' | 'salaryDesc' | '';
+  onlyMyOffers?: string;
 }

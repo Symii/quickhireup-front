@@ -14,11 +14,11 @@
       </p>
 
       <div class="d-flex justify-content-center gap-3">
-        <button class="btn btn-primary" @click="onPrimaryClick">
+        <button class="btn btn-primary" @click="handlePrimaryClick">
           {{ primaryButtonText }}
         </button>
 
-        <button class="btn btn-outline-secondary" @click="onSecondaryClick">
+        <button class="btn btn-outline-secondary" @click="handleSecondaryClick">
           {{ secondaryButtonText }}
         </button>
       </div>
@@ -27,6 +27,7 @@
 </template>
 
 <script lang="ts">
+import router from '@/router';
 import { onMounted, onUnmounted, ref, defineComponent, type PropType } from 'vue';
 
 interface Star {
@@ -47,18 +48,15 @@ export default defineComponent({
     icon: String,
     primaryButtonText: String,
     secondaryButtonText: String,
-    onPrimaryClick: {
-      type: Function as PropType<() => void>,
-      required: true,
-    },
-    onSecondaryClick: {
-      type: Function as PropType<() => void>,
-      required: true,
-    },
+    primaryPath: { type: String, required: true },
+    secondaryPath: { type: String, required: true },
   },
-  setup() {
+  setup(props) {
     const confettiCanvas = ref<HTMLCanvasElement | null>(null);
     let animationId: number;
+
+    const handlePrimaryClick = () => router.push(props.primaryPath);
+    const handleSecondaryClick = () => router.push(props.secondaryPath);
 
     const hexToRgb = (hex: string) => {
       const bigint = parseInt(hex.replace('#', ''), 16);
@@ -115,7 +113,7 @@ export default defineComponent({
       cancelAnimationFrame(animationId);
     });
 
-    return { confettiCanvas };
+    return { confettiCanvas, handlePrimaryClick, handleSecondaryClick };
   },
 });
 </script>

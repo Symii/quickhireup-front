@@ -15,4 +15,6 @@ export interface JobOffer {
   agreeRegulation: boolean;
   latitude?: number;
   longitude?: number;
+
+  isActive?: boolean;
 }

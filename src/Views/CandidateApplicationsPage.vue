@@ -11,7 +11,7 @@
     <div v-if="applications.length === 0" class="text-center text-muted py-5">
       <i class="fa-brands fa-searchengin fa-3x mb-3"></i>
 
-      <p>Nie masz jeszcze żadnych aplikacji. Zacznij już teraz!</p>
+      <p>Nie masz jeszcze żadnych aplikacji.</p>
 
       <RouterLink to="/oferty">
         <button class="btn btn-gradient mt-2">Przeglądaj oferty</button>
@@ -56,6 +56,14 @@
               >
                 <i class="fa-regular fa-circle-left me-2"></i> Cofnij aplikację
               </button>
+
+              <button
+                v-if="app.status === 'withdrawn'"
+                class="btn btn-outline-danger"
+                @click="deleteApp(app.id)"
+              >
+                <i class="fa-regular fa-trash-can me-2"></i> Usuń z historii
+              </button>
             </div>
           </div>
         </div>
@@ -96,6 +104,9 @@
 </template>
 
 <script setup lang="ts">
+import { useConfirm } from '@/composables/useConfirm';
+import api from '@/api/services/api';
+import { useNotification } from '@/composables/useNotification';
 import { ref, computed, onMounted } from 'vue';
 
 interface Application {
@@ -106,7 +117,7 @@ interface Application {
   location: string;
   type: string;
   submittedAt: string;
-  status: 'submitted' | 'in_progress' | 'rejected' | 'accepted' | 'withdrawn';
+  status: 'in_progress' | 'rejected' | 'accepted' | 'withdrawn';
 }
 
 const allApplications = ref<Application[]>([]);
@@ -115,17 +126,14 @@ const loading = ref(true);
 const fetchApplications = async () => {
   loading.value = true;
   try {
-    const token = localStorage.getItem('token');
-    const response = await fetch('http://localhost:5000/api/applications/my-applications', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await api.get('http://localhost:5000/api/applications/my-applications');
 
-    if (!response.ok) throw new Error('Błąd podczas pobierania danych');
+    if (!response.data) {
+      notification.showMessage('Błąd podczas pobierania danych.', 'error');
+      throw new Error('Błąd podczas pobierania danych');
+    }
 
-    const data = await response.json();
-    allApplications.value = data;
+    allApplications.value = response.data;
   } catch (error) {
     console.error(error);
   } finally {
@@ -137,6 +145,7 @@ onMounted(() => {
   fetchApplications();
 });
 
+const notification = useNotification();
 const applications = computed(() => allApplications.value);
 
 const currentPage = ref(1);
@@ -164,29 +173,64 @@ const goToPage = () => {
   changePage(pageInput.value);
 };
 
+const { confirm } = useConfirm();
+
 const withdraw = async (appId: string) => {
-  if (confirm('Czy na pewno chcesz wycofać tę aplikację?')) {
+  const isConfirmed = await confirm(
+    'Wycofanie aplikacji',
+    'Czy na pewno chcesz wycofać tę aplikację? Tej operacji nie można cofnąć.',
+    { confirmText: 'Tak, wycofaj', cancelText: 'Nie, wróć' },
+  );
+
+  if (isConfirmed) {
     try {
+      await api.patch(`http://localhost:5000/api/applications/${appId}/status`, 'withdrawn', {
+        headers: { 'Content-Type': 'application/json' },
+      });
+
       const idx = allApplications.value.findIndex((a) => a.id === appId);
       if (idx !== -1) {
         allApplications.value[idx].status = 'withdrawn';
       }
-      alert('Aplikacja została wycofana.');
+
+      notification.showMessage('Aplikacja została wycofana.');
     } catch {
-      alert('Nie udało się wycofać aplikacji.');
+      notification.showMessage('Błąd podczas wycofywania aplikacji.', 'error');
+    }
+  }
+};
+
+const deleteApp = async (appId: string) => {
+  const isConfirmed = await confirm(
+    'Usuwanie aplikacji',
+    'Czy na pewno chcesz usunąć tę aplikację z historii? Pozwoli Ci to na ponowne zaaplikowanie na to stanowisko.',
+    { confirmText: 'Tak, usuń', cancelText: 'Nie, wróć' },
+  );
+
+  if (isConfirmed) {
+    try {
+      await api.delete(`http://localhost:5000/api/applications/${appId}`);
+
+      allApplications.value = allApplications.value.filter((a) => a.id !== appId);
+
+      notification.showMessage('Aplikacja została usunięta.');
+    } catch {
+      notification.showMessage('Błąd podczas usuwania aplikacji.', 'error');
     }
   }
 };
 
 const formatDate = (iso: string) => {
-  if (!iso) return '-';
+  if (!iso) {
+    return '-';
+  }
+
   const d = new Date(iso);
   return d.toLocaleDateString('pl-PL', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
 const statusLabel = (status: Application['status']) => {
   const labels = {
-    submitted: 'Złożona',
     in_progress: 'W trakcie',
     rejected: 'Odrzucona',
     accepted: 'Przyjęta',
@@ -197,7 +241,6 @@ const statusLabel = (status: Application['status']) => {
 
 const statusClass = (status: Application['status']) => {
   const classes = {
-    submitted: 'badge-bg-secondary',
     in_progress: 'badge-bg-primary',
     rejected: 'badge-bg-danger',
     accepted: 'badge-bg-success',
@@ -208,7 +251,6 @@ const statusClass = (status: Application['status']) => {
 
 const statusIcon = (status: Application['status']) => {
   const icons = {
-    submitted: 'fa-regular fa-envelope',
     in_progress: 'fa-solid fa-hourglass-half',
     rejected: 'fa-solid fa-x',
     accepted: 'fa-solid fa-lightbulb',

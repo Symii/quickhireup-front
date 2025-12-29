@@ -270,7 +270,7 @@
                 <input
                   type="checkbox"
                   v-model="form.agreeRegulation"
-                  class="form-check-input"
+                  class="custom-checkbox"
                   id="agree"
                 />
 
@@ -311,6 +311,7 @@ import api from '@/api/services/api';
 import jobOfferService from '@/api/services/jobOfferService';
 import type { JobOffer } from '@/api/types/jobOffer';
 import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
+import { useConfirm } from '@/composables/useConfirm';
 import { useNotification } from '@/composables/useNotification';
 import router from '@/router';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
@@ -446,7 +447,13 @@ export default {
       if (step === 3 && !form.agreeRegulation)
         errors.agreeRegulation = 'Błąd: Musisz zaakceptować regulamin.';
 
-      return Object.values(errors).every((v) => !v);
+      const isValid = Object.values(errors).every((v) => !v);
+
+      if (!isValid) {
+        notification.showMessage('Proszę poprawić błędy w formularzu.', 'error');
+      }
+
+      return isValid;
     };
 
     const nextStep = () => {
@@ -457,8 +464,23 @@ export default {
       if (currentStep.value > 1) currentStep.value--;
     };
 
+    const { confirm } = useConfirm();
+
     const handleSubmit = async () => {
-      if (!validateStep(3)) return;
+      if (!validateStep(3)) {
+        return;
+      }
+
+      const isConfirmed = await confirm(
+        'Dodaj ogłoszenie',
+        'Czy na pewno chcesz dodać to ogłoszenie?',
+        { confirmText: 'Tak, dodaj', cancelText: 'Nie, wróć' },
+      );
+
+      if (!isConfirmed) {
+        return;
+      }
+
       loading.value = true;
       try {
         if (isEditMode.value) {
@@ -466,7 +488,9 @@ export default {
           notification.showMessage('Zaktualizowano ogłoszenie pomyślnie');
         } else {
           const created = await jobOfferService.create(form);
+
           notification.showMessage('Dodano ogłoszenie pomyślnie');
+
           await router.push({
             name: 'job-success',
             query: { offerId: created.id, jobTitle: created.jobTitle },
@@ -633,5 +657,56 @@ button.btn-primary:hover {
 .additional-padding :deep(input.form-control) {
   padding-top: 8px;
   padding-bottom: 8px;
+}
+
+.form-check-label {
+  position: relative;
+  padding-left: 2.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.form-check-label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.form-check-label::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  width: 8px;
+  height: 12px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-100%) scale(0) rotate(45deg);
+  transform-origin: bottom left;
+  transition: transform 0.3s ease;
+}
+
+.custom-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.custom-checkbox:checked + .form-check-label::before {
+  background-color: #ff5666;
+  border-color: #ff5666;
+}
+
+.custom-checkbox:checked + .form-check-label::after {
+  transform: translateY(-100%) scale(1) rotate(45deg);
 }
 </style>

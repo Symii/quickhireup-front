@@ -8,7 +8,7 @@
       <i class="fa-solid fa-circle-check me-2 fs-4"></i>
 
       <div>
-        Już aplikowałeś na to stanowisko. Twoja aplikacja jest przetwarzana przez pracodawcę.
+        {{ message }}
       </div>
     </div>
 
@@ -19,6 +19,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 const isVisible = ref(true);
+
+defineProps<{ message: string }>();
 </script>
 
 <style scoped>
