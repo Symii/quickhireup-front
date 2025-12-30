@@ -33,6 +33,7 @@
               <svg viewBox="0 0 24 24" width="16" height="16">
                 <path :d="mdiRocketLaunch" fill="black" />
               </svg>
+
               PRO
             </span>
           </h4>

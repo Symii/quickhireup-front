@@ -14,6 +14,34 @@
     <section class="offer-content row justify-content-center">
       <div class="col-lg-8 mb-4">
         <div class="offer-card shadow-sm p-4">
+          <div v-if="job?.isActive" class="expiration-box mb-4 p-3 bg-light rounded border">
+            <div class="d-flex justify-content-between align-items-end mb-2">
+              <span class="fw-bold text-muted small text-uppercase">Ważność oferty</span>
+
+              <span class="fw-bold" :class="daysLeft <= 3 ? 'text-danger' : 'text-primary'">
+                <i class="fa-regular fa-clock me-1"></i> {{ progressLabel }}
+              </span>
+            </div>
+
+            <div class="progress" style="height: 10px">
+              <div
+                class="progress-bar progress-bar-striped progress-bar-animated"
+                role="progressbar"
+                :style="{ width: progressPercentage + '%' }"
+                :class="progressColorClass"
+                :aria-valuenow="progressPercentage"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              ></div>
+            </div>
+
+            <div class="text-end mt-1">
+              <small class="text-muted" style="font-size: 0.7rem">
+                Wygasa: {{ new Date(job?.expiresAt).toLocaleDateString() }}
+              </small>
+            </div>
+          </div>
+
           <h3 class="section-title mb-3" :style="{ color: primaryColor }">Opis stanowiska</h3>
 
           <p class="text-muted mb-4">{{ job?.description }}</p>
@@ -156,6 +184,53 @@ const auth = useAuthStore();
 const isLoggedIn = computed(() => auth.user != null);
 const isCandidate = computed(() => auth.user?.role === RoleName.CANDIDATE);
 const hasApplied = ref(false);
+
+const daysLeft = computed(() => {
+  if (!job.value?.expiresAt) {
+    return 0;
+  }
+
+  const expires = new Date(job.value.expiresAt);
+  const now = new Date();
+
+  const diffTime = expires.getTime() - now.getTime();
+
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays > 0 ? diffDays : 0;
+});
+
+const progressPercentage = computed(() => {
+  const maxDays = 30;
+  const current = daysLeft.value;
+  const percentage = (current / maxDays) * 100;
+  return Math.min(Math.max(percentage, 0), 100);
+});
+
+const progressColorClass = computed(() => {
+  const days = daysLeft.value;
+  if (days <= 3) {
+    return 'bg-danger';
+  }
+
+  if (days <= 7) {
+    return 'bg-warning';
+  }
+  return 'bg-success';
+});
+
+const progressLabel = computed(() => {
+  const days = daysLeft.value;
+  if (days === 0) {
+    return 'Oferta wygasa dzisiaj';
+  }
+
+  if (days === 1) {
+    return 'Pozostał 1 dzień';
+  }
+
+  return `Pozostało ${days} dni`;
+});
 
 const initMap = () => {
   const longitude = job.value?.longitude;
@@ -330,5 +405,46 @@ const toggleSaveJob = async () => {
   background-color: #d4edda;
   border-color: #c3e6cb;
   color: #155724;
+}
+
+.progress {
+  display: flex;
+  height: 10px;
+  overflow: hidden;
+  line-height: 0;
+  font-size: 0.75rem;
+  background-color: #e9ecef;
+  border-radius: 20px;
+  position: relative;
+  width: 100%;
+}
+
+.progress-bar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  transition: width 0.6s ease;
+  height: 100%;
+  border-radius: 20px;
+}
+
+.bg-success {
+  background-color: #28a745 !important;
+}
+.bg-warning {
+  background-color: #ffc107 !important;
+}
+.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+.expiration-box {
+  border: 1px solid #f0f0f0;
+  clear: both;
+  position: relative;
 }
 </style>

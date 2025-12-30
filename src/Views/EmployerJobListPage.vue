@@ -53,7 +53,16 @@
                   <span v-else class="badge bg-success ms-2" style="font-size: 0.6rem">
                     Aktywne
                   </span>
+
+                  <span
+                    v-if="job.isPromoted"
+                    class="badge bg-warning ms-2"
+                    style="font-size: 0.6rem"
+                  >
+                    Promowane
+                  </span>
                 </h5>
+
                 <small class="text-muted">{{ job.company }}</small>
               </div>
 
@@ -83,6 +92,19 @@
             </div>
 
             <div class="d-flex gap-2 mt-auto flex-wrap">
+              <button
+                class="btn w-100 mb-2"
+                :class="job.isPromoted ? 'btn-outline-warning' : 'btn-outline-secondary'"
+                :disabled="isOfferExpired(job.expiresAt)"
+                @click="togglePromoteJob(job)"
+              >
+                <template v-if="job.isPromoted">
+                  <i class="fa-solid fa-star-half-stroke me-2"></i> Przestań promować
+                </template>
+
+                <template v-else> <i class="fa-regular fa-star me-2"></i> Promuj ofertę </template>
+              </button>
+
               <button
                 v-if="isOfferExpired(job.expiresAt)"
                 class="btn btn-success w-100 mb-2"
@@ -170,12 +192,14 @@
 </template>
 
 <script setup lang="ts">
+import type { ApiErrorResponse } from '@/api/interfaces/ApiErrorResponse';
 import jobOfferService from '@/api/services/jobOfferService';
 import type { JobOfferFilters } from '@/api/types/filters/jobOfferFilters';
 import type { JobOffer } from '@/api/types/jobOffer';
 import { useConfirm } from '@/composables/useConfirm';
 import { useNotification } from '@/composables/useNotification';
 import { mdiClock, mdiLock } from '@mdi/js';
+import type { AxiosError } from 'axios';
 import { ref, onMounted } from 'vue';
 
 const notification = useNotification();
@@ -302,6 +326,24 @@ const extendOffer = async (job: JobOffer) => {
   }
 };
 
+const togglePromoteJob = async (job: JobOffer) => {
+  try {
+    const response = await jobOfferService.togglePromote(job.id!);
+
+    job.isPromoted = response.isPromoted;
+
+    if (job.isPromoted) {
+      notification.showMessage('Ogłoszenie zostało wyróżnione!', 'success');
+    } else {
+      notification.showMessage('Wyłączono promowanie ogłoszenia.', 'info');
+    }
+  } catch (error: unknown) {
+    const axiosError = error as AxiosError<ApiErrorResponse>;
+    const msg = axiosError.response?.data?.message || 'Błąd podczas zmiany statusu promowania';
+    notification.showMessage(msg, 'error');
+  }
+};
+
 onMounted(fetchJobs);
 </script>
 
@@ -332,6 +374,8 @@ onMounted(fetchJobs);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  min-width: 48px;
 }
 
 .btn-gradient {
@@ -355,5 +399,17 @@ onMounted(fetchJobs);
   background-color: #ff5666;
   color: white;
   border-color: #ff5666;
+}
+
+.btn-outline-warning {
+  color: #ffc107;
+  border-color: #ffc107;
+}
+.btn-outline-warning:hover {
+  background-color: #ffc107;
+  color: #000;
+}
+.badge.bg-warning {
+  background-color: #ffc107 !important;
 }
 </style>

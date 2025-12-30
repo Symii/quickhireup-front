@@ -129,7 +129,9 @@
           </ul>
 
           <div class="mt-auto">
-            <button class="btn-generator w-100">Zacznij teraz</button>
+            <button class="btn-generator w-100" @click="handlePayment" :disabled="isLoading">
+              {{ isLoading ? 'Przetwarzanie...' : 'Zacznij teraz' }}
+            </button>
           </div>
         </div>
       </div>
@@ -153,7 +155,45 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '@/api/authentication/authStore';
+import { useNotification } from '@/composables/useNotification';
 import { mdiCheck, mdiClose, mdiLeaf, mdiRobot, mdiRocketLaunch } from '@mdi/js';
+import { computed, ref } from 'vue';
+
+const isLoading = ref(false);
+const auth = useAuthStore();
+const notification = useNotification();
+
+const currentUser = computed(() => auth.user);
+
+const handlePayment = async () => {
+  isLoading.value = true;
+  try {
+    const response = await fetch('http://localhost:5000/api/Payment/create-tpay-transaction', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${auth.token}`,
+      },
+      body: JSON.stringify({
+        amount: 199.0,
+        description: 'Plan Pro Business - QuickHireUp',
+        email: currentUser.value?.email,
+        name: `${currentUser.value?.firstName} ${currentUser.value?.secondName}`,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.transactionPaymentUrl) {
+      window.location.href = data.transactionPaymentUrl;
+    }
+  } catch {
+    notification.showMessage('Wystąpił problem z inicjacją płatności.', 'error');
+  } finally {
+    isLoading.value = false;
+  }
+};
 </script>
 
 <style scoped>

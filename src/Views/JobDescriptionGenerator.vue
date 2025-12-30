@@ -8,6 +8,41 @@
 
     <section class="form-content row justify-content-center">
       <div class="col-lg-5 mb-4">
+        <div
+          class="form-card shadow-sm p-4 mb-4 bg-white border-start border-4 border-custom"
+          style="overflow: visible !important"
+        >
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">Twój limit AI</h5>
+
+            <span class="badge bg-warning text-dark">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path :d="mdiRocketLaunch" fill="black" />
+              </svg>
+
+              PRO ({{ usedCount }} / {{ aiLimit }})
+            </span>
+          </div>
+
+          <div class="custom-limit-container">
+            <div
+              class="custom-limit-bar progress-bar-striped progress-bar-animated"
+              :class="[limitColorClass]"
+              :style="{ width: limitPercentage + '%' }"
+            >
+              {{ limitPercentage }}%
+            </div>
+          </div>
+
+          <p class="text-muted small mt-2 mb-0">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+              <path :d="mdiInformation" fill="#fc4c4e" />
+            </svg>
+
+            Limit odnawia się co miesiąc. Ostatni reset: {{ formattedResetDate }}
+          </p>
+        </div>
+
         <div class="form-card shadow-sm p-4">
           <form @submit.prevent="submitForm" novalidate>
             <div class="mb-3">
@@ -140,7 +175,7 @@
       </div>
     </section>
 
-    <div v-if="generating" class="mt-3 p-3 form-card shadow-sm bg-light text-center">
+    <div v-if="generating" class="mt-3 p-3 form-card static-card shadow-sm bg-light text-center">
       <p>Trwa generowanie opisu...</p>
 
       <p>Czas oczekiwania: {{ formattedTime }}</p>
@@ -220,11 +255,15 @@ interface History {
   description: string;
 }
 
+import { useAuthStore } from '@/api/authentication/authStore';
 import api from '@/api/services/api';
+import { useNotification } from '@/composables/useNotification';
+import { mdiInformation, mdiRocketLaunch } from '@mdi/js';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 export default {
   setup() {
+    const notification = useNotification();
     const generating = ref(false);
     const elapsedTime = ref(0);
     let timer: number | undefined = undefined;
@@ -284,7 +323,10 @@ export default {
     };
 
     const submitForm = async () => {
-      if (!validateForm()) return;
+      if (!validateForm()) {
+        notification.showMessage('Proszę poprawić błędy w formularzu.', 'error');
+        return;
+      }
 
       loading.value = true;
       startTimer();
@@ -299,8 +341,10 @@ export default {
           location: form.location,
           description: generatedDescription.value,
         });
+        usedCount.value = usedCount.value + 1;
       } catch (error) {
         generatedDescription.value = `Wystąpił błąd: ${error}`;
+        notification.showMessage('Wystąpił błąd przy generowaniu opisu.', 'error');
       } finally {
         loading.value = false;
         stopTimer();
@@ -345,6 +389,37 @@ export default {
       }
     };
 
+    const authStore = useAuthStore();
+    const user = computed(() => authStore.user);
+
+    const aiLimit = 100;
+    const usedCount = ref(user.value?.aiDescriptionsUsed || 0);
+
+    const limitPercentage = computed(() => {
+      const percentage = (usedCount.value / aiLimit) * 100;
+      return Math.min(percentage, 100);
+    });
+
+    const limitColorClass = computed(() => {
+      if (limitPercentage.value >= 90) {
+        return 'bg-danger';
+      }
+
+      if (limitPercentage.value >= 70) {
+        return 'bg-warning';
+      }
+
+      return 'bg-success';
+    });
+
+    const formattedResetDate = computed(() => {
+      const dateValue = user.value?.lastAiLimitReset;
+      if (!dateValue) {
+        return '---';
+      }
+      return new Date(dateValue).toLocaleDateString();
+    });
+
     onMounted(() => {
       fetchHistory();
     });
@@ -361,6 +436,14 @@ export default {
       generating,
       formattedTime,
       pageInput,
+      limitPercentage,
+      limitColorClass,
+      user,
+      usedCount,
+      aiLimit,
+      formattedResetDate,
+      mdiInformation,
+      mdiRocketLaunch,
       goToPage,
       changePage,
       submitForm,
@@ -387,6 +470,18 @@ export default {
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease;
+  position: relative;
+}
+
+.form-card:not(.static-card):hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+}
+
+.static-card {
+  transform: none !important;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+  cursor: default;
 }
 
 .form-card:hover {
@@ -453,16 +548,6 @@ button.btn-primary:hover {
   border-left: 4px solid #28a745;
 }
 
-.progress {
-  height: 20px;
-  margin-top: 5px;
-}
-
-.custom-progress {
-  background-color: var(--primary);
-  width: 100%;
-}
-
 .mt-20 {
   margin-top: 20px;
 }
@@ -510,5 +595,99 @@ button.btn-primary:hover {
   background-color: #ff5666;
   color: white;
   border-color: #ff5666;
+}
+
+.border-custom {
+  border-color: #ff5666 !important;
+}
+
+.progress {
+  display: flex !important;
+  height: 20px !important;
+  background-color: #e9ecef !important;
+  border-radius: 10px !important;
+  width: 100% !important;
+  margin: 15px 0 !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.progress-bar {
+  height: 100% !important;
+  transition: width 0.6s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: white !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+}
+
+.bg-success {
+  background-color: #28a745 !important;
+  min-width: 2px;
+}
+.bg-warning {
+  background-color: #ffc107 !important;
+  min-width: 2px;
+}
+.bg-danger {
+  background-color: #dc3545 !important;
+  min-width: 2px;
+}
+
+.custom-progress {
+  background-color: #ff5666 !important;
+  width: 100%;
+}
+
+.progress-bar-striped {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  ) !important;
+  background-size: 1rem 1rem !important;
+}
+
+@keyframes progress-bar-stripes {
+  0% {
+    background-position: 1rem 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+.progress-bar-animated {
+  animation: progress-bar-stripes 2s linear infinite !important;
+}
+
+.custom-limit-container {
+  width: 100% !important;
+  height: 24px !important;
+  background-color: #eee !important;
+  border: 1px solid #ddd !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  display: block !important;
+  margin: 10px 0 !important;
+}
+
+.custom-limit-bar {
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: white !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  transition: width 0.5s ease !important;
+  min-width: 30px !important;
 }
 </style>

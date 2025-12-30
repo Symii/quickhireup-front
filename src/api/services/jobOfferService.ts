@@ -82,4 +82,9 @@ export default {
     const response = await api.patch(`${API_URL}/${id}/extend`);
     return response.data;
   },
+
+  async togglePromote(id: string) {
+    const response = await api.patch(`${API_URL}/${id}/toggle-promote`);
+    return response.data;
+  },
 };

@@ -53,10 +53,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useNotification } from '@/composables/useNotification';
 import api from '@/api/services/api';
 import type { AxiosError } from 'axios';
-
-interface ApiErrorResponse {
-  message?: string;
-}
+import type { ApiErrorResponse } from '@/api/interfaces/ApiErrorResponse';
 
 const route = useRoute();
 const router = useRouter();

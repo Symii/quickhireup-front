@@ -129,10 +129,21 @@
 
     <div class="row g-4">
       <div v-for="job in paginatedJobs" :key="job.id" class="col-md-6 col-lg-4">
-        <div class="card job-card shadow-sm h-100 border-0">
+        <div
+          class="card job-card shadow-sm h-100 border-0"
+          :class="{ 'is-promoted': job.isPromoted }"
+        >
           <div class="card-body d-flex flex-column">
-            <div class="d-flex align-items-center mb-3">
-              <div class="company-icon me-3">{{ job.company[0] }}</div>
+            <div v-if="job.isPromoted" class="promoted-badge">
+              <i class="fas fa-star me-1"></i> Super oferta
+            </div>
+
+            <br v-if="job.isPromoted" />
+
+            <div class="d-flex align-items-center mb-3" :class="{ 'mt-3': job.isPromoted }">
+              <div class="company-icon me-3" :class="{ 'pro-icon': job.isPromoted }">
+                {{ job.company[0].toUpperCase() }}
+              </div>
 
               <div>
                 <h5 class="card-title fw-semibold mb-0">{{ job.jobTitle }}</h5>
@@ -145,14 +156,14 @@
               {{ job.description }}
             </p>
 
-            <div class="d-flex justify-content-between text-muted small">
+            <div class="d-flex justify-content-between text-muted small mb-3">
               <span><i class="fa-regular fa-map me-1"></i>{{ job.location }}</span>
 
               <span><i class="fas fa-clock me-1"></i>{{ job.contractType }}</span>
             </div>
 
             <RouterLink :to="`/oferta/${job.id}`">
-              <button class="btn btn-gradient w-100 mt-3">
+              <button class="btn btn-gradient w-100 mt-auto">
                 <i class="fa-regular fa-circle-right me-2"></i> Zobacz ofertę
               </button>
             </RouterLink>
@@ -395,5 +406,71 @@ const paginatedJobs = computed(() => jobs.value);
 .additional-padding :deep(input.form-control) {
   padding-top: 8px;
   padding-bottom: 8px;
+}
+
+.job-card.is-promoted {
+  background: linear-gradient(to bottom right, #ffffff, #fffdf0);
+  border: 1px solid rgba(255, 193, 7, 0.4) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.job-card.is-promoted:hover {
+  box-shadow: 0 10px 25px rgba(255, 193, 7, 0.25) !important;
+  transform: translateY(-8px);
+}
+
+.promoted-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(45deg, #ffc107, #ff9800);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+.company-icon.pro-icon {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+.job-card.is-promoted::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transform: skewX(-25deg);
+  animation: shine 6s infinite;
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  15% {
+    left: 120%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
+.job-card .btn-gradient {
+  transition: transform 0.2s ease;
+}
+
+.job-card:hover .btn-gradient {
+  transform: scale(1.02);
 }
 </style>
