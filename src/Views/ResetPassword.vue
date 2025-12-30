@@ -1,135 +1,123 @@
 <template>
   <div class="login-wrapper">
     <div class="login-card">
-      <h1 class="title">Zaloguj się</h1>
+      <h1 class="title">{{ isResetting ? 'Nowe hasło' : 'Resetuj hasło' }}</h1>
 
-      <p class="subtitle">Dostęp do serwisu QuickHireUp</p>
+      <p class="subtitle">
+        {{ isResetting ? 'Wprowadź nowe dane logowania' : 'Podaj email, aby otrzymać link' }}
+      </p>
 
-      <form @submit.prevent="submitLogin" class="login-form" novalidate>
-        <div class="input-group">
+      <form @submit.prevent="handleSubmit" class="login-form">
+        <div v-if="!isResetting" class="input-group">
           <label for="email">Email</label>
 
-          <input id="email" type="email" v-model="email" autocomplete="email" required />
+          <input id="email" type="email" v-model="form.email" required />
         </div>
 
-        <div class="input-group">
-          <label for="password">Hasło</label>
+        <template v-else>
+          <div class="input-group">
+            <label for="password">Nowe hasło</label>
 
-          <input
-            id="password"
-            type="password"
-            v-model="password"
-            autocomplete="current-password"
-            required
-          />
-        </div>
+            <input id="password" type="password" v-model="form.password" required />
+          </div>
 
-        <button type="submit" :disabled="!isFormValid || loading" class="btn-login">
+          <div class="input-group">
+            <label for="confirm">Potwierdź nowe hasło</label>
+
+            <input id="confirm" type="password" v-model="form.confirmPassword" required />
+          </div>
+        </template>
+
+        <button type="submit" :disabled="loading || !isFormValid" class="btn-login">
           <span v-if="loading" class="pulse-loader"></span>
-
-          <span v-else>Zaloguj się</span>
+          <span v-else>{{ isResetting ? 'Zmień hasło' : 'Wyślij link' }}</span>
         </button>
 
-        <div v-if="error" class="error-container">
-          <p style="color: red">{{ error }}</p>
-
-          <button
-            v-if="showResendButton"
-            @click="handleResend"
-            :disabled="loading"
-            class="btn btn-outline-primary"
-          >
-            {{ loading ? 'Wysyłanie...' : 'Wyślij ponownie link aktywacyjny' }}
-          </button>
+        <div v-if="statusMessage" :class="['status-msg', isError ? 'error' : 'success']">
+          {{ statusMessage }}
         </div>
       </form>
 
       <p class="footer-text">
-        Zapomniałeś hasło?
+        Pamiętasz hasło?
 
-        <RouterLink to="/reset-password">
-          <span class="register-link">Resetuj hasło</span>
-        </RouterLink>
-
-        <br />
-
-        Nie masz konta?
-
-        <RouterLink to="/register">
-          <span class="register-link">Zarejestruj się</span>
-        </RouterLink>
+        <RouterLink to="/login" class="register-link">Zaloguj się</RouterLink>
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useNotification } from '@/composables/useNotification';
-import { useAuthStore } from '@/api/authentication/authStore';
+import api from '@/api/services/api';
 import type { AxiosError } from 'axios';
 
-const notification = useNotification();
-const router = useRouter();
+interface ApiErrorResponse {
+  message?: string;
+}
+
 const route = useRoute();
-const auth = useAuthStore();
+const router = useRouter();
+const notification = useNotification();
 
-const email = ref('');
-const password = ref('');
 const loading = ref(false);
-const error = ref<string | null>(null);
+const statusMessage = ref('');
+const isError = ref(false);
+const isResetting = ref(false);
 
-const isEmailValid = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-const isFormValid = computed(() => isEmailValid(email.value) && password.value.length >= 6);
+const form = reactive({
+  email: '',
+  password: '',
+  confirmPassword: '',
+  token: '',
+});
 
 onMounted(() => {
-  if (auth.token) {
-    notification.showMessage('Jesteś już zalogowany.');
-    const redirectPath = (route.query.redirect as string) || '/';
-    router.push(redirectPath);
+  if (route.query.token && route.query.email) {
+    isResetting.value = true;
+    form.token = route.query.token as string;
+    form.email = route.query.email as string;
   }
 });
 
-const showResendButton = ref(false);
-
-async function submitLogin() {
-  loading.value = true;
-  error.value = null;
-  showResendButton.value = false;
-
-  try {
-    await auth.login(email.value, password.value);
-    notification.showMessage('Zalogowano pomyślnie');
-    const redirectPath = (route.query.redirect as string) || '/';
-    router.push(redirectPath);
-  } catch (err) {
-    const axiosError = err as AxiosError;
-
-    if (
-      axiosError.response?.status === 401 &&
-      axiosError.response?.data === 'E-mail nie został potwierdzony'
-    ) {
-      error.value = 'Twoje konto nie zostało jeszcze potwierdzone.';
-      showResendButton.value = true;
-      notification.showMessage('Konto nieaktywne. Potwierdź swój adres e-mail.', 'info');
-    } else {
-      error.value = 'Nieprawidłowy email lub hasło';
-      notification.showMessage('Błąd logowania.', 'error');
-    }
-  } finally {
-    loading.value = false;
+const isFormValid = computed(() => {
+  if (!isResetting.value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
   }
-}
 
-async function handleResend() {
+  return form.password.length >= 6 && form.password === form.confirmPassword;
+});
+
+async function handleSubmit() {
   loading.value = true;
+  statusMessage.value = '';
+
   try {
-    await auth.resendConfirmation(email.value);
-    notification.showMessage('Link aktywacyjny został wysłany ponownie. Sprawdź pocztę.');
-    showResendButton.value = false;
-  } catch {
-    notification.showMessage('Błąd podczas wysyłania maila.', 'error');
+    if (!isResetting.value) {
+      await api.post('/account/forgot-password', { email: form.email });
+      notification.showMessage('Instrukcje zostały wysłane na e-mail.');
+      statusMessage.value = 'Sprawdź swoją skrzynkę pocztową.';
+    } else {
+      await api.post('/account/reset-password', {
+        email: form.email,
+        token: form.token,
+        newPassword: form.password,
+      });
+
+      notification.showMessage('Hasło zostało zmienione pomyślnie!');
+      await router.push('/login');
+    }
+  } catch (err: unknown) {
+    isError.value = true;
+
+    const axiosError = err as AxiosError<ApiErrorResponse>;
+
+    const errorMessage = axiosError.response?.data?.message || 'Wystąpił błąd. Spróbuj ponownie.';
+
+    notification.showMessage(errorMessage, 'error');
+    statusMessage.value = errorMessage;
   } finally {
     loading.value = false;
   }
@@ -139,12 +127,28 @@ async function handleResend() {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
 
+.status-msg {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  text-align: center;
+}
+.status-msg.success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.status-msg.error {
+  background: #ffebee;
+  color: #c62828;
+}
+
 .login-wrapper {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: url('../../assets/laptop-with-pen-pencil-paper-clips-sticky-notes-spiral-notepad-beige-background.jpg');
+  background: url('../assets/laptop-with-pen-pencil-paper-clips-sticky-notes-spiral-notepad-beige-background.jpg');
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;

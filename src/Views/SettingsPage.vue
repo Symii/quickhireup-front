@@ -14,10 +14,20 @@
               :src="profilePhoto ? `http://localhost:5000${profilePhoto}` : defaultPhoto"
               alt="Zdjęcie profilowe"
               class="profile-photo rounded-circle"
+              :class="{ 'pro-border': isPro }"
             />
           </div>
 
-          <h4 class="mb-2">{{ userData.firstName }} {{ userData.secondName }}</h4>
+          <h4 class="mb-2">
+            {{ userData.firstName }} {{ userData.secondName }}
+
+            <span v-if="isPro" class="badge-pro ms-2" title="Konto Premium">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path :d="mdiRocketLaunch" fill="black" />
+              </svg>
+              PRO
+            </span>
+          </h4>
 
           <p class="text-muted mb-1">Ustawienia konta</p>
 
@@ -28,6 +38,25 @@
 
             <li><i class="fa-solid fa-lightbulb me-2"></i>Bezpieczeństwo</li>
           </ul>
+
+          <template v-if="isLoggedIn && isCompany">
+            <div v-if="isPro" class="subscription-status mt-3 p-2 rounded">
+              <small class="text-uppercase fw-bold d-block">Status Subskrypcji</small>
+
+              <span class="text-success">
+                <i class="fa-solid fa-calendar-check"></i> Aktywna do:
+                {{ formatDate(proExpirationDate) }}
+              </span>
+            </div>
+
+            <div v-else class="subscription-status mt-3 p-2 rounded bg-light">
+              <small class="text-uppercase fw-bold d-block">Plan Darmowy</small>
+
+              <RouterLink to="/pricing" class="btn btn-sm btn-outline-primary mt-1">
+                Ulepsz do PRO
+              </RouterLink>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -169,6 +198,7 @@ import accountService from '@/api/services/accountService';
 import userService from '@/api/services/usersService';
 import { useAuthStore } from '@/api/authentication/authStore';
 import { useNotification } from '@/composables/useNotification';
+import { mdiRocketLaunch } from '@mdi/js';
 
 const notification = useNotification();
 
@@ -182,6 +212,9 @@ const userData = reactive({
   email: '',
   bio: '',
 });
+
+const isLoggedIn = ref(false);
+const isCompany = ref(false);
 
 const primaryColor = '#ff5666';
 
@@ -199,6 +232,8 @@ const settings = reactive({
   confirmPassword: '',
 });
 
+const isPro = ref(false);
+const proExpirationDate = ref('');
 const saving = ref(false);
 const successMessage = ref('');
 const errorMessage = ref('');
@@ -247,10 +282,21 @@ const saveSettings = async () => {
   }
 };
 
+const formatDate = (dateString: string | undefined) => {
+  if (!dateString) return '';
+  return new Date(dateString).toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+};
+
 onMounted(async () => {
   const auth = useAuthStore();
 
   const currentUser = computed(() => auth.user);
+  isLoggedIn.value = currentUser.value != null;
+  isCompany.value = accountService.isCompany();
 
   if (!currentUser.value) {
     return;
@@ -263,6 +309,9 @@ onMounted(async () => {
 
   settings.privacy.showCV = currentUser.value.showCv;
   settings.privacy.showProfile = currentUser.value.showProfile;
+
+  isPro.value = currentUser.value?.isPro ?? false;
+  proExpirationDate.value = currentUser.value?.proExpirationDate ?? '';
 
   profilePhoto.value = currentUser.value.photoUrl ?? null;
 });
@@ -414,5 +463,41 @@ button.btn-primary:disabled {
 
 .custom-checkbox:checked + .form-check-label::after {
   transform: translateY(-100%) scale(1) rotate(45deg);
+}
+
+.profile-photo.pro-border {
+  border: 4px solid #ffd700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.badge-pro {
+  background: linear-gradient(45deg, #ffd700, #ffae00);
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.subscription-status {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  font-size: 0.85rem;
+}
+
+.subscription-status i {
+  margin-right: 5px;
+}
+
+.btn-outline-primary {
+  color: #ff5666;
+  border-color: #ff5666;
+}
+.btn-outline-primary:hover {
+  background-color: #ff5666;
+  color: white !important;
 }
 </style>

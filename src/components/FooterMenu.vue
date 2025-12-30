@@ -33,6 +33,8 @@
           <li><RouterLink to="/kontakt">Kontakt</RouterLink></li>
 
           <li><RouterLink to="/partnerzy">Partnerzy</RouterLink></li>
+
+          <li><RouterLink to="/pricing">Cennik</RouterLink></li>
         </ul>
       </div>
 

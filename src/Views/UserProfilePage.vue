@@ -16,6 +16,7 @@
               :src="previewPhoto || profilePhoto || defaultPhoto"
               alt="Zdjęcie profilowe"
               class="profile-photo rounded-circle"
+              :class="{ 'pro-border': isPro }"
             />
 
             <label class="upload-btn">
@@ -25,7 +26,16 @@
             </label>
           </div>
 
-          <h4 class="mb-1">{{ userData.firstName }} {{ userData.secondName }}</h4>
+          <h4 class="mb-1">
+            {{ userData.firstName }} {{ userData.secondName }}
+
+            <span v-if="isPro" class="badge-pro ms-2" title="Konto Premium">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path :d="mdiRocketLaunch" fill="black" />
+              </svg>
+              PRO
+            </span>
+          </h4>
 
           <p class="text-muted mb-1">{{ userRoleToString(userData.role) }}</p>
 
@@ -34,6 +44,25 @@
           <div class="decor-line"></div>
 
           <p class="text-muted small">{{ userData.bio }}</p>
+
+          <template v-if="isLoggedIn && isCompany">
+            <div v-if="isPro" class="subscription-status mt-3 p-2 rounded">
+              <small class="text-uppercase fw-bold d-block">Status Subskrypcji</small>
+
+              <span class="text-success">
+                <i class="fa-solid fa-calendar-check"></i> Aktywna do:
+                {{ formatDate(proExpirationDate) }}
+              </span>
+            </div>
+
+            <div v-else class="subscription-status mt-3 p-2 rounded bg-light">
+              <small class="text-uppercase fw-bold d-block">Plan Darmowy</small>
+
+              <RouterLink to="/pricing" class="btn btn-sm btn-outline-primary mt-1">
+                Ulepsz do PRO
+              </RouterLink>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -188,6 +217,7 @@ import roleService from '@/api/services/roleService';
 import userService from '@/api/services/usersService';
 import type { UpdateUserDto } from '@/api/types/updateUserDto';
 import { useNotification } from '@/composables/useNotification';
+import { mdiRocketLaunch } from '@mdi/js';
 import { ref, reactive, onMounted, computed } from 'vue';
 
 const notification = useNotification();
@@ -222,6 +252,8 @@ const errors = reactive({
   location: false,
 });
 
+const isPro = ref(false);
+const proExpirationDate = ref('');
 const saving = ref(false);
 const successMessage = ref('');
 const errorMessage = ref('');
@@ -308,12 +340,24 @@ async function saveProfile() {
   }
 }
 
+const formatDate = (dateString: string | undefined) => {
+  if (!dateString) return '';
+  return new Date(dateString).toLocaleDateString('pl-PL', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+};
+
 onMounted(async () => {
   try {
     const auth = useAuthStore();
 
     const currentUser = computed(() => auth.user);
     Object.assign(userData, currentUser.value);
+
+    isPro.value = currentUser.value?.isPro ?? false;
+    proExpirationDate.value = currentUser.value?.proExpirationDate ?? '';
 
     if (currentUser.value?.photoUrl) {
       profilePhoto.value = `http://localhost:5000${currentUser.value.photoUrl}`;
@@ -447,5 +491,41 @@ button.btn-primary:disabled {
   margin-right: 10px;
   color: red;
   font-weight: bold;
+}
+
+.profile-photo.pro-border {
+  border: 4px solid #ffd700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.badge-pro {
+  background: linear-gradient(45deg, #ffd700, #ffae00);
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.subscription-status {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  font-size: 0.85rem;
+}
+
+.subscription-status i {
+  margin-right: 5px;
+}
+
+.btn-outline-primary {
+  color: #ff5666;
+  border-color: #ff5666;
+}
+.btn-outline-primary:hover {
+  background-color: #ff5666;
+  color: white !important;
 }
 </style>

@@ -211,8 +211,19 @@ const routes = [
   },
   {
     path: '/verify-email',
-    name: '/verify-email',
+    name: 'verify-email',
     component: () => import('@/Views/VerifyEmail.vue'),
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('@/Views/ResetPassword.vue'),
+    meta: { requiresAuth: false, hideNavFooter: true },
+  },
+  {
+    path: '/pricing',
+    name: 'pricing',
+    component: () => import('@/Views/PricingPage.vue'),
   },
   {
     path: '/:pathMatch(.*)*',

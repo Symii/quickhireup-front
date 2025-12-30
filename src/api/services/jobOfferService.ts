@@ -77,4 +77,9 @@ export default {
     const response = await api.patch(`${API_URL}/${id}/toggle-status`);
     return response.data;
   },
+
+  async extend(id: string) {
+    const response = await api.patch(`${API_URL}/${id}/extend`);
+    return response.data;
+  },
 };

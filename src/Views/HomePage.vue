@@ -50,10 +50,21 @@
 
     <div class="row g-4">
       <div class="col-md-6 col-lg-4" v-for="job in jobs" :key="job.id">
-        <div class="card job-card h-100 shadow-sm border-0">
+        <div
+          class="card job-card h-100 shadow-sm border-0"
+          :class="{ 'is-promoted': job.isPromoted }"
+        >
           <div class="card-body d-flex flex-column">
+            <div v-if="job.isPromoted" class="promoted-badge">
+              <i class="fas fa-star me-1"></i> Super oferta
+            </div>
+
+            <br v-if="job.isPromoted" />
+
             <div class="d-flex align-items-center mb-3">
-              <div class="company-icon me-3">{{ job.company[0].toUpperCase() }}</div>
+              <div class="company-icon me-3" :class="{ 'pro-icon': job.isPromoted }">
+                {{ job.company[0].toUpperCase() }}
+              </div>
 
               <div>
                 <h5 class="card-title mb-0 fw-semibold">{{ job.jobTitle }}</h5>
@@ -384,5 +395,63 @@ header p {
   header h1 {
     font-size: 1.5rem;
   }
+}
+
+.job-card.is-promoted {
+  background: linear-gradient(to bottom right, #ffffff, #fffdf0);
+  border: 1px solid rgba(255, 193, 7, 0.3) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.job-card.is-promoted:hover {
+  box-shadow: 0 10px 20px rgba(255, 193, 7, 0.2) !important;
+  transform: translateY(-8px);
+}
+
+.promoted-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(45deg, #ffc107, #ff9800);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+
+.company-icon.pro-icon {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  20% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.job-card.is-promoted::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-25deg);
+  animation: shine 6s infinite;
 }
 </style>

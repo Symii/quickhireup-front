@@ -17,4 +17,7 @@ export interface JobOffer {
   longitude?: number;
 
   isActive?: boolean;
+
+  expiresAt: string;
+  isPromoted: boolean;
 }

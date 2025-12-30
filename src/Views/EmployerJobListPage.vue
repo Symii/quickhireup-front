@@ -4,7 +4,7 @@
       <h1 class="display-5 fw-bold text-primary-gradient">Moje ogłoszenia</h1>
 
       <p class="text-muted">
-        Masz obecnie <strong>{{ myJobs.length }}</strong> aktywnych ofert pracy.
+        Masz obecnie <strong>{{ myJobs.length }}</strong> ofert pracy.
       </p>
     </header>
 
@@ -22,7 +22,10 @@
 
     <div v-else class="row g-4">
       <div v-for="job in myJobs" :key="job.id" class="col-md-6 col-lg-4">
-        <div class="card job-card shadow-sm h-100 border-0">
+        <div
+          class="card job-card shadow-sm h-100 border-0"
+          :class="{ 'opacity-75 bg-light': isOfferExpired(job.expiresAt) }"
+        >
           <div class="card-body d-flex flex-column">
             <div class="d-flex align-items-center mb-3">
               <div class="company-icon me-3">{{ job.company[0] }}</div>
@@ -32,17 +35,25 @@
                   {{ job.jobTitle }}
 
                   <span
-                    v-if="!job.isActive"
+                    v-if="isOfferExpired(job.expiresAt)"
+                    class="badge bg-danger ms-2"
+                    style="font-size: 0.6rem"
+                  >
+                    Wygasło
+                  </span>
+
+                  <span
+                    v-else-if="!job.isActive"
                     class="badge bg-secondary ms-2"
                     style="font-size: 0.6rem"
-                    >Nieaktywne</span
                   >
+                    Ukryte
+                  </span>
 
-                  <span v-else class="badge bg-success ms-2" style="font-size: 0.6rem"
-                    >Aktywne</span
-                  >
+                  <span v-else class="badge bg-success ms-2" style="font-size: 0.6rem">
+                    Aktywne
+                  </span>
                 </h5>
-
                 <small class="text-muted">{{ job.company }}</small>
               </div>
 
@@ -56,6 +67,16 @@
             </p>
 
             <div class="d-flex justify-content-between text-muted small mb-3">
+              <span>
+                <i class="fa-regular fa-calendar-xmark me-1"></i>
+
+                Wygasa:
+
+                {{ new Date(job.expiresAt).toLocaleDateString() }}
+              </span>
+            </div>
+
+            <div class="d-flex justify-content-between text-muted small mb-3">
               <span><i class="fa-regular fa-map me-1"></i>{{ job.location }}</span>
 
               <span><i class="fas fa-clock me-1"></i>{{ job.contractType }}</span>
@@ -63,15 +84,39 @@
 
             <div class="d-flex gap-2 mt-auto flex-wrap">
               <button
+                v-if="isOfferExpired(job.expiresAt)"
+                class="btn btn-success w-100 mb-2"
+                @click="extendOffer(job)"
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                  <path :d="mdiClock" fill="white" />
+                </svg>
+
+                Przedłuż ofertę
+              </button>
+
+              <button
                 class="btn w-100 mb-2"
-                :class="job.isActive ? 'btn-outline-warning' : 'btn-outline-success'"
+                :class="job.isActive ? 'btn-outline-danger' : 'btn-outline-success'"
+                :disabled="isOfferExpired(job.expiresAt)"
                 @click="toggleJobStatus(job)"
               >
-                <i
-                  :class="job.isActive ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"
-                  class="me-2"
-                ></i>
-                {{ job.isActive ? 'Dezaktywuj' : 'Aktywuj' }}
+                <template v-if="isOfferExpired(job.expiresAt)">
+                  <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path :d="mdiLock" fill="red" />
+                  </svg>
+
+                  Ogłoszenie wygasło
+                </template>
+
+                <template v-else>
+                  <i
+                    :class="job.isActive ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"
+                    class="me-2"
+                  ></i>
+
+                  {{ job.isActive ? 'Ukryj ogłoszenie' : 'Pokaż ogłoszenie' }}
+                </template>
               </button>
 
               <RouterLink :to="`/firma/edytuj-ogloszenie/${job.id}`" class="flex-grow-1">
@@ -130,6 +175,7 @@ import type { JobOfferFilters } from '@/api/types/filters/jobOfferFilters';
 import type { JobOffer } from '@/api/types/jobOffer';
 import { useConfirm } from '@/composables/useConfirm';
 import { useNotification } from '@/composables/useNotification';
+import { mdiClock, mdiLock } from '@mdi/js';
 import { ref, onMounted } from 'vue';
 
 const notification = useNotification();
@@ -228,12 +274,31 @@ const toggleJobStatus = async (job: JobOffer) => {
     job.isActive = response.isActive;
 
     if (job.isActive) {
-      notification.showMessage('Aktywowano ogłoszenie o pracę.');
+      notification.showMessage('Pokazano ogłoszenie o pracę.');
     } else {
-      notification.showMessage('Dezaktywowano ogłoszenie o pracę.', 'info');
+      notification.showMessage('Ukryto ogłoszenie o pracę.', 'info');
     }
   } catch {
     notification.showMessage('Błąd podczas zmiany statusu', 'error');
+  }
+};
+
+const isOfferExpired = (expiresAt: string) => {
+  return new Date(expiresAt) < new Date();
+};
+
+const extendOffer = async (job: JobOffer) => {
+  try {
+    const response = await jobOfferService.extend(job.id!);
+
+    job.expiresAt = response.expiresAt;
+    job.isActive = response.isActive;
+
+    notification.showMessage(
+      `Ogłoszenie zostało przedłużone do ${new Date(response.expiresAt).toLocaleDateString()}`,
+    );
+  } catch {
+    notification.showMessage('Błąd podczas przedłużania ogłoszenia', 'error');
   }
 };
 

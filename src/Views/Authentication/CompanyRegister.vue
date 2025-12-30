@@ -69,7 +69,7 @@
       </form>
 
       <p class="footer-text">
-        Masz już konto firmowe?
+        Masz już konto?
 
         <RouterLink to="/login">
           <span class="login-link">Zaloguj się</span>

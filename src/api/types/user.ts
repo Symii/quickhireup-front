@@ -32,6 +32,11 @@ export interface User {
   companyName?: string;
   nip?: string;
   location?: string;
+
+  proExpirationDate?: string;
+  aiDescriptionsUsed: number;
+  lastAiLimitReset: string;
+  isPro: boolean;
 }
 
 export interface CV {
