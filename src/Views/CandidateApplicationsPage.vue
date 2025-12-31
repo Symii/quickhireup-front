@@ -126,7 +126,8 @@ const loading = ref(true);
 const fetchApplications = async () => {
   loading.value = true;
   try {
-    const response = await api.get('http://localhost:5000/api/applications/my-applications');
+    const envApiUrl = import.meta.env.VITE_API_URL;
+    const response = await api.get(`${envApiUrl}/api/applications/my-applications`);
 
     if (!response.data) {
       notification.showMessage('Błąd podczas pobierania danych.', 'error');
@@ -184,7 +185,8 @@ const withdraw = async (appId: string) => {
 
   if (isConfirmed) {
     try {
-      await api.patch(`http://localhost:5000/api/applications/${appId}/status`, 'withdrawn', {
+      const envApiUrl = import.meta.env.VITE_API_URL;
+      await api.patch(`${envApiUrl}/api/applications/${appId}/status`, 'withdrawn', {
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -209,7 +211,8 @@ const deleteApp = async (appId: string) => {
 
   if (isConfirmed) {
     try {
-      await api.delete(`http://localhost:5000/api/applications/${appId}`);
+      const envApiUrl = import.meta.env.VITE_API_URL;
+      await api.delete(`${envApiUrl}/api/applications/${appId}`);
 
       allApplications.value = allApplications.value.filter((a) => a.id !== appId);
 

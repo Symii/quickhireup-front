@@ -63,7 +63,7 @@
           <div class="company-photo-wrapper mb-3">
             <img
               v-if="user?.photoUrl"
-              :src="`http://localhost:5000/${user?.photoUrl}`"
+              :src="`${envApiUrl}/${user?.photoUrl}`"
               alt="Logo firmy"
               class="company-photo rounded-circle"
             />
@@ -178,6 +178,7 @@ const notification = useNotification();
 const route = useRoute();
 const id = route.params.id as string;
 
+const envApiUrl = import.meta.env.VITE_API_URL;
 const job = ref<JobOffer | null>(null);
 const user = ref<User | null>(null);
 const auth = useAuthStore();

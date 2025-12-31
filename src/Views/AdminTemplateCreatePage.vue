@@ -251,7 +251,8 @@ export default {
     const notification = useNotification();
     const templates = ref<TemplateForm[]>([]);
     const editingTemplate = ref<TemplateForm | null>(null);
-    const apiUrl = 'http://localhost:5000/api/JobTemplates';
+    const envApiUrl = import.meta.env.VITE_API_URL;
+    const apiUrl = `${envApiUrl}/api/JobTemplates`;
 
     const form = reactive<TemplateForm>({
       name: '',

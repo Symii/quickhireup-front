@@ -122,7 +122,8 @@ const jobTitle = ref('');
 
 const fetchCandidates = async () => {
   try {
-    const response = await api.get(`http://localhost:5000/api/applications/job/${jobId}`);
+    const envApiUrl = import.meta.env.VITE_API_URL;
+    const response = await api.get(`${envApiUrl}/api/applications/job/${jobId}`);
     candidates.value = response.data;
     if (candidates.value.length > 0) jobTitle.value = candidates.value[0].jobTitle;
   } catch {
@@ -144,13 +145,10 @@ const updateStatus = async (appId: string, status: ApplicationStatus) => {
   }
 
   try {
-    await api.patch(
-      `http://localhost:5000/api/applications/${appId}/status`,
-      JSON.stringify(status),
-      {
-        headers: { 'Content-Type': 'application/json' },
-      },
-    );
+    const envApiUrl = import.meta.env.VITE_API_URL;
+    await api.patch(`${envApiUrl}/api/applications/${appId}/status`, JSON.stringify(status), {
+      headers: { 'Content-Type': 'application/json' },
+    });
 
     const candidate = candidates.value.find((c) => c.id === appId);
     if (candidate) {
@@ -192,7 +190,8 @@ const statusIcon = (status: ApplicationStatus) => {
   return icons[status] || 'fa-regular fa-circle-question';
 };
 
-const getCvFullUrl = (cvPath: string) => `http://localhost:5000/${cvPath}`;
+const envApiUrl = import.meta.env.VITE_API_URL;
+const getCvFullUrl = (cvPath: string) => `${envApiUrl}/${cvPath}`;
 
 onMounted(fetchCandidates);
 </script>

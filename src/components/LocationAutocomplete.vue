@@ -8,6 +8,7 @@
       @input="onInput"
       @focus="showSuggestions = true"
       class="form-control"
+      style="min-height: 45px !important"
       :placeholder="placeholder"
     />
 

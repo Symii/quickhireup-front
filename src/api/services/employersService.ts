@@ -1,6 +1,7 @@
 import api from './api';
 
-const API_URL = 'http://localhost:5000/api/employers';
+const apiUrl = import.meta.env.VITE_API_URL;
+const API_URL = `${apiUrl}/api/employers`;
 
 export default {
   async getAll() {

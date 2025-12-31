@@ -156,7 +156,8 @@ const isCompany = computed(() => accountService.isCompany());
 
 const userPhoto = computed(() => {
   if (auth.user?.photoUrl) {
-    return `http://localhost:5000${auth.user.photoUrl}`;
+    const apiUrl = import.meta.env.VITE_API_URL;
+    return `${apiUrl}${auth.user.photoUrl}`;
   }
   return '/quick-hire-up-logo.png';
 });

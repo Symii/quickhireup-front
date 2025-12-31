@@ -159,7 +159,8 @@ const fetchMessages = async (page: number) => {
 
   loading.value = true;
   try {
-    const response = await api.get(`http://localhost:5000/api/contact?page=${page}&pageSize=10`);
+    const apiUrl = import.meta.env.VITE_API_URL;
+    const response = await api.get(`${apiUrl}/api/contact?page=${page}&pageSize=10`);
     messages.value = response.data.items;
     currentPage.value = response.data.currentPage;
     totalPages.value = response.data.totalPages;

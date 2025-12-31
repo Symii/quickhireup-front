@@ -298,6 +298,12 @@ header p {
   background-color: var(--bg);
   font-size: 0.95rem;
   color: var(--text);
+
+  box-sizing: border-box;
+  height: 3rem;
+  appearance: none;
+  -webkit-appearance: none;
+  line-height: 1.5;
 }
 
 .search-form input::placeholder {

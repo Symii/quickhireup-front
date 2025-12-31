@@ -2,8 +2,9 @@ import { ref, computed } from 'vue';
 import type { UserShort } from '../types/user';
 import api from './api';
 import { RoleName } from '@/constants/RoleNames';
+const apiUrl = import.meta.env.VITE_API_URL;
 
-const API_URL = 'http://localhost:5000/api/account';
+const API_URL = `${apiUrl}/api/account`;
 
 const currentUser = ref<UserShort | null>(null);
 const isLoaded = ref(false);

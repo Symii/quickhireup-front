@@ -298,6 +298,8 @@ const userRoleToString = (role: string) => {
   return roleService.userRoleToString(role);
 };
 
+const envApiUrl = import.meta.env.VITE_API_URL;
+
 async function saveProfile() {
   if (!validateForm()) {
     return;
@@ -312,7 +314,7 @@ async function saveProfile() {
       const formData = new FormData();
       formData.append('file', selectedFile.value);
       const response = await userService.uploadProfilePhoto(userData.id, formData);
-      profilePhoto.value = `http://localhost:5000${response.photoUrl}`;
+      profilePhoto.value = `${envApiUrl}${response.photoUrl}`;
       previewPhoto.value = null;
       selectedFile.value = null;
     }
@@ -361,7 +363,7 @@ onMounted(async () => {
     proExpirationDate.value = currentUser.value?.proExpirationDate ?? '';
 
     if (currentUser.value?.photoUrl) {
-      profilePhoto.value = `http://localhost:5000${currentUser.value.photoUrl}`;
+      profilePhoto.value = `${envApiUrl}${currentUser.value.photoUrl}`;
     }
   } catch (error) {
     console.error('Błąd podczas ładowania danych użytkownika:', error);

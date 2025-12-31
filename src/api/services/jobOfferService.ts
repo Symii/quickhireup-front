@@ -2,7 +2,8 @@ import type { JobOfferFilters } from '../types/filters/jobOfferFilters';
 import type { JobOffer } from '../types/jobOffer';
 import api from './api';
 
-const API_URL = 'http://localhost:5000/api/joboffer';
+const apiUrl = import.meta.env.VITE_API_URL;
+const API_URL = `${apiUrl}/api/joboffer`;
 
 export default {
   async getPaged(page: number, pageSize: number, filters: JobOfferFilters) {

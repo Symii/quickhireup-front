@@ -344,7 +344,8 @@ export default {
     const templates = ref<JobTemplate[]>([]);
     const templateSearchQuery = ref('');
     const showTemplateDropdown = ref(false);
-    const apiUrlTemplates = 'http://localhost:5000/api/JobTemplates';
+    const envApiUrl = import.meta.env.VITE_API_URL;
+    const apiUrlTemplates = `${envApiUrl}/api/JobTemplates`;
 
     const fetchTemplates = async () => {
       try {

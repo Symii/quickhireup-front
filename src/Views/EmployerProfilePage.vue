@@ -27,7 +27,7 @@
             <div class="company-photo-wrapper position-relative mb-3">
               <img
                 v-if="employerData.photoUrl"
-                :src="`http://localhost:5000/${employerData.photoUrl}`"
+                :src="`${envApiUrl}/${employerData.photoUrl}`"
                 alt="Logo firmy"
                 class="company-photo rounded-circle"
               />
@@ -123,6 +123,7 @@ interface Employer {
   jobOffers: JobOffer[];
 }
 
+const envApiUrl = import.meta.env.VITE_API_URL;
 const route = useRoute();
 const primaryColor = '#ff5666';
 
@@ -140,7 +141,8 @@ const fetchEmployerData = async () => {
   }
 
   try {
-    const response = await api.get(`http://localhost:5000/api/employers/${employerId}`);
+    const envApiUrl = import.meta.env.VITE_API_URL;
+    const response = await api.get(`${envApiUrl}/api/employers/${employerId}`);
 
     if (!response) {
       throw new Error('Nie udało się pobrać danych pracodawcy.');

@@ -17,7 +17,7 @@
 
               <img
                 v-else
-                :src="`http://localhost:5000${employer.photoUrl}`"
+                :src="`${envApiUrl}${employer.photoUrl}`"
                 :alt="employer.firstName"
                 class="employer-logo"
               />
@@ -74,6 +74,7 @@ import { ref, onMounted } from 'vue';
 const employers = ref<User[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
+const envApiUrl = import.meta.env.VITE_API_URL;
 
 const fetchEmployers = async () => {
   try {

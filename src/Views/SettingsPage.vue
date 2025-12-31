@@ -11,7 +11,7 @@
         <div class="settings-card shadow-sm p-4 text-center">
           <div class="profile-photo-wrapper mb-3">
             <img
-              :src="profilePhoto ? `http://localhost:5000${profilePhoto}` : defaultPhoto"
+              :src="profilePhoto ? `${envApiUrl}${profilePhoto}` : defaultPhoto"
               alt="Zdjęcie profilowe"
               class="profile-photo rounded-circle"
               :class="{ 'pro-border': isPro }"
@@ -189,6 +189,7 @@ import { mdiRocketLaunch } from '@mdi/js';
 
 const notification = useNotification();
 
+const envApiUrl = import.meta.env.VITE_API_URL;
 const defaultPhoto = 'quick-hire-up-logo.png';
 const profilePhoto = ref(null as string | null);
 const userData = reactive({

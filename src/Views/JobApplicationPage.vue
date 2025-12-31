@@ -284,7 +284,8 @@ const handleSubmit = async () => {
   }
 
   try {
-    const response = await api.post('http://localhost:5000/api/applications', formData);
+    const envApiUrl = import.meta.env.VITE_API_URL;
+    const response = await api.post(`${envApiUrl}/api/applications`, formData);
 
     if (!response.data) {
       notification.showMessage('Wystąpił błąd podczas wysyłania.', 'error');

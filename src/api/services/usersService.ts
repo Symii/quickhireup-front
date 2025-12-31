@@ -2,7 +2,8 @@ import type { UpdateUserDto } from '../types/updateUserDto';
 import type { User } from '../types/user';
 import api from './api';
 
-const API_URL = 'http://localhost:5000/api/users';
+const apiUrl = import.meta.env.VITE_API_URL;
+const API_URL = `${apiUrl}/api/users`;
 
 export default {
   async getAll(): Promise<User[]> {

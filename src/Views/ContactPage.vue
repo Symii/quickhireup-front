@@ -162,7 +162,8 @@ async function submitForm() {
   loading.value = true;
 
   try {
-    const response = await api.post('http://localhost:5000/api/contact', form);
+    const envApiUrl = import.meta.env.VITE_API_URL;
+    const response = await api.post(`${envApiUrl}/api/contact`, form);
 
     if (!response.data) {
       notification.showMessage('Wystąpił błąd podczas wysyłania wiadomości.', 'error');
