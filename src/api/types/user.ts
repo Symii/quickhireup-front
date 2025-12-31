@@ -26,7 +26,6 @@ export interface User {
 
   jobAlertsEnabled: boolean;
   applicationUpdatesEnabled: boolean;
-  showCv: boolean;
   showProfile: boolean;
 
   companyName?: string;
@@ -54,7 +53,6 @@ export interface UserShort {
 
   jobAlertsEnabled: boolean;
   applicationUpdatesEnabled: boolean;
-  showCv: boolean;
   showProfile: boolean;
 
   companyName?: string;

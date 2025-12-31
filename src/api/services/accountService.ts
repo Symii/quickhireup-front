@@ -58,7 +58,6 @@ export default {
   updateSettings(settings: {
     jobAlerts: boolean;
     applicationUpdates: boolean;
-    showCV: boolean;
     showProfile: boolean;
   }) {
     return api.put(`${API_URL}/settings`, settings);

@@ -65,11 +65,22 @@
 
           <div class="mt-auto">
             <RouterLink
+              v-if="!isLoggedIn || !isCompany"
               to="/company-register"
               class="btn-outline-primary w-100 btn-company-register"
             >
               Stwórz konto
             </RouterLink>
+
+            <div
+              v-else
+              class="tooltip-wrapper show-tooltip"
+              data-tooltip="Jesteś już zalogowany na koncie firmowym"
+            >
+              <button class="btn-generator w-100" @click="handlePayment" disabled>
+                Masz już konto
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -129,9 +140,29 @@
           </ul>
 
           <div class="mt-auto">
-            <button class="btn-generator w-100" @click="handlePayment" :disabled="isLoading">
-              {{ isLoading ? 'Przetwarzanie...' : 'Zacznij teraz' }}
-            </button>
+            <div
+              :class="[
+                'tooltip-wrapper',
+                { 'show-tooltip': !isLoggedIn || !isCompany || isLoading },
+              ]"
+              :data-tooltip="getTooltipText"
+            >
+              <button
+                class="btn-generator w-100"
+                @click="handlePayment"
+                :disabled="isLoading || !isLoggedIn || !isCompany"
+              >
+                <template v-if="!isLoggedIn || !isCompany"> Tylko dla firm </template>
+
+                <template v-else>{{
+                  isLoading
+                    ? 'Przetwarzanie...'
+                    : currentUser?.isPro
+                      ? 'Przedłuż plan'
+                      : 'Zacznij teraz'
+                }}</template>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -156,6 +187,7 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '@/api/authentication/authStore';
+import accountService from '@/api/services/accountService';
 import { useNotification } from '@/composables/useNotification';
 import { mdiCheck, mdiClose, mdiLeaf, mdiRobot, mdiRocketLaunch } from '@mdi/js';
 import { computed, ref } from 'vue';
@@ -165,6 +197,8 @@ const auth = useAuthStore();
 const notification = useNotification();
 
 const currentUser = computed(() => auth.user);
+const isLoggedIn = computed(() => auth.user != null);
+const isCompany = computed(() => accountService.isCompany());
 
 const handlePayment = async () => {
   isLoading.value = true;
@@ -194,6 +228,22 @@ const handlePayment = async () => {
     isLoading.value = false;
   }
 };
+
+const getTooltipText = computed(() => {
+  if (!isLoggedIn.value) {
+    return 'Zaloguj się, aby kontynuować';
+  }
+
+  if (!isCompany.value) {
+    return 'Ta opcja jest dostępna tylko dla kont firmowych';
+  }
+
+  if (isLoading.value) {
+    return 'Proszę czekać...';
+  }
+
+  return '';
+});
 </script>
 
 <style scoped>
@@ -290,6 +340,14 @@ const handlePayment = async () => {
   cursor: pointer;
 }
 
+.btn-generator:disabled {
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
+  opacity: 0.7;
+  border: 1px solid #999999;
+}
+
 .btn-outline-primary {
   background: transparent;
   color: var(--primary);
@@ -336,5 +394,61 @@ const handlePayment = async () => {
 .btn-company-register {
   display: block;
   text-align: center;
+}
+
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.btn-generator:disabled {
+  background-color: #e0e0e0;
+  color: #a0a0a0;
+  border: 1px solid #d0d0d0;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.tooltip-wrapper.show-tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  background-color: #333;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.tooltip-wrapper.show-tooltip:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+  z-index: 10;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 </style>

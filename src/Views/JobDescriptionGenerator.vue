@@ -9,6 +9,7 @@
     <section class="form-content row justify-content-center">
       <div class="col-lg-5 mb-4">
         <div
+          v-if="user?.isPro"
           class="form-card shadow-sm p-4 mb-4 bg-white border-start border-4 border-custom"
           style="overflow: visible !important"
         >
@@ -43,7 +44,71 @@
           </p>
         </div>
 
-        <div class="form-card shadow-sm p-4">
+        <div
+          v-else
+          class="form-card shadow-sm p-5 text-center bg-white border-top border-5 border-custom"
+        >
+          <div class="mb-4">
+            <svg viewBox="0 0 24 24" width="64" height="64" class="mb-3 animate-rocket">
+              <path :d="mdiRocketLaunch" fill="#ff5666" />
+            </svg>
+
+            <h3 class="fw-bold">Funkcja dostępna w wersji PRO</h3>
+
+            <p class="text-muted">
+              Automatyczne generowanie opisów stanowisk za pomocą AI jest dostępne wyłącznie dla
+              subskrybentów planu PRO.
+            </p>
+          </div>
+
+          <ul class="text-start mb-4 list-unstyled d-inline-block func-list">
+            <li>
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path :d="mdiCheck" fill="green" />
+              </svg>
+
+              Nielimitowane ogłoszenia
+            </li>
+
+            <li>
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path :d="mdiCheck" fill="green" />
+              </svg>
+
+              Pełna biblioteka szablonów
+            </li>
+
+            <li>
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path :d="mdiCheck" fill="green" />
+              </svg>
+
+              Ważność ogłoszenia: 30 dni
+            </li>
+
+            <li>
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path :d="mdiCheck" fill="green" />
+              </svg>
+
+              Możliwość wygenerowania 100 opisów AI
+            </li>
+
+            <li>
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path :d="mdiCheck" fill="green" />
+              </svg>
+
+              Promowanie ofert (Top List)
+            </li>
+          </ul>
+
+          <router-link to="/pricing" class="btn btn-generator w-100 py-3 shadow-sm">
+            Wybierz plan PRO i zacznij tworzyć
+          </router-link>
+        </div>
+
+        <div v-if="user?.isPro" class="form-card shadow-sm p-4">
           <form @submit.prevent="submitForm" novalidate>
             <div class="mb-3">
               <label class="form-label">Tytuł stanowiska</label>
@@ -156,7 +221,7 @@
         </div>
       </div>
 
-      <div class="col-lg-5 mb-4">
+      <div v-if="user?.isPro" class="col-lg-5 mb-4">
         <div class="form-card shadow-sm p-4 bg-light text-center">
           <h4>Instrukcja</h4>
 
@@ -258,7 +323,7 @@ interface History {
 import { useAuthStore } from '@/api/authentication/authStore';
 import api from '@/api/services/api';
 import { useNotification } from '@/composables/useNotification';
-import { mdiInformation, mdiRocketLaunch } from '@mdi/js';
+import { mdiCheck, mdiInformation, mdiRobot, mdiRocketLaunch } from '@mdi/js';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 export default {
@@ -444,6 +509,8 @@ export default {
       formattedResetDate,
       mdiInformation,
       mdiRocketLaunch,
+      mdiCheck,
+      mdiRobot,
       goToPage,
       changePage,
       submitForm,
@@ -689,5 +756,36 @@ button.btn-primary:hover {
   font-weight: bold !important;
   transition: width 0.5s ease !important;
   min-width: 30px !important;
+}
+
+.animate-rocket {
+  display: inline-block;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.text-custom {
+  color: #ff5666;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.text-custom:hover {
+  text-decoration: underline;
+}
+
+.func-list li {
+  font-weight: bold;
 }
 </style>

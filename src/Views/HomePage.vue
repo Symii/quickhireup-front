@@ -106,7 +106,13 @@
         </p>
 
         <RouterLink to="/generator">
-          <button class="btn-generator">🚀 Uruchom generator</button>
+          <button class="btn-generator">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+              <path :d="mdiRocketLaunch" fill="white" />
+            </svg>
+
+            Uruchom generator
+          </button>
         </RouterLink>
       </div>
     </div>
@@ -129,6 +135,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import PartnersSlide from './Components/PartnersSlide.vue';
 import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
+import { mdiRocketLaunch } from '@mdi/js';
 
 const router = useRouter();
 

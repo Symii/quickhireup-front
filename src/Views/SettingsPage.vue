@@ -67,10 +67,10 @@
           <hr />
 
           <form @submit.prevent="saveSettings" novalidate>
-            <div class="mb-4">
+            <div class="mb-4" v-if="isLoggedIn && isCandidate">
               <h5 class="mb-3">Powiadomienia e-mail</h5>
 
-              <div class="form-check mb-2">
+              <div v-if="isCandidate" class="form-check mb-2">
                 <input
                   type="checkbox"
                   v-model="settings.notifications.jobAlerts"
@@ -83,7 +83,7 @@
                 </label>
               </div>
 
-              <div class="form-check mb-2">
+              <div v-if="isCandidate" class="form-check mb-2">
                 <input
                   type="checkbox"
                   v-model="settings.notifications.applicationUpdates"
@@ -97,23 +97,10 @@
               </div>
             </div>
 
-            <div class="mb-4">
+            <div class="mb-4" v-if="isLoggedIn && isCompany">
               <h5 class="mb-3">Prywatność</h5>
 
-              <div class="form-check mb-2">
-                <input
-                  type="checkbox"
-                  v-model="settings.privacy.showCV"
-                  class="custom-checkbox"
-                  id="showCV"
-                />
-
-                <label class="form-check-label" for="showCV">
-                  Twoje CV jest widoczne dla wszystkich firm
-                </label>
-              </div>
-
-              <div class="form-check mb-2">
+              <div v-if="isCompany" class="form-check mb-2">
                 <input
                   type="checkbox"
                   v-model="settings.privacy.showProfile"
@@ -122,7 +109,7 @@
                 />
 
                 <label class="form-check-label" for="showProfile">
-                  Twój profil jest widoczny w wyszukiwarce kandydatów
+                  Twój profil jest widoczny w wyszukiwarce pracodawców
                 </label>
               </div>
             </div>
@@ -213,9 +200,6 @@ const userData = reactive({
   bio: '',
 });
 
-const isLoggedIn = ref(false);
-const isCompany = ref(false);
-
 const primaryColor = '#ff5666';
 
 const settings = reactive({
@@ -224,7 +208,6 @@ const settings = reactive({
     applicationUpdates: true,
   },
   privacy: {
-    showCV: true,
     showProfile: true,
   },
   currentPassword: '',
@@ -257,12 +240,19 @@ const saveSettings = async () => {
   errorMessage.value = '';
 
   try {
-    await accountService.updateSettings({
+    const updatedSettings = {
       jobAlerts: settings.notifications.jobAlerts,
       applicationUpdates: settings.notifications.applicationUpdates,
-      showCV: settings.privacy.showCV,
       showProfile: settings.privacy.showProfile,
-    });
+    };
+
+    await accountService.updateSettings(updatedSettings);
+
+    if (auth.user) {
+      auth.user.jobAlertsEnabled = updatedSettings.jobAlerts;
+      auth.user.applicationUpdatesEnabled = updatedSettings.applicationUpdates;
+      auth.user.showProfile = updatedSettings.showProfile;
+    }
 
     if (settings.newPassword && settings.currentPassword) {
       await userService.changePassword(
@@ -290,14 +280,14 @@ const formatDate = (dateString: string | undefined) => {
     year: 'numeric',
   });
 };
+const auth = useAuthStore();
+
+const currentUser = computed(() => auth.user);
+const isLoggedIn = computed(() => auth.user != null);
+const isCandidate = computed(() => accountService.isCandidate());
+const isCompany = computed(() => accountService.isCompany());
 
 onMounted(async () => {
-  const auth = useAuthStore();
-
-  const currentUser = computed(() => auth.user);
-  isLoggedIn.value = currentUser.value != null;
-  isCompany.value = accountService.isCompany();
-
   if (!currentUser.value) {
     return;
   }
@@ -307,7 +297,6 @@ onMounted(async () => {
   settings.notifications.jobAlerts = currentUser.value.jobAlertsEnabled;
   settings.notifications.applicationUpdates = currentUser.value.applicationUpdatesEnabled;
 
-  settings.privacy.showCV = currentUser.value.showCv;
   settings.privacy.showProfile = currentUser.value.showProfile;
 
   isPro.value = currentUser.value?.isPro ?? false;
