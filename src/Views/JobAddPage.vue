@@ -405,7 +405,7 @@ export default {
     const selectedTemplate = ref('');
     const errors = reactive<Record<string, string>>({});
 
-    const form = reactive<JobOffer>({
+    const form = reactive<Partial<JobOffer>>({
       userId: '',
       jobTitle: '',
       company: '',
@@ -437,9 +437,16 @@ export default {
       if (step === 2) {
         if (!form.experience) errors.experience = 'Błąd: Proszę wybrać poziom doświadczenia.';
         if (!form.contractType) errors.contractType = 'Błąd: Proszę wybrać rodzaj umowy.';
-        if (form.salaryFrom < 0) errors.salaryFrom = 'Błąd: Proszę podać wynagrodzenie.';
-        if (form.salaryTo < form.salaryFrom)
-          errors.salaryTo = `Błąd: Wynagrodzenie DO musi być większe niż ${form.salaryFrom}.`;
+        if ((form.salaryFrom ?? 0) < 0) {
+          errors.salaryFrom = 'Błąd: Proszę podać wynagrodzenie.';
+        }
+
+        const sFrom = form.salaryFrom ?? 0;
+        const sTo = form.salaryTo ?? 0;
+
+        if (sTo < sFrom) {
+          errors.salaryTo = `Błąd: Wynagrodzenie DO musi być większe niż ${sFrom}.`;
+        }
         if (!form.description) errors.description = 'Błąd: Proszę wpisać opis stanowiska.';
         if (!form.qualifications) errors.qualifications = 'Błąd: Proszę podać wymagania.';
       }
@@ -484,10 +491,10 @@ export default {
       loading.value = true;
       try {
         if (isEditMode.value) {
-          await jobOfferService.update(offerId, form);
+          await jobOfferService.update(offerId, form as JobOffer);
           notification.showMessage('Zaktualizowano ogłoszenie pomyślnie');
         } else {
-          const created = await jobOfferService.create(form);
+          const created = await jobOfferService.create(form as JobOffer);
 
           notification.showMessage('Dodano ogłoszenie pomyślnie');
 
@@ -513,7 +520,7 @@ export default {
 
     watch(
       () => form.location,
-      async (loc: string) => {
+      async (loc) => {
         if (!loc) {
           userCoord.value = null;
           return;
