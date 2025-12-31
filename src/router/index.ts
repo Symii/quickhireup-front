@@ -157,7 +157,7 @@ const routes = [
     path: '/admin/uzytkownicy',
     name: 'Lista użytkowników',
     component: () => import('@/Views/UsersListPage.vue'),
-    meta: { requiresAuth: true, roles: ['Admin'] },
+    // TODO: ODKOMENTOWAC! meta: { requiresAuth: true, roles: ['Admin'] },
   },
   {
     path: '/admin/wiadomosci',
