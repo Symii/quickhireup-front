@@ -91,6 +91,26 @@
             </button>
           </RouterLink>
         </div>
+
+        <div v-if="job?.salaryFrom" class="salary-card shadow-sm p-4 mt-4 text-center">
+          <div class="salary-icon-circle mb-3">
+            <svg viewBox="0 0 24 24" width="32" height="32">
+              <path :d="mdiWallet" fill="#ffffff" />
+            </svg>
+          </div>
+
+          <h5 class="text-muted small text-uppercase fw-bold mb-2">Proponowane wynagrodzenie</h5>
+
+          <div class="salary-amount" :style="{ color: primaryColor }">
+            {{ job.salaryFrom.toLocaleString() }} - {{ job.salaryTo.toLocaleString() }}
+
+            <span class="currency-label">PLN</span>
+          </div>
+
+          <div class="salary-details mt-2">
+            <span class="badge rounded-pill bg-light text-dark border">Brutto / miesięcznie</span>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -173,6 +193,7 @@ import { useRoute } from 'vue-router';
 import { MapPinIcon } from '@heroicons/vue/24/solid';
 import { RoleName } from '@/constants/RoleNames';
 import AlertMessage from '@/components/AlertMessage.vue';
+import { mdiWallet } from '@mdi/js';
 
 const notification = useNotification();
 const route = useRoute();
@@ -447,5 +468,48 @@ const toggleSaveJob = async () => {
   border: 1px solid #f0f0f0;
   clear: both;
   position: relative;
+}
+
+.salary-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border-left: 5px solid #ff5666;
+  transition: transform 0.3s ease;
+}
+
+.salary-card:hover {
+  transform: translateY(-5px);
+}
+
+.salary-icon-circle {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #ff5666, #e14b59);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-shadow: 0 4px 10px rgba(255, 86, 102, 0.3);
+}
+
+.salary-amount {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.currency-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+.salary-details .badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.5em 1em;
 }
 </style>
