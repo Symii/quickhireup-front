@@ -71,10 +71,6 @@
               </button>
             </div>
 
-            <p class="card-text text-muted flex-grow-1">
-              {{ job.description }}
-            </p>
-
             <div class="d-flex justify-content-between text-muted small mb-3">
               <span>
                 <i class="fa-regular fa-calendar-xmark me-1"></i>
