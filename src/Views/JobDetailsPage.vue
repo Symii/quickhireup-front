@@ -270,7 +270,13 @@ const initMap = () => {
     maxZoom: 19,
   }).addTo(map);
 
-  L.marker([latitude, longitude]).addTo(map);
+  const markerIcon = L.icon({
+    iconUrl: '/marker-icon.png',
+    iconSize: [38, 38],
+    iconAnchor: [22, 50],
+  });
+
+  L.marker([latitude, longitude], { icon: markerIcon }).addTo(map);
 };
 
 onMounted(async () => {
