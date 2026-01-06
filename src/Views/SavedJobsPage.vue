@@ -33,8 +33,6 @@
               </button>
             </div>
 
-            <p class="text-muted small mb-3">{{ job.description }}</p>
-
             <div class="text-end">
               <RouterLink :to="`oferta/${job.id}`" class="btn btn-gradient"
                 >Zobacz ogłoszenie</RouterLink
