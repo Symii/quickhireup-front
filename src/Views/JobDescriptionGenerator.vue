@@ -324,6 +324,7 @@ import { useAuthStore } from '@/api/authentication/authStore';
 import api from '@/api/services/api';
 import { useNotification } from '@/composables/useNotification';
 import { mdiCheck, mdiInformation, mdiRobot, mdiRocketLaunch } from '@mdi/js';
+import axios from 'axios';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 export default {
@@ -407,9 +408,28 @@ export default {
           description: generatedDescription.value,
         });
         usedCount.value = usedCount.value + 1;
-      } catch (error) {
-        generatedDescription.value = `Wystąpił błąd: ${error}`;
-        notification.showMessage('Wystąpił błąd przy generowaniu opisu.', 'error');
+      } catch (error: unknown) {
+        let errorMessage = 'Wystąpił nieoczekiwany błąd.';
+
+        if (axios.isAxiosError(error)) {
+          const data = error.response?.data as
+            | {
+                title?: string;
+                message?: string;
+              }
+            | undefined;
+
+          errorMessage =
+            data?.title ||
+            data?.message ||
+            mapStatusToMessage(error.response?.status) ||
+            error.message;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        generatedDescription.value = errorMessage;
+        notification.showMessage(errorMessage, 'error');
       } finally {
         loading.value = false;
         stopTimer();
@@ -418,7 +438,7 @@ export default {
 
     const copyToClipboard = () => {
       navigator.clipboard.writeText(generatedDescription.value);
-      alert('Opis został skopiowany do schowka!');
+      notification.showMessage('Opis został skopiowany do schowka');
     };
 
     const startTimer = () => {
@@ -484,6 +504,23 @@ export default {
       }
       return new Date(dateValue).toLocaleDateString();
     });
+
+    function mapStatusToMessage(status?: number): string | null {
+      switch (status) {
+        case 401:
+          return 'Sesja wygasła. Zaloguj się ponownie.';
+        case 403:
+          return 'Brak uprawnień (wymagany plan PRO).';
+        case 429:
+          return 'Zbyt wiele zapytań. Spróbuj ponownie później.';
+        case 500:
+          return 'Błąd serwera.';
+        case 503:
+          return 'Serwis chwilowo niedostępny.';
+        default:
+          return null;
+      }
+    }
 
     onMounted(() => {
       fetchHistory();
