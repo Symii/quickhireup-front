@@ -15,7 +15,7 @@
         </ul>
       </div>
 
-      <div v-if="isCompany">
+      <div v-if="isLoggedIn && isCompany">
         <h4>Dla firm</h4>
 
         <ul>
@@ -35,6 +35,8 @@
           <li><RouterLink to="/partnerzy">Partnerzy</RouterLink></li>
 
           <li><RouterLink to="/pricing">Cennik</RouterLink></li>
+
+          <li><RouterLink to="/features">Funkcje</RouterLink></li>
         </ul>
       </div>
 

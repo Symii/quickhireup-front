@@ -105,7 +105,7 @@
           pracy i przyciągaj najlepszych kandydatów!
         </p>
 
-        <RouterLink to="/generator">
+        <RouterLink :to="generatorLink">
           <button class="btn-generator">
             <svg viewBox="0 0 24 24" width="24" height="24">
               <path :d="mdiRocketLaunch" fill="white" />
@@ -130,12 +130,14 @@
 <script setup lang="ts">
 import jobOfferService from '@/api/services/jobOfferService';
 import type { JobOffer } from '@/api/types/jobOffer';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 
 import { useRouter } from 'vue-router';
 import PartnersSlide from './Components/PartnersSlide.vue';
 import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
 import { mdiRocketLaunch } from '@mdi/js';
+import { useAuthStore } from '@/api/authentication/authStore';
+import accountService from '@/api/services/accountService';
 
 const router = useRouter();
 
@@ -181,6 +183,14 @@ function animateNumber(targetNumber: number) {
 }
 
 const jobs = ref<Array<JobOffer> | null>(null);
+
+const auth = useAuthStore();
+const isLoggedIn = computed(() => auth.user != null);
+const isCompany = computed(() => accountService.isCompany());
+
+const generatorLink = computed(() =>
+  isLoggedIn.value && isCompany.value ? '/generator' : '/features',
+);
 
 onMounted(async () => {
   jobs.value = await jobOfferService.getRandom(6);

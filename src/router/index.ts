@@ -236,6 +236,11 @@ const routes = [
     component: () => import('@/Views/PaymentError.vue'),
   },
   {
+    path: '/features',
+    name: 'features',
+    component: () => import('@/Views/FeaturesPage.vue'),
+  },
+  {
     path: '/:pathMatch(.*)*',
     component: () => import('@/Views/ErrorPage.vue'),
     props: { type: '404', message: 'Strona na ktorą próbujesz wejść nie istnieje.' },
