@@ -340,24 +340,19 @@ export default {
       if (!validate()) return;
 
       try {
-        let response;
         if (editingTemplate.value && editingTemplate.value.id) {
-          response = await api.put(`${apiUrl}/${editingTemplate.value.id}`, {
+          await api.put(`${apiUrl}/${editingTemplate.value.id}`, {
             ...form,
             id: editingTemplate.value.id,
           });
         } else {
-          response = await api.post(apiUrl, form);
+          await api.post(apiUrl, form);
         }
 
-        if (response.status === 200 || response.status === 201) {
-          notification.showMessage('Szablon zapisany pomyślnie.', 'success');
-          await fetchTemplates();
-          editingTemplate.value = null;
-          resetForm();
-        } else {
-          notification.showMessage('Wystąpił błąd podczas zapisywania.', 'error');
-        }
+        notification.showMessage('Szablon zapisany pomyślnie.', 'success');
+        await fetchTemplates();
+        editingTemplate.value = null;
+        resetForm();
       } catch (error) {
         console.error(error);
         notification.showMessage('Wystąpił błąd połączenia.', 'error');
