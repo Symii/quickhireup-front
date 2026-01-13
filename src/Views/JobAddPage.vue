@@ -314,6 +314,7 @@ import LocationAutocomplete from '@/components/LocationAutocomplete.vue';
 import { useConfirm } from '@/composables/useConfirm';
 import { useNotification } from '@/composables/useNotification';
 import router from '@/router';
+import axios from 'axios';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -504,8 +505,20 @@ export default {
             query: { offerId: created.id, jobTitle: created.jobTitle },
           });
         }
-      } catch (error) {
-        console.error('Błąd zapisu:', error);
+      } catch (error: unknown) {
+        let errorMessage = 'Wystąpił nieoczekiwany błąd.';
+
+        if (axios.isAxiosError(error)) {
+          const data = error.response?.data as string;
+
+          if (data) {
+            errorMessage = data as string;
+          }
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+
+        notification.showMessage(errorMessage, 'error');
       } finally {
         loading.value = false;
       }

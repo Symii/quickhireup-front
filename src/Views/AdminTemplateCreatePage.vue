@@ -205,6 +205,20 @@
               <div class="invalid-feedback">{{ errors.benefits }}</div>
             </div>
 
+            <div class="form-check mt-3">
+              <input
+                type="checkbox"
+                v-model="form.isPremium"
+                class="custom-checkbox"
+                id="isPremium"
+              />
+
+              <label for="isPremium" class="form-check-label"
+                >Czy szablon ma być dostępny tylko dla użytkowników, którzy wykupili płatną
+                subskrypcję?</label
+              >
+            </div>
+
             <div class="text-end">
               <button
                 v-if="editingTemplate"
@@ -244,6 +258,7 @@ interface TemplateForm {
   description: string;
   qualifications: string;
   benefits?: string;
+  isPremium: boolean;
 }
 
 export default {
@@ -265,6 +280,7 @@ export default {
       description: '',
       qualifications: '',
       benefits: '',
+      isPremium: false,
     });
 
     const errors = reactive<Record<string, string>>({});
@@ -311,6 +327,7 @@ export default {
       form.description = '';
       form.qualifications = '';
       form.benefits = '';
+      form.isPremium = false;
       delete form.id;
     };
 
@@ -435,5 +452,56 @@ button.btn-primary:hover {
 .invalid-feedback {
   color: #dc3545;
   font-size: 0.85rem;
+}
+
+.form-check-label {
+  position: relative;
+  padding-left: 2.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.form-check-label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.form-check-label::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  width: 8px;
+  height: 12px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-100%) scale(0) rotate(45deg);
+  transform-origin: bottom left;
+  transition: transform 0.3s ease;
+}
+
+.custom-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.custom-checkbox:checked + .form-check-label::before {
+  background-color: #ff5666;
+  border-color: #ff5666;
+}
+
+.custom-checkbox:checked + .form-check-label::after {
+  transform: translateY(-100%) scale(1) rotate(45deg);
 }
 </style>
