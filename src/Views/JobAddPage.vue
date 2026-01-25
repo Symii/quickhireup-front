@@ -175,7 +175,7 @@
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Wynagrodzenie OD</label>
+                <label class="form-label">Wynagrodzenie minimalne</label>
 
                 <input
                   type="number"
@@ -188,7 +188,7 @@
               </div>
 
               <div class="mb-3">
-                <label class="form-label">Wynagrodzenie DO</label>
+                <label class="form-label">Wynagrodzenie maksymalne</label>
 
                 <input
                   type="number"
@@ -403,6 +403,7 @@ export default {
     );
 
     const stepLabels = ['Dane podstawowe', 'Szczegóły stanowiska', 'Podsumowanie'];
+    const MAX_SALARY = 200000;
 
     const selectedTemplate = ref('');
     const errors = reactive<Record<string, string>>({});
@@ -446,9 +447,20 @@ export default {
         const sFrom = form.salaryFrom ?? 0;
         const sTo = form.salaryTo ?? 0;
 
-        if (sTo < sFrom) {
-          errors.salaryTo = `Błąd: Wynagrodzenie DO musi być większe niż ${sFrom}.`;
+        if (sFrom <= 0) {
+          errors.salaryFrom = 'Proszę podać kwotę większą od 0.';
+        } else if (sFrom > MAX_SALARY) {
+          errors.salaryFrom = `Kwota nie może przekraczać ${MAX_SALARY.toLocaleString()} zł.`;
         }
+
+        if (sTo > 0) {
+          if (sTo < sFrom) {
+            errors.salaryTo = `Kwota musi być większa lub równa wynagrodzeniu minimalnemu (${sFrom} zł).`;
+          } else if (sTo > MAX_SALARY) {
+            errors.salaryTo = `Maksymalne wynagrodzenie to ${MAX_SALARY.toLocaleString()} zł.`;
+          }
+        }
+
         if (!form.description) errors.description = 'Błąd: Proszę wpisać opis stanowiska.';
         if (!form.qualifications) errors.qualifications = 'Błąd: Proszę podać wymagania.';
       }

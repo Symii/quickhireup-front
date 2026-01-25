@@ -2,7 +2,6 @@
   <div class="candidates-view container py-5">
     <header class="text-center mb-5">
       <h1 class="display-5 fw-bold text-primary-gradient">Kandydaci</h1>
-
       <p v-if="jobTitle" class="text-muted">
         Oferta pracy: <strong>{{ jobTitle }}</strong>
       </p>
@@ -40,15 +39,25 @@
               </span>
             </div>
 
-            <p class="text-muted flex-grow-1">
-              <strong>Telefon:</strong> {{ candidate.tel }}<br />
+            <div class="mb-3">
+              <p class="text-muted small mb-1"><strong>Telefon:</strong> {{ candidate.tel }}</p>
 
-              <strong>Doświadczenie:</strong> {{ candidate.experience }}
+              <p class="text-muted small mb-1"><strong>Doświadczenie:</strong></p>
 
-              <br />
+              <pre class="bg-light p-2 rounded">{{ candidate.experience }}</pre>
+            </div>
 
-              <strong>Miasto:</strong> {{ candidate.location }}
-            </p>
+            <div class="mb-3">
+              <p class="text-muted small mb-1"><strong>Edukacja:</strong></p>
+
+              <pre class="bg-light p-2 rounded">{{ candidate.education }}</pre>
+            </div>
+
+            <div v-if="candidate.coverLetter" class="mb-3">
+              <p class="text-muted small mb-1"><strong>List motywacyjny:</strong></p>
+
+              <pre class="bg-light p-2 rounded">{{ candidate.coverLetter }}</pre>
+            </div>
 
             <div class="d-flex flex-column gap-2 mt-auto">
               <a
@@ -56,34 +65,93 @@
                 target="_blank"
                 class="btn btn-outline-primary w-100"
               >
-                <i class="fa-solid fa-file-pdf me-2"></i> CV
+                <i class="fa-solid fa-file-pdf me-2"></i> Zobacz CV
               </a>
 
               <div v-if="candidate.status === 'in_progress'" class="d-flex gap-2">
                 <button
-                  @click="updateStatus(candidate.id, 'accepted')"
+                  @click="openDecisionModal(candidate.id, 'accepted')"
                   class="btn btn-success flex-grow-1"
                 >
                   <CheckCircleIcon class="icon" /> Przyjmij
                 </button>
 
                 <button
-                  @click="updateStatus(candidate.id, 'rejected')"
+                  @click="openDecisionModal(candidate.id, 'rejected')"
                   class="btn btn-danger flex-grow-1"
                 >
                   <ArchiveBoxXMarkIcon class="icon" /> Odrzuć
                 </button>
               </div>
 
-              <div v-else-if="candidate.status !== 'withdrawn'" class="d-flex gap-2">
-                <button
-                  @click="updateStatus(candidate.id, 'in_progress')"
-                  class="btn btn-outline-secondary w-100"
-                >
-                  <BackwardIcon class="icon" /> Przywróć do rozpatrywania
-                </button>
-              </div>
+              <button
+                v-else-if="candidate.status !== 'withdrawn'"
+                @click="updateStatusSimple(candidate.id, 'in_progress')"
+                class="btn btn-outline-secondary w-100"
+              >
+                <BackwardIcon class="icon" /> Przywróć
+              </button>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showDecisionModal" class="modal-backdrop fade show"></div>
+
+    <div v-if="showDecisionModal" class="modal d-block" tabindex="-1" style="top: 10%">
+      <div class="modal-dialog">
+        <div class="modal-content shadow-lg border-0">
+          <div
+            class="modal-header text-white"
+            :class="decisionType === 'accepted' ? 'bg-success' : 'bg-danger'"
+          >
+            <h5 class="modal-title">
+              {{ decisionType === 'accepted' ? 'Akceptacja kandydata' : 'Odrzucenie aplikacji' }}
+            </h5>
+
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              @click="showDecisionModal = false"
+            ></button>
+          </div>
+
+          <div class="modal-body py-4">
+            <label class="form-label fw-bold">
+              {{
+                decisionType === 'accepted'
+                  ? 'Dalsze kroki / Wiadomość dla kandydata'
+                  : 'Powód odrzucenia'
+              }}
+            </label>
+
+            <textarea
+              v-model="decisionNote"
+              class="form-control"
+              rows="4"
+              :placeholder="
+                decisionType === 'accepted'
+                  ? 'Np. Zapraszamy na rozmowę w poniedziałek...'
+                  : 'Np. Brak wymaganego doświadczenia...'
+              "
+            ></textarea>
+          </div>
+          <div class="modal-footer border-0">
+            <button type="button" class="btn btn-light" @click="showDecisionModal = false">
+              Anuluj
+            </button>
+
+            <button
+              type="button"
+              :class="decisionType === 'accepted' ? 'btn btn-success' : 'btn btn-danger'"
+              @click="submitDecision"
+              :disabled="isSubmitting"
+            >
+              <span v-if="isSubmitting" class="spinner-border spinner-border-sm me-1"></span>
+
+              Zatwierdź i wyślij
+            </button>
           </div>
         </div>
       </div>
@@ -107,7 +175,8 @@ interface Candidate {
   email: string;
   tel: string;
   experience: string;
-  location: string;
+  education: string;
+  coverLetter: string;
   cvUrl: string;
   jobId: string;
   jobTitle: string;
@@ -120,24 +189,61 @@ const jobId = route.params.jobId as string;
 const candidates = ref<Candidate[]>([]);
 const jobTitle = ref('');
 
+const showDecisionModal = ref(false);
+const decisionType = ref<'accepted' | 'rejected'>('accepted');
+const decisionNote = ref('');
+const selectedAppId = ref<string | null>(null);
+const isSubmitting = ref(false);
+
 const fetchCandidates = async () => {
   try {
     const envApiUrl = import.meta.env.VITE_API_URL;
     const response = await api.get(`${envApiUrl}/api/applications/job/${jobId}`);
     candidates.value = response.data;
+    console.log(response.data);
     if (candidates.value.length > 0) jobTitle.value = candidates.value[0].jobTitle;
   } catch {
     notification.showMessage('Błąd podczas ładowania kandydatów.', 'error');
   }
 };
 
+const openDecisionModal = (appId: string, type: 'accepted' | 'rejected') => {
+  selectedAppId.value = appId;
+  decisionType.value = type;
+  decisionNote.value = '';
+  showDecisionModal.value = true;
+};
+
+const submitDecision = async () => {
+  if (!selectedAppId.value) return;
+  isSubmitting.value = true;
+
+  try {
+    const envApiUrl = import.meta.env.VITE_API_URL;
+    await api.patch(`${envApiUrl}/api/applications/${selectedAppId.value}/status`, {
+      status: decisionType.value,
+      note: decisionNote.value,
+    });
+
+    const candidate = candidates.value.find((c) => c.id === selectedAppId.value);
+    if (candidate) candidate.status = decisionType.value;
+
+    notification.showMessage('Status został pomyślnie zmieniony.');
+    showDecisionModal.value = false;
+  } catch {
+    notification.showMessage('Błąd podczas aktualizacji statusu.', 'error');
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
 const { confirm } = useConfirm();
 
-const updateStatus = async (appId: string, status: ApplicationStatus) => {
+const updateStatusSimple = async (appId: string, status: ApplicationStatus) => {
   const isConfirmed = await confirm(
-    'Zmiana statusu',
-    `Czy na pewno chcesz zmienić status aplikacji na "${statusLabel(status)}"?`,
-    { confirmText: 'Tak, zmień', cancelText: 'Nie, wróć' },
+    'Przywróć aplikację',
+    'Czy na pewno chcesz przywrócić tę aplikację do statusu "W trakcie"?',
+    { confirmText: 'Tak, przywróć', cancelText: 'Nie, wróć' },
   );
 
   if (!isConfirmed) {
@@ -146,15 +252,10 @@ const updateStatus = async (appId: string, status: ApplicationStatus) => {
 
   try {
     const envApiUrl = import.meta.env.VITE_API_URL;
-    await api.patch(`${envApiUrl}/api/applications/${appId}/status`, JSON.stringify(status), {
-      headers: { 'Content-Type': 'application/json' },
-    });
-
+    await api.patch(`${envApiUrl}/api/applications/${appId}/status`, { status });
     const candidate = candidates.value.find((c) => c.id === appId);
-    if (candidate) {
-      candidate.status = status;
-    }
-    notification.showMessage('Status został zaktualizowany.');
+    if (candidate) candidate.status = status;
+    notification.showMessage('Przywrócono aplikację.');
   } catch {
     notification.showMessage('Błąd podczas aktualizacji statusu.', 'error');
   }
@@ -226,14 +327,29 @@ onMounted(fetchCandidates);
   font-size: 1.2rem;
 }
 
-.btn-gradient {
-  background: linear-gradient(90deg, #ff5666, #e14b59);
-  color: white;
-  border: none;
+.icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
 }
 
-.btn-gradient:hover {
-  opacity: 0.9;
+pre {
+  font-family: inherit;
+  color: #666;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+}
+
+.modal {
+  z-index: 1050;
 }
 
 .btn-outline-primary {
@@ -245,10 +361,5 @@ onMounted(fetchCandidates);
   background-color: #ff5666;
   color: white;
   border-color: #ff5666;
-}
-
-.icon {
-  width: 20px;
-  height: 20px;
 }
 </style>

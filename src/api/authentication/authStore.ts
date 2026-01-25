@@ -82,6 +82,12 @@ export const useAuthStore = defineStore('auth', {
       });
     },
 
+    async confirmEmailChange(userId: string, token: string, newEmail: string) {
+      await api.get(`/users/confirm-email-change`, {
+        params: { userId, token, newEmail },
+      });
+    },
+
     async registerCompany(
       companyName: string,
       nip: string,

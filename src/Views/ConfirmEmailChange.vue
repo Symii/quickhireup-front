@@ -4,9 +4,9 @@
       <div v-if="loading" class="status-content">
         <div class="spinner"></div>
 
-        <h2>Weryfikacja konta</h2>
+        <h2>Weryfikacja zmiany adresu e-mail</h2>
 
-        <p>Proszę czekać, weryfikujemy Twoje dane...</p>
+        <p>Proszę czekać, sprawdzamy Twój token...</p>
       </div>
 
       <div v-else-if="success" class="status-content success">
@@ -18,7 +18,7 @@
 
         <h2>Sukces!</h2>
 
-        <p>Twoje konto zostało potwierdzone pomyślnie.</p>
+        <p>Twój adres e-mail został pomyślnie zaktualizowany.</p>
 
         <p class="redirect-info">Za chwilę zostaniesz przekierowany do logowania...</p>
       </div>
@@ -30,7 +30,7 @@
           </svg>
         </div>
 
-        <h2>Błąd weryfikacji</h2>
+        <h2>Wystąpił błąd</h2>
 
         <p>Link weryfikacyjny jest nieprawidłowy lub wygasł.</p>
 
@@ -60,8 +60,9 @@ const goToHome = () => router.push('/');
 onMounted(async () => {
   const userId = route.query.userId as string;
   const token = route.query.token as string;
+  const newEmail = route.query.newEmail as string;
 
-  if (!userId || !token) {
+  if (!userId || !token || !newEmail) {
     loading.value = false;
     success.value = false;
     notification.showMessage('Link jest niekompletny.', 'error');
@@ -69,17 +70,18 @@ onMounted(async () => {
   }
 
   try {
-    await auth.verifyEmail(userId, token);
+    await auth.confirmEmailChange(userId, token, newEmail);
 
     success.value = true;
-    notification.showMessage('Konto potwierdzone pomyślnie!');
+    notification.showMessage('Adres e-mail został zmieniony!');
 
     setTimeout(() => {
+      auth.logout();
       router.push('/login');
     }, 3500);
   } catch {
     success.value = false;
-    notification.showMessage('Nie udało się potwierdzić konta.', 'error');
+    notification.showMessage('Weryfikacja nie powiodła się.', 'error');
   } finally {
     loading.value = false;
   }

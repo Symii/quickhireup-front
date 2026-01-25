@@ -22,6 +22,7 @@
               <svg viewBox="0 0 24 24" width="24" height="24">
                 <path :d="mdiRocketLaunch" fill="#fc4c4e" />
               </svg>
+
               <span class="fw-bold">Aktywne: QuickHireUp Pro</span>
             </div>
 

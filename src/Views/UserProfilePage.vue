@@ -40,7 +40,7 @@
 
           <p class="text-muted mb-1">{{ userRoleToString(userData.role) }}</p>
 
-          <p class="text-muted small">{{ userData.email }}</p>
+          <p class="text-muted small">{{ userData.originalEmail }}</p>
 
           <div class="decor-line"></div>
 
@@ -109,7 +109,7 @@
 
               <input
                 type="email"
-                v-model="userData.email"
+                v-model="userData.newEmail"
                 class="form-control"
                 required
                 :class="{ 'is-invalid': errors.email }"
@@ -219,6 +219,7 @@ import userService from '@/api/services/usersService';
 import type { UpdateUserDto } from '@/api/types/updateUserDto';
 import { useNotification } from '@/composables/useNotification';
 import { mdiRocketLaunch } from '@mdi/js';
+import type { AxiosError } from 'axios';
 import { ref, reactive, onMounted, computed } from 'vue';
 
 const notification = useNotification();
@@ -236,7 +237,8 @@ const userData = reactive({
   firstName: '',
   secondName: '',
   role: '',
-  email: '',
+  originalEmail: '',
+  newEmail: '',
   bio: '',
 
   companyName: '',
@@ -265,7 +267,7 @@ const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email
 const validateForm = () => {
   errors.firstName = !userData.firstName.trim();
   errors.secondName = !userData.secondName.trim();
-  errors.email = !validateEmail(userData.email);
+  errors.email = !validateEmail(userData.newEmail);
   errors.companyName = isCompany.value ? !userData.companyName?.trim() : false;
   errors.nip = isCompany.value ? !userData.nip?.trim() : false;
   errors.location = isCompany.value ? !userData.location?.trim() : false;
@@ -322,7 +324,7 @@ async function saveProfile() {
     const dto: UpdateUserDto = {
       firstName: userData.firstName,
       secondName: userData.secondName,
-      email: userData.email,
+      email: userData.newEmail,
       bio: userData.bio,
 
       companyName: isCompany.value ? userData.companyName : undefined,
@@ -331,13 +333,17 @@ async function saveProfile() {
     };
 
     await userService.update(userData.id, dto);
-    successMessage.value = 'Zmiany zostały zapisane pomyślnie!';
+    successMessage.value =
+      'Zmiany zostały zapisane pomyślnie. Jeśli zmieniłeś adres e-mail, sprawdź skrzynkę e-mail.';
     unsavedChanges.value = false;
-    notification.showMessage('Zmiany zostały zapisane pomyślnie!', 'success');
-  } catch (err) {
-    console.error(err);
-    errorMessage.value = 'Wystąpił błąd podczas zapisywania zmian.';
-    notification.showMessage('Błąd połączenia z serwerem', 'error');
+    notification.showMessage('Zmiany zostały zapisane pomyślnie.', 'success');
+  } catch (err: unknown) {
+    const axiosError = err as AxiosError<string>;
+    errorMessage.value = axiosError.response?.data || 'Wystąpił błąd podczas zapisywania zmian.';
+    notification.showMessage(
+      axiosError.response?.data || 'Wystąpił błąd podczas zapisywania zmian.',
+      'error',
+    );
   } finally {
     saving.value = false;
   }
@@ -358,6 +364,8 @@ onMounted(async () => {
 
     const currentUser = computed(() => auth.user);
     Object.assign(userData, currentUser.value);
+    userData.newEmail = currentUser.value?.email ?? '';
+    userData.originalEmail = currentUser.value?.email ?? '';
 
     isPro.value = currentUser.value?.isPro ?? false;
     proExpirationDate.value = currentUser.value?.proExpirationDate ?? '';

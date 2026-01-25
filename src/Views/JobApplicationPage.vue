@@ -80,11 +80,11 @@
               <div class="mb-3">
                 <label class="form-label">Wykształcenie</label>
 
-                <input
-                  type="text"
+                <textarea
                   v-model="form.education"
+                  rows="3"
                   :class="['form-control', { 'is-invalid': errors.education }]"
-                />
+                ></textarea>
 
                 <div class="invalid-feedback">{{ errors.education }}</div>
               </div>

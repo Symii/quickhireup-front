@@ -42,19 +42,45 @@
             </div>
           </div>
 
-          <h3 class="section-title mb-3" :style="{ color: primaryColor }">Opis stanowiska</h3>
+          <div class="job-details-container">
+            <section class="job-section">
+              <h3 class="section-title">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                  <path :d="mdiTextBoxSearchOutline" fill="#fc4c4e" />
+                </svg>
 
-          <p class="text-muted mb-4">{{ job?.description }}</p>
+                &nbsp;&nbsp;Opis stanowiska
+              </h3>
 
-          <h4 class="section-subtitle">Wymagania</h4>
+              <div class="section-content">{{ job?.description }}</div>
+            </section>
 
-          <p class="text-muted mb-4">{{ job?.qualifications }}</p>
+            <section class="job-section">
+              <h4 class="section-subtitle">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                  <path :d="mdiClipboardCheckOutline" fill="#fc4c4e" />
+                </svg>
 
-          <template v-if="job?.benefits">
-            <h4 class="section-subtitle">Oferujemy</h4>
+                &nbsp;&nbsp;Wymagania
+              </h4>
 
-            <p class="text-muted mb-4">{{ job?.benefits }}</p>
-          </template>
+              <div class="section-content">{{ job?.qualifications }}</div>
+            </section>
+
+            <template v-if="job?.benefits">
+              <section class="job-section">
+                <h4 class="section-subtitle">
+                  <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path :d="mdiGiftOutline" fill="#fc4c4e" />
+                  </svg>
+
+                  &nbsp;&nbsp;Oferujemy
+                </h4>
+
+                <div class="section-content">{{ job?.benefits }}</div>
+              </section>
+            </template>
+          </div>
         </div>
       </div>
 
@@ -193,7 +219,12 @@ import { useRoute } from 'vue-router';
 import { MapPinIcon } from '@heroicons/vue/24/solid';
 import { RoleName } from '@/constants/RoleNames';
 import AlertMessage from '@/components/AlertMessage.vue';
-import { mdiWallet } from '@mdi/js';
+import {
+  mdiClipboardCheckOutline,
+  mdiGiftOutline,
+  mdiTextBoxSearchOutline,
+  mdiWallet,
+} from '@mdi/js';
 
 const notification = useNotification();
 const route = useRoute();
@@ -517,5 +548,50 @@ const toggleSaveJob = async () => {
   font-size: 0.75rem;
   font-weight: 500;
   padding: 0.5em 1em;
+}
+
+.job-details-container {
+  max-width: 800px;
+  line-height: 1.6;
+}
+
+.job-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 0.5rem;
+}
+
+.section-subtitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+}
+
+.section-content {
+  color: #555;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+  padding-left: 0.5rem;
+}
+
+.section-content {
+  border-left: 3px solid #e0e0e0;
+  padding-left: 1rem;
 }
 </style>
