@@ -1,41 +1,66 @@
 # quickhireup-front
 
-![image](https://github.com/user-attachments/assets/67eeee60-fb34-41fb-856c-82c6f9270f47)
+# Instrukcja instalacji projektu QuickHireUP
 
-![image](https://github.com/user-attachments/assets/efc46d38-1702-4444-a398-467b323cee53)
+Poniżej znajduje się lista kroków wymaganych do poprawnego uruchomienia systemu.
 
-<img width="1920" height="1080" alt="7" src="https://github.com/user-attachments/assets/a20ce20c-f0f8-4da9-b46f-27d08f421209" />
+### 1. Wymagania systemowe
 
-<img width="1920" height="1080" alt="8" src="https://github.com/user-attachments/assets/9cbf773a-8b26-46fe-9043-be575b825990" />
+- **System operacyjny** - Windows 10 lub 11
+- **Środowisko .NET** - .NET 8.0 SDK
+- **Środowisko Node.js** - Wersja 22.x lub nowsza
+- **Node Packet Manager** - npm wersja 10.x lub nowsza
+- **Baza danych** - MariaDB 10.11.15 lub nowsza
+- **Przeglądarka** - np. Chrome
 
-<img width="1920" height="1080" alt="9" src="https://github.com/user-attachments/assets/dce75333-6469-450b-886d-d0551325db9f" />
+### 2. Wymagania sprzętowe
 
-<img width="1920" height="1080" alt="1" src="https://github.com/user-attachments/assets/211b1511-8a2d-477e-b758-2f6951073250" />
+- **Procesor** - minimum 2-rdzeniowy
+- **Pamięć RAM** - minimum 8 GB
+- **Miejsce na dysku** - 1 GB
 
-<img width="1920" height="1080" alt="2" src="https://github.com/user-attachments/assets/f4ae3a51-d269-44cf-a835-c01bfbe9ceeb" />
+### 3. Konfiguracja bazy danych
 
-<img width="1920" height="1080" alt="3" src="https://github.com/user-attachments/assets/811b2d31-29a7-40f6-988a-75c1ab04fdce" />
+- Uruchom instancję serwera bazy danych
+- Utwórz pustą bazę danych o dowolnej nazwie
+- W pliku appsettings.json zaktualizuj sekcję “ConnectionStrings”
 
-<img width="1920" height="1080" alt="4" src="https://github.com/user-attachments/assets/b55fc232-d20a-405b-a402-32d92ddb4f75" />
+### 4. Instalacja i uruchomienie Backend .NET 8
 
-<img width="1920" height="1080" alt="5" src="https://github.com/user-attachments/assets/f1a1bbeb-3524-45e0-bd46-8b07fa451fe0" />
+- Sklonuj repozytorium
+  - `git clone https://github.com/Symii/quickhireup-api.git`
+- Wejdź do katalogu quickhireup-api
+- Wpisz komendy
+  - `dotnet restore`
+  - `dotnet ef database update`
+  - `dotnet run`
 
-<img width="1920" height="1080" alt="10" src="https://github.com/user-attachments/assets/c44c591a-dffc-4d7b-b5f0-6411e37a8531" />
+### 5. Konfiguracja OpenAI
 
-<img width="1920" height="1080" alt="11" src="https://github.com/user-attachments/assets/f1873a3a-7cef-4f79-866a-86b834119b05" />
+- Przejdź na platformę OpenAI https://platform.openai.com/
+- Zaloguj się lub utwórz konto.
+- Utwórz nowy api key https://platform.openai.com/api-keys
+- Po utworzeniu od razu skopiuj token i wklej do appsettings.json do sekcji OpenAI.
+- Po utworzeniu konta powinny być do wykorzystania darmowe tokeny, jeśli zostaną zużyte, będzie wymagane doładowania konta.
 
-<img width="1920" height="1080" alt="12" src="https://github.com/user-attachments/assets/402867d0-83fc-4ded-98d4-6e33097fd119" />
+### 6. Konfiguracja poczty e-mail (Przykład Gmail)
 
-<img width="1920" height="1080" alt="13" src="https://github.com/user-attachments/assets/470b69aa-cbdb-44eb-90f1-7af092a8b1c4" />
+- Zaloguj się lub utwórz konto gmail https://accounts.google.com/signin
+- Włącz weryfikację dwuetapową.
+- Wygeneruj hasło do aplikacji https://myaccount.google.com/apppasswords
+- Skopiuj 16-znakowy kod (bez spacji) do appsettings.json do sekcji EmailSettings.
 
-<img width="1920" height="1080" alt="14" src="https://github.com/user-attachments/assets/cfcd3490-0b5b-4e20-9978-f2abfa175463" />
+### 7. Instalacja i uruchomienie Frontend (Vue 3)
 
-<img width="1920" height="1080" alt="15" src="https://github.com/user-attachments/assets/df46767f-b4ac-4779-99c3-8dd1a260bcb4" />
+- Sklonuj repozytorium
+  - `git clone https://github.com/Symii/quickhireup-front.git`
+- Wejdź do katalogu quickhireup-front
+- Zaktualizuj plik `.env` (ustaw adres URL dla backendu / API)
+- Wpisz komendy
+  - `npm install`
+  - `npm run dev`
 
-<img width="1920" height="1080" alt="16" src="https://github.com/user-attachments/assets/746c0ed8-df57-4aed-8652-0ede80d75a33" />
+### 8. Weryfikacja instalacji
 
-![zaloguj_sie](https://github.com/user-attachments/assets/fd724e9c-4972-4d59-ae8b-ab47663ddb5c)
-
-![zarejestruj](https://github.com/user-attachments/assets/71ca4928-7832-4efd-adf7-92ef5990cea7)
-
-![firmowe](https://github.com/user-attachments/assets/31cc07b3-55db-41e8-8172-e83d85249c8e)
+- Pod adresem `http://localhost:port` (podaj właściwy port) powinien wyświetlać się interfejs użytkownika.
+- Aplikacja powinna pobierać dane z bazy danych przez API.
